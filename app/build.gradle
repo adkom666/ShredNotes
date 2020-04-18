@@ -1,7 +1,5 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
 
 android {
@@ -29,6 +27,13 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
         androidTest.java.srcDirs += 'src/androidTest/kotlin'
+    }
+    lintOptions {
+        abortOnError true
+        warningsAsErrors true
+        checkReleaseBuilds true
+        noLines true
+        xmlReport false
     }
 }
 

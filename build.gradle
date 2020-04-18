@@ -15,7 +15,12 @@ buildscript {
     }
 }
 
+plugins {
+    id 'io.gitlab.arturbosch.detekt' version '1.7.0-beta2'
+}
+
 allprojects {
+    apply from: "${rootDir}/detekt.gradle"
     repositories {
         google()
         jcenter()
@@ -24,4 +29,8 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task lintFast(type: GradleBuild, group: "verification") {
+    tasks = ["detekt"]
 }
