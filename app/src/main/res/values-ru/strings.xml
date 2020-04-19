@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Shred Notes</string>
+
+    <string name="menu_item_title_notes">Заметки</string>
+    <string name="menu_item_title_exercises">Упражнения</string>
+    <string name="menu_item_title_statistics">Статистика</string>
+    <string name="menu_item_title_ask">Аск</string>
+</resources>
