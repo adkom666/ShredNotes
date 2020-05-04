@@ -5,4 +5,11 @@
     <string name="menu_item_title_exercises">Упражнения</string>
     <string name="menu_item_title_statistics">Статистика</string>
     <string name="menu_item_title_ask">Аск</string>
+
+    <string name="menu_item_title_search">Поиск</string>
+    <string name="menu_item_title_filter">Фильтр</string>
+    <string name="menu_item_title_read">Прочитать</string>
+    <string name="menu_item_title_write">Записать</string>
+    <string name="menu_item_title_sing_in">Войти</string>
+    <string name="menu_item_title_sign_out">Выйти</string>
 </resources>

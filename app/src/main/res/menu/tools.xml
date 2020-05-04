@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:id="@+id/group_search">
+        <item
+            android:id="@+id/action_search"
+            android:icon="@drawable/ic_search"
+            android:title="@string/menu_item_title_search"
+            app:showAsAction="always|collapseActionView"
+            app:actionViewClass="androidx.appcompat.widget.SearchView" />
+    </group>
+    <group android:id="@+id/group_filter">
+        <item
+            android:id="@+id/action_filter"
+            android:icon="@drawable/ic_filter_off"
+            android:title="@string/menu_item_title_filter"
+            app:showAsAction="always" />
+    </group>
+    <group>
+        <item
+            android:id="@+id/action_read"
+            android:icon="@drawable/ic_download"
+            android:title="@string/menu_item_title_read"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_write"
+            android:icon="@drawable/ic_upload"
+            android:title="@string/menu_item_title_write"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_sign_out"
+            android:icon="@drawable/ic_sign_out"
+            android:title="@string/menu_item_title_sign_out"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_sign_in"
+            android:icon="@drawable/ic_google_drive"
+            android:title="@string/menu_item_title_sing_in"
+            app:showAsAction="ifRoom" />
+    </group>
+</menu>
