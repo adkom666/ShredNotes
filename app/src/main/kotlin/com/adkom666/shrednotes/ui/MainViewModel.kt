@@ -14,6 +14,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val IS_SEARCH_VISIBLE_BY_DEFAULT = true
         private const val IS_FILTER_VISIBLE_BY_DEFAULT = true
         private const val IS_FILTER_ENABLED_BY_DEFAULT = false
+
+        private val DEFAULT_SECTION = Section.NOTES
     }
 
     private val _isSearchVisibleAsLiveData: MutableLiveData<Boolean> =
@@ -46,4 +48,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         set(value) {
             _isFilterEnabledAsLiveData.value = value
         }
+
+    var section: Section = DEFAULT_SECTION
 }
