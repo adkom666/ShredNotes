@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Shred Notes</string>
+
+    <string name="menu_item_title_notes">Notes</string>
+    <string name="menu_item_title_exercises">Exercises</string>
+    <string name="menu_item_title_statistics">Statistics</string>
+    <string name="menu_item_title_ask">Ask</string>
+
+    <string name="menu_item_title_search">Search</string>
+    <string name="menu_item_title_filter">Filter</string>
+    <string name="menu_item_title_read">Read</string>
+    <string name="menu_item_title_write">Write</string>
+    <string name="menu_item_title_sing_in">Sign In</string>
+    <string name="menu_item_title_sign_out">Sign Out</string>
 </resources>
