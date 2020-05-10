@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -17,6 +18,7 @@ import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import timber.log.Timber
 
 /**
  * Main screen.
@@ -160,17 +162,15 @@ class MainActivity :
     }
 
     private fun handleNavSelection(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_notes -> model.section = Section.NOTES
-            R.id.action_exercises -> model.section = Section.EXERCISES
-            R.id.action_statistics -> model.section = Section.STATISTICS
-            R.id.action_ask -> model.section = Section.ASK
-            else -> return false
-        }
-        return true
+        getTargetSection(item)?.let { section ->
+            Timber.d("Navigation button pressed: section=$section")
+            model.section = section
+            return true
+        } ?: return false
     }
 
     private fun search(query: String?): Boolean {
+        Timber.d("Search: query=$query")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         return if (fragment is Searchable) {
             fragment.search(query)
@@ -180,6 +180,7 @@ class MainActivity :
     }
 
     private fun preview(newText: String?): Boolean {
+        Timber.d("Preview search query: newText=$newText")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         return if (fragment is Searchable) {
             fragment.preview(newText)
@@ -189,6 +190,7 @@ class MainActivity :
     }
 
     private fun filter() {
+        Timber.d("Button pressed: filter")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
             fragment.filter { filterEnabled ->
@@ -198,19 +200,19 @@ class MainActivity :
     }
 
     private fun read() {
-        TODO("Not yet implemented")
+        Timber.d("Button pressed: read notes")
     }
 
     private fun write() {
-        TODO("Not yet implemented")
+        Timber.d("Button pressed: write notes")
     }
 
     private fun signIn() {
-        TODO("Not yet implemented")
+        Timber.d("Button pressed: sign in")
     }
 
     private fun signOut() {
-        TODO("Not yet implemented")
+        Timber.d("Button pressed: sign out")
     }
 
     private fun adjustToolbar(fragment: Fragment) {
@@ -224,6 +226,7 @@ class MainActivity :
     }
 
     private fun addFragment(fragment: Fragment) {
+        Timber.d("Add fragment: $fragment")
         supportFragmentManager
             .beginTransaction()
             .replace(binding.content.id, fragment)
@@ -231,6 +234,7 @@ class MainActivity :
     }
 
     private fun replaceFragment(fragment: Fragment) {
+        Timber.d("Replace fragment: $fragment")
         supportFragmentManager
             .beginTransaction()
             .setCustomAnimations(
@@ -239,6 +243,14 @@ class MainActivity :
             )
             .replace(binding.content.id, fragment)
             .commit()
+    }
+
+    private fun getTargetSection(item: MenuItem): Section? = when (item.itemId) {
+        R.id.action_notes -> Section.NOTES
+        R.id.action_exercises -> Section.EXERCISES
+        R.id.action_statistics -> Section.STATISTICS
+        R.id.action_ask -> Section.ASK
+        else -> null
     }
 
     @IdRes
