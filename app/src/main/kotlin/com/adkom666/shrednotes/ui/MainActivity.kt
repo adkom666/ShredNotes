@@ -47,7 +47,7 @@ class MainActivity :
         _model = ViewModelProvider(this).get(MainViewModel::class.java)
 
         observeActionBarButtons()
-        setContentIfNeed(savedInstanceState)
+        observeSection(isInitialScreenPresent = savedInstanceState != null)
         initNavigation()
     }
 
@@ -93,10 +93,27 @@ class MainActivity :
         })
     }
 
-    private fun setContentIfNeed(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            setScreen(model.section)
-        }
+    private fun observeSection(isInitialScreenPresent: Boolean) {
+        var isScreenPresent = isInitialScreenPresent
+        var isScreenNotFirst = false
+
+        model.sectionAsLiveData.observe(this, Observer { section ->
+            val fragment = section.getFragment()
+            adjustToolbar(fragment)
+
+            if (isScreenPresent) {
+                if (isScreenNotFirst) {
+                    replaceFragment(fragment)
+                } else {
+                    // First screen is already set by system
+                    isScreenNotFirst = true
+                }
+            } else {
+                addFragment(fragment)
+                isScreenPresent = true
+                isScreenNotFirst = true
+            }
+        })
     }
 
     private fun initNavigation() {
@@ -144,10 +161,10 @@ class MainActivity :
 
     private fun handleNavSelection(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_notes -> switchScreen(Section.NOTES)
-            R.id.action_exercises -> switchScreen(Section.EXERCISES)
-            R.id.action_statistics -> switchScreen(Section.STATISTICS)
-            R.id.action_ask -> switchScreen(Section.ASK)
+            R.id.action_notes -> model.section = Section.NOTES
+            R.id.action_exercises -> model.section = Section.EXERCISES
+            R.id.action_statistics -> model.section = Section.STATISTICS
+            R.id.action_ask -> model.section = Section.ASK
             else -> return false
         }
         return true
@@ -194,21 +211,6 @@ class MainActivity :
 
     private fun signOut() {
         TODO("Not yet implemented")
-    }
-
-    private fun setScreen(section: Section) {
-        val fragment = section.getFragment()
-        adjustToolbar(fragment)
-        addFragment(fragment)
-    }
-
-    private fun switchScreen(section: Section) {
-        if (section != model.section) {
-            val fragment = section.getFragment()
-            adjustToolbar(fragment)
-            replaceFragment(fragment)
-            model.section = section
-        }
     }
 
     private fun adjustToolbar(fragment: Fragment) {

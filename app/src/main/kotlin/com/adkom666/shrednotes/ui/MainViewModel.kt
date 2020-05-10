@@ -27,9 +27,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isFilterEnabledAsLiveData: MutableLiveData<Boolean> =
         MutableLiveData(IS_FILTER_ENABLED_BY_DEFAULT)
 
+    private val _sectionAsLiveData: MutableLiveData<Section> =
+        MutableLiveData(DEFAULT_SECTION)
+
     val isSearchVisibleAsLiveData: LiveData<Boolean> = _isSearchVisibleAsLiveData
     val isFilterVisibleAsLiveData: LiveData<Boolean> = _isFilterVisibleAsLiveData
     val isFilterEnabledAsLiveData: LiveData<Boolean> = _isFilterEnabledAsLiveData
+
+    val sectionAsLiveData: LiveData<Section> = _sectionAsLiveData
 
     var isSearchVisible: Boolean
         get() = _isSearchVisibleAsLiveData.value ?: IS_SEARCH_VISIBLE_BY_DEFAULT
@@ -49,5 +54,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _isFilterEnabledAsLiveData.value = value
         }
 
-    var section: Section = DEFAULT_SECTION
+    var section: Section
+        get() = _sectionAsLiveData.value ?: DEFAULT_SECTION
+        set(value) {
+            _sectionAsLiveData.value = value
+        }
 }
