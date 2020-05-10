@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.distinctUntilChanged
 
 /**
  * Main screen model.
@@ -30,11 +31,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _sectionAsLiveData: MutableLiveData<Section> =
         MutableLiveData(DEFAULT_SECTION)
 
-    val isSearchVisibleAsLiveData: LiveData<Boolean> = _isSearchVisibleAsLiveData
-    val isFilterVisibleAsLiveData: LiveData<Boolean> = _isFilterVisibleAsLiveData
-    val isFilterEnabledAsLiveData: LiveData<Boolean> = _isFilterEnabledAsLiveData
+    val isSearchVisibleAsLiveData: LiveData<Boolean> =
+        distinctUntilChanged(_isSearchVisibleAsLiveData)
 
-    val sectionAsLiveData: LiveData<Section> = _sectionAsLiveData
+    val isFilterVisibleAsLiveData: LiveData<Boolean> =
+        distinctUntilChanged(_isFilterVisibleAsLiveData)
+
+    val isFilterEnabledAsLiveData: LiveData<Boolean> =
+        distinctUntilChanged(_isFilterEnabledAsLiveData)
+
+    val sectionAsLiveData: LiveData<Section> =
+        distinctUntilChanged(_sectionAsLiveData)
 
     var isSearchVisible: Boolean
         get() = _isSearchVisibleAsLiveData.value ?: IS_SEARCH_VISIBLE_BY_DEFAULT
