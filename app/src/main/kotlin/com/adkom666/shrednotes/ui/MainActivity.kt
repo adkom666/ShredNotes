@@ -131,6 +131,12 @@ class MainActivity :
 
     private fun prepareSearch(menu: Menu) {
         val searchVisible = model.isSearchVisible
+        val itemSearch = menu.findItem(R.id.action_search)
+        if (itemSearch?.isActionViewExpanded == true) {
+            itemSearch.collapseActionView()
+        }
+        val searchView = itemSearch.actionView as? SearchView
+        searchView?.isVisible = searchVisible
         menu.setGroupVisible(R.id.group_search, searchVisible)
     }
 
