@@ -20,6 +20,7 @@ app/class_files.txt
 app/mapping.txt
 app/seeds.txt
 app/unused.txt
+app/release/
 
 # Gradle files
 .gradle/
