@@ -6,8 +6,10 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.R
@@ -18,11 +20,13 @@ import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import timber.log.Timber
 
 /**
  * Main screen.
  */
+@ExperimentalCoroutinesApi
 class MainActivity :
     AppCompatActivity(),
     BottomNavigationView.OnNavigationItemSelectedListener {
@@ -36,6 +40,20 @@ class MainActivity :
     private var _binding: ActivityMainBinding? = null
     private var _model: MainViewModel? = null
 
+    private val onExpandSearchViewListener: MenuItem.OnActionExpandListener =
+        object : MenuItem.OnActionExpandListener {
+
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                reportSearchActiveness(true)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                reportSearchActiveness(false)
+                return true
+            }
+        }
+
     private val onQueryTextListener: SearchView.OnQueryTextListener =
         object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = search(query)
@@ -48,51 +66,36 @@ class MainActivity :
         setContentView(binding.root)
         _model = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        observeActionBarButtons()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initNavigation()
+
+        supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.tools, menu)
-        menu?.let {
-            initSearch(it)
-        }
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         menu?.let {
-            prepareSearch(it)
-            prepareFilter(it)
+            val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+            prepareSearch(fragment, it)
+            prepareFilter(fragment, it)
         }
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        item?.let {
-            return if (handleToolSelection(it)) {
-                true
-            } else {
-                super.onOptionsItemSelected(it)
-            }
-        } ?: return false
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (handleToolSelection(item)) {
+            true
+        } else {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         return handleNavSelection(item)
-    }
-
-    private fun observeActionBarButtons() {
-        model.isSearchVisibleAsLiveData.observe(this, Observer {
-            invalidateOptionsMenu()
-        })
-        model.isFilterVisibleAsLiveData.observe(this, Observer {
-            invalidateOptionsMenu()
-        })
-        model.isFilterEnabledAsLiveData.observe(this, Observer {
-            invalidateOptionsMenu()
-        })
     }
 
     private fun observeSection(isInitialScreenPresent: Boolean) {
@@ -101,8 +104,6 @@ class MainActivity :
 
         model.sectionAsLiveData.observe(this, Observer { section ->
             val fragment = section.getFragment()
-            adjustToolbar(fragment)
-
             if (isScreenPresent) {
                 if (isScreenNotFirst) {
                     replaceFragment(fragment)
@@ -123,36 +124,60 @@ class MainActivity :
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
     }
 
-    private fun initSearch(menu: Menu) {
-        val itemSearch = menu.findItem(R.id.action_search)
-        val searchView = itemSearch.actionView as? SearchView
-        searchView?.setOnQueryTextListener(onQueryTextListener)
-    }
+    private fun prepareSearch(fragment: Fragment?, menu: Menu) {
 
-    private fun prepareSearch(menu: Menu) {
-        val searchVisible = model.isSearchVisible
-        val itemSearch = menu.findItem(R.id.action_search)
-        if (itemSearch?.isActionViewExpanded == true) {
-            itemSearch.collapseActionView()
+        fun MenuItem.ensureActionViewExpanded() {
+            if (!isActionViewExpanded) {
+                expandActionView()
+            }
         }
+
+        fun MenuItem.ensureActionViewCollapsed() {
+            if (isActionViewExpanded) {
+                collapseActionView()
+            }
+        }
+
+        val itemSearch = menu.findItem(R.id.action_search)
+        itemSearch.setOnActionExpandListener(null)
         val searchView = itemSearch.actionView as? SearchView
-        searchView?.isVisible = searchVisible
-        menu.setGroupVisible(R.id.group_search, searchVisible)
+        searchView?.setOnQueryTextListener(null)
+        val isSearchVisible = if (fragment is Searchable) {
+            val isSearchActive = fragment.isSearchActive
+            val currentQuery = fragment.currentQuery
+            if (currentQuery.isNullOrEmpty() && isSearchActive.not()) {
+                itemSearch.ensureActionViewCollapsed()
+            } else {
+                itemSearch.ensureActionViewExpanded()
+                searchView?.setQuery(currentQuery, false)
+            }
+            true
+        } else {
+            itemSearch.ensureActionViewCollapsed()
+            false
+        }
+        searchView?.isVisible = isSearchVisible
+        menu.setGroupVisible(R.id.group_search, isSearchVisible)
+        if (isSearchVisible) {
+            itemSearch.setOnActionExpandListener(onExpandSearchViewListener)
+            searchView?.setOnQueryTextListener(onQueryTextListener)
+        }
     }
 
-    private fun prepareFilter(menu: Menu) {
-        val itemFilter = menu.findItem(R.id.action_filter)
-        val filterVisible = model.isFilterVisibleAsLiveData.value ?: true
-        if (filterVisible) {
-            val filterEnabled = model.isFilterEnabledAsLiveData.value ?: false
-            val iconRes = if (filterEnabled) {
+    private fun prepareFilter(fragment: Fragment?, menu: Menu) {
+        val isFilterVisible = if (fragment is Filterable) {
+            val iconRes = if (fragment.isFilterEnabled) {
                 R.drawable.ic_filter_on
             } else {
                 R.drawable.ic_filter_off
             }
-            itemFilter?.icon = getDrawable(iconRes)
+            val itemFilter = menu.findItem(R.id.action_filter)
+            itemFilter?.icon = ContextCompat.getDrawable(this, iconRes)
+            true
+        } else {
+            false
         }
-        menu.setGroupVisible(R.id.group_filter, filterVisible)
+        menu.setGroupVisible(R.id.group_filter, isFilterVisible)
     }
 
     private fun handleToolSelection(item: MenuItem): Boolean {
@@ -173,6 +198,14 @@ class MainActivity :
             model.section = section
             return true
         } ?: return false
+    }
+
+    private fun reportSearchActiveness(isActive: Boolean) {
+        Timber.d("Search active: $isActive")
+        val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+        if (fragment is Searchable) {
+            fragment.isSearchActive = isActive
+        }
     }
 
     private fun search(query: String?): Boolean {
@@ -200,7 +233,7 @@ class MainActivity :
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
             fragment.filter { filterEnabled ->
-                model.isFilterEnabled = filterEnabled
+                Timber.d("filterEnabled=$filterEnabled")
             }
         }
     }
@@ -219,16 +252,6 @@ class MainActivity :
 
     private fun signOut() {
         Timber.d("Button pressed: sign out")
-    }
-
-    private fun adjustToolbar(fragment: Fragment) {
-        model.isSearchVisible = fragment is Searchable
-        if (fragment is Filterable) {
-            model.isFilterVisible = true
-            model.isFilterEnabled = fragment.isFilterEnabled
-        } else {
-            model.isFilterVisible = false
-        }
     }
 
     private fun addFragment(fragment: Fragment) {
@@ -272,5 +295,23 @@ class MainActivity :
         Section.EXERCISES -> ExercisesFragment.newInstance()
         Section.STATISTICS -> StatisticsFragment.newInstance()
         Section.ASK -> AskFragment.newInstance()
+    }
+
+    private inner class OptionsMenuInvalidator : FragmentManager.FragmentLifecycleCallbacks() {
+
+        var isFirstFragmentActivityCreated: Boolean = false
+
+        override fun onFragmentActivityCreated(
+            fragmentManager: FragmentManager,
+            fragment: Fragment,
+            savedInstanceState: Bundle?
+        ) {
+            Timber.d("onFragmentActivityCreated")
+            if (isFirstFragmentActivityCreated) {
+                invalidateOptionsMenu()
+            } else {
+                isFirstFragmentActivityCreated = true
+            }
+        }
     }
 }

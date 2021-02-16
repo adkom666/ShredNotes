@@ -6,6 +6,16 @@ package com.adkom666.shrednotes.ui
 interface Searchable {
 
     /**
+     * Property for storing a flag indicating whether the search is active.
+     */
+    var isSearchActive: Boolean
+
+    /**
+     * Current search query, if it exists.
+     */
+    val currentQuery: String?
+
+    /**
      * Search for a given query.
      *
      * @param query text or null.

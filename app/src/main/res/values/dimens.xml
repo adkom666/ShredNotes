@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_xs">2dp</dimen>
+    <dimen name="padding_s">4dp</dimen>
+    <dimen name="padding_m">8dp</dimen>
+    <dimen name="padding_l">16dp</dimen>
+    <dimen name="padding_xl">24dp</dimen>
+
+    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="child_fab_margin">8dp</dimen>
+    <dimen name="bottom_child_fab_margin">12dp</dimen>
+
+    <!-- Permanent on all configurations -->
+    <dimen name="fab_elevation">6dp</dimen>
+    <dimen name="child_fab_elevation">4dp</dimen>
+
+    <dimen name="card_vertical_margin">@dimen/padding_m</dimen>
+</resources>
