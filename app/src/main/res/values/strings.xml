@@ -12,4 +12,26 @@
     <string name="menu_item_title_write">Write</string>
     <string name="menu_item_title_sing_in">Sign In</string>
     <string name="menu_item_title_sign_out">Sign Out</string>
+
+    <string name="desc_add_del">Add or delete</string>
+    <string name="desc_select_all">Select all</string>
+    <string name="desc_cancel">Cancel</string>
+
+    <string name="button_title_ok">OK</string>
+    <string name="button_title_cancel">Cancel</string>
+
+    <string name="title_exercise_name">"Name: "</string>
+    <string name="hint_exercise_name">Exercise name</string>
+
+    <string name="dialog_confirm_deletion_title">Confirmation</string>
+    <string name="dialog_confirm_deletion_message">Number of selected exercises: %d\nDo you confirm deletion?</string>
+
+    <string name="message_exercise_has_been_added">Exercise has been added</string>
+    <string name="message_exercise_has_been_updated">Exercise has been updated</string>
+    <string name="message_deleted_exercises">Deleted exercises: %d</string>
+
+    <string name="error_missing_excercise_name">Exercise name is missing</string>
+    <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>
+    <string name="error_clarified">Error occurred: %s</string>
+    <string name="error_unknown">Unknown error occurred</string>
 </resources>

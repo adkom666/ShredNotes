@@ -37,6 +37,11 @@ class NotesFragment :
     private var _binding: FragmentNotesBinding? = null
     private var _model: NotesViewModel? = null
 
+    override var isSearchActive: Boolean = false
+
+    override val currentQuery: String?
+        get() = null
+
     override val isFilterEnabled: Boolean
         get() = false
 

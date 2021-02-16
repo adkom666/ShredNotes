@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_cancel"
+        style="@style/AppTheme.Fab.Child"
+        android:contentDescription="@string/desc_cancel"
+        android:src="@drawable/ic_cancel"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/fab_select_all"
+        app:layout_constraintEnd_toEndOf="@+id/fab_select_all"
+        app:layout_constraintBottom_toTopOf="@+id/fab_select_all"
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_select_all"
+        style="@style/AppTheme.Fab.Child.Bottom"
+        android:contentDescription="@string/desc_select_all"
+        android:src="@drawable/ic_select_all"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/fab_add_del"
+        app:layout_constraintEnd_toEndOf="@+id/fab_add_del"
+        app:layout_constraintBottom_toTopOf="@+id/fab_add_del"
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_del"
+        style="@style/AppTheme.Fab"
+        android:contentDescription="@string/desc_add_del"
+        android:src="@drawable/ic_plus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
