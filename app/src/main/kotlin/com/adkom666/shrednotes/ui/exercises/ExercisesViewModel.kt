@@ -113,7 +113,7 @@ class ExercisesViewModel @Inject constructor(
     /**
      * The text that must be contained in the names of the displayed exercises (case-insensitive).
      */
-    var subname: String? by Delegates.observable<String?>(null) { _, old, new ->
+    var subname: String? by Delegates.observable(null) { _, old, new ->
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
                 exerciseSourceFactory.subname = new?.trim()

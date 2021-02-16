@@ -13,18 +13,14 @@ import android.view.WindowManager
 fun View.measureHeight(): Int {
     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-//    val deviceWidth = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-//        windowManager.currentWindowMetrics.bounds.width()
-//    } else {
-//        val size = Point()
-//        @Suppress("DEPRECATION")
-//        windowManager.defaultDisplay.getSize(size)
-//        size.x
-//    }
-
-    val size = Point()
-    windowManager.defaultDisplay.getSize(size)
-    val deviceWidth = size.x
+    val deviceWidth = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        windowManager.currentWindowMetrics.bounds.width()
+    } else {
+        val size = Point()
+        @Suppress("DEPRECATION")
+        windowManager.defaultDisplay.getSize(size)
+        size.x
+    }
 
     val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(
         deviceWidth,

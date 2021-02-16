@@ -1,7 +1,7 @@
 package com.adkom666.shrednotes.data.model
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * Model of the exercise.
