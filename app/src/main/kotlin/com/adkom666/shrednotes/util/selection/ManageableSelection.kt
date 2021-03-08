@@ -1,30 +1,20 @@
-package com.adkom666.shrednotes.util
+package com.adkom666.shrednotes.util.selection
 
 import kotlin.properties.Delegates
 
 /**
- * Information about the selected identifiable items.
+ * Selectable identifiable items along with tools for manipulating the selection and the selection
+ * itself.
  *
  * @property itemCount total count of items to select.
  */
-@Deprecated("Use com.adkom666.shrednotes.util.selection.ManageableSelection")
-class Selector(private var itemCount: Int) {
+class ManageableSelection(private var itemCount: Int) :
+    SelectableItems,
+    SelectionDashboard,
+    Selection {
 
     /**
-     * Listener to detect when at least one selected item appears or disappears.
-     */
-    interface OnActivenessChangeListener {
-
-        /**
-         * Callback to execute when selection appears or disappears.
-         *
-         * @param isActive true if at least one item is selected.
-         */
-        fun onActivenessChange(isActive: Boolean)
-    }
-
-    /**
-     * Information about the presence of selected items.
+     * Information about selected items.
      */
     sealed class State {
 
@@ -64,16 +54,6 @@ class Selector(private var itemCount: Int) {
     val state: State
         get() = _state
 
-    /**
-     * Calculation of the count of selected items depending on the current state.
-     */
-    val selectedItemCount: Int
-        get() = when (val state = _state) {
-            is State.Active.Exclusive -> itemCount - state.unselectedItemIdSet.size
-            is State.Active.Inclusive -> state.selectedItemIdSet.size
-            State.Inactive -> 0
-        }
-
     private var _state: State by Delegates.observable(State.Inactive) { _, old: State, new: State ->
         if (old == State.Inactive && new != State.Inactive ||
             old != State.Inactive && new == State.Inactive
@@ -84,36 +64,38 @@ class Selector(private var itemCount: Int) {
         }
     }
 
-    private val onActivenessChangeListenerList: MutableList<OnActivenessChangeListener> =
-        mutableListOf()
+    private val onActivenessChangeListenerList:
+            MutableList<OnActivenessChangeListener> = mutableListOf()
 
-    /**
-     * Represents a long click on a specific item.
-     *
-     * @param itemId identifier of the item that was clicked on.
-     * @param changeSelection callback to execute when selection of the clicked item changes.
-     */
-    fun longClick(itemId: Long, changeSelection: (Boolean) -> Unit) {
+    override val selectedItemCount: Int
+        get() = when (val state = _state) {
+            is State.Active.Exclusive -> itemCount - state.unselectedItemIdSet.size
+            is State.Active.Inclusive -> state.selectedItemIdSet.size
+            State.Inactive -> 0
+        }
+
+    override val isActive: Boolean
+        get() = _state is State.Active
+
+    override fun longClick(itemId: Long, changeSelection: (Boolean) -> Unit) {
         if (_state == State.Inactive) {
             _state = clickWhenActive(State.Active.Inclusive(), itemId, changeSelection)
         }
     }
 
-    /**
-     * Represents a click on a specific item.
-     *
-     * @param itemId identifier of the item that was clicked on.
-     * @param clickWhenInactive callback to execute when there are no selected items.
-     * @param changeSelection callback to execute when selection of the clicked item changes.
-     */
-    fun click(itemId: Long, clickWhenInactive: () -> Unit, changeSelection: (Boolean) -> Unit) {
+    override fun click(
+        itemId: Long,
+        changeSelection: (Boolean) -> Unit,
+        clickWhenInactive: () -> Unit
+    ) {
         _state = click(_state, itemId, clickWhenInactive, changeSelection)
     }
 
-    /**
-     * Select all items if at least one is present.
-     */
-    fun selectAll() {
+    override fun isSelected(itemId: Long): Boolean {
+        return isSelected(_state, itemId)
+    }
+
+    override fun selectAll() {
         val exclusiveState = State.Active.Exclusive()
         _state = if (!isDeactivationNeed(exclusiveState)) {
             exclusiveState
@@ -123,42 +105,19 @@ class Selector(private var itemCount: Int) {
         }
     }
 
-    /**
-     * Deselect all items.
-     */
-    fun deselectAll() {
+    override fun deselectAll() {
         if (_state is State.Active) {
             _state = State.Inactive
         }
     }
 
-    /**
-     * Determine whether a specific item is selected.
-     *
-     * @param itemId identifier of the target item.
-     * @return true if an item with [itemId] is selected.
-     */
-    fun isSelected(itemId: Long): Boolean {
-        return isSelected(_state, itemId)
-    }
-
-    /**
-     * Addition of the listener which detects when at least one selected item appears or disappears.
-     *
-     * @param listener listener to add.
-     */
-    fun addOnActivenessChangeListener(listener: OnActivenessChangeListener) {
+    override fun addOnActivenessChangeListener(listener: OnActivenessChangeListener) {
         if (onActivenessChangeListenerList.contains(listener).not()) {
             onActivenessChangeListenerList.add(listener)
         }
     }
 
-    /**
-     * Removing of the listener which detects when at least one selected item appears or disappears.
-     *
-     * @param listener listener to remove.
-     */
-    fun removeOnActivenessChangeListener(listener: OnActivenessChangeListener) {
+    override fun removeOnActivenessChangeListener(listener: OnActivenessChangeListener) {
         onActivenessChangeListenerList.remove(listener)
     }
 
