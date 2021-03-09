@@ -14,9 +14,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun noteRepository(repositoryImpl: NoteRepositoryImpl): NoteRepository
+    abstract fun exerciseRepository(repositoryImpl: ExerciseRepositoryImpl): ExerciseRepository
 
     @Binds
     @Singleton
-    abstract fun exerciseRepository(repositoryImpl: ExerciseRepositoryImpl): ExerciseRepository
+    abstract fun noteRepository(repositoryImpl: NoteRepositoryImpl): NoteRepository
 }
