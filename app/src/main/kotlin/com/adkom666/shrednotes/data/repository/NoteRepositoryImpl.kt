@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.util.paging.Page
@@ -55,11 +56,11 @@ class NoteRepositoryImpl : NoteRepository {
     override suspend fun saveSuspending(note: Note) {
     }
 
-    override suspend fun deleteSuspending(ids: List<Long>, subname: String?): Int {
+    override suspend fun deleteSuspending(ids: List<Id>, subname: String?): Int {
         return 0
     }
 
-    override suspend fun deleteOtherSuspending(ids: List<Long>, subname: String?): Int {
+    override suspend fun deleteOtherSuspending(ids: List<Id>, subname: String?): Int {
         return 0
     }
 }

@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.util.paging.Page
 import kotlinx.coroutines.flow.Flow
@@ -79,7 +80,7 @@ interface NoteRepository {
      * @param subname part of the names of the notes to delete.
      * @return count of deleted notes.
      */
-    suspend fun deleteSuspending(ids: List<Long>, subname: String? = null): Int
+    suspend fun deleteSuspending(ids: List<Id>, subname: String? = null): Int
 
     /**
      * Deleting notes whose identifiers are not in the [ids] and whose names contain [subname] if it
@@ -89,5 +90,5 @@ interface NoteRepository {
      * @param subname part of the names of the notes to delete.
      * @return count of deleted notes.
      */
-    suspend fun deleteOtherSuspending(ids: List<Long>, subname: String? = null): Int
+    suspend fun deleteOtherSuspending(ids: List<Id>, subname: String? = null): Int
 }

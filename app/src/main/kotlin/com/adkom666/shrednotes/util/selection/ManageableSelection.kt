@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.util.selection
 
+import com.adkom666.shrednotes.common.Id
 import kotlin.properties.Delegates
 
 /**
@@ -29,7 +30,7 @@ class ManageableSelection(private var itemCount: Int) :
              * @param selectedItemIdSet set of identifiers of the selected items.
              */
             data class Inclusive(
-                val selectedItemIdSet: MutableSet<Long> = mutableSetOf()
+                val selectedItemIdSet: MutableSet<Id> = mutableSetOf()
             ) : Active()
 
             /**
@@ -38,7 +39,7 @@ class ManageableSelection(private var itemCount: Int) :
              * @param unselectedItemIdSet set of identifiers of the unselected items.
              */
             data class Exclusive(
-                val unselectedItemIdSet: MutableSet<Long> = mutableSetOf()
+                val unselectedItemIdSet: MutableSet<Id> = mutableSetOf()
             ) : Active()
         }
 
@@ -77,21 +78,21 @@ class ManageableSelection(private var itemCount: Int) :
     override val isActive: Boolean
         get() = _state is State.Active
 
-    override fun longClick(itemId: Long, changeSelection: (Boolean) -> Unit) {
+    override fun longClick(itemId: Id, changeSelection: (Boolean) -> Unit) {
         if (_state == State.Inactive) {
             _state = clickWhenActive(State.Active.Inclusive(), itemId, changeSelection)
         }
     }
 
     override fun click(
-        itemId: Long,
+        itemId: Id,
         changeSelection: (Boolean) -> Unit,
         clickWhenInactive: () -> Unit
     ) {
         _state = click(_state, itemId, clickWhenInactive, changeSelection)
     }
 
-    override fun isSelected(itemId: Long): Boolean {
+    override fun isSelected(itemId: Id): Boolean {
         return isSelected(_state, itemId)
     }
 
@@ -133,7 +134,7 @@ class ManageableSelection(private var itemCount: Int) :
 
     private fun click(
         state: State,
-        itemId: Long,
+        itemId: Id,
         clickWhenInactive: () -> Unit,
         changeSelection: (Boolean) -> Unit
     ): State = if (state is State.Active) {
@@ -145,7 +146,7 @@ class ManageableSelection(private var itemCount: Int) :
 
     private fun clickWhenActive(
         state: State.Active,
-        itemId: Long,
+        itemId: Id,
         onSelectionChange: (Boolean) -> Unit
     ): State {
         val isSelected = when (state) {
@@ -160,7 +161,7 @@ class ManageableSelection(private var itemCount: Int) :
         }
     }
 
-    private fun changeSelectionWhenInclusive(state: State.Active.Inclusive, itemId: Long): Boolean {
+    private fun changeSelectionWhenInclusive(state: State.Active.Inclusive, itemId: Id): Boolean {
         val isSelected = state.selectedItemIdSet.contains(itemId)
         if (isSelected) {
             state.selectedItemIdSet.remove(itemId)
@@ -170,7 +171,7 @@ class ManageableSelection(private var itemCount: Int) :
         return isSelected.not()
     }
 
-    private fun changeSelectionWhenExclusive(state: State.Active.Exclusive, itemId: Long): Boolean {
+    private fun changeSelectionWhenExclusive(state: State.Active.Exclusive, itemId: Id): Boolean {
         val isSelected = state.unselectedItemIdSet.contains(itemId).not()
         if (isSelected) {
             state.unselectedItemIdSet.add(itemId)
@@ -186,7 +187,7 @@ class ManageableSelection(private var itemCount: Int) :
         else -> false
     }
 
-    private fun isSelected(state: State, itemId: Long): Boolean = when (state) {
+    private fun isSelected(state: State, itemId: Id): Boolean = when (state) {
         is State.Active.Inclusive -> state.selectedItemIdSet.contains(itemId)
         is State.Active.Exclusive -> state.unselectedItemIdSet.contains(itemId).not()
         else -> false
