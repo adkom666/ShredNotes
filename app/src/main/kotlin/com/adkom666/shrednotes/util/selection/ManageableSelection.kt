@@ -9,7 +9,7 @@ import kotlin.properties.Delegates
  *
  * @property itemCount total count of items to select.
  */
-class ManageableSelection(private var itemCount: Int) :
+class ManageableSelection(private var itemCount: Int = 0) :
     SelectableItems,
     SelectionDashboard,
     Selection {
@@ -120,6 +120,15 @@ class ManageableSelection(private var itemCount: Int) :
 
     override fun removeOnActivenessChangeListener(listener: OnActivenessChangeListener) {
         onActivenessChangeListenerList.remove(listener)
+    }
+
+    /**
+     * Prepare for selections. Must be called at the beginning of the work.
+     *
+     * @param itemCount total count of items to select.
+     */
+    fun init(itemCount: Int) {
+        this.itemCount = itemCount
     }
 
     /**
