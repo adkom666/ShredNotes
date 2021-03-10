@@ -26,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
  * @property bottomChildFabMargin the margin between the bottom child FAB and the parent one in
  * pixels.
  */
+@Deprecated("Use com.adkom666.shrednotes.util.FabDashboard")
 class FabDashboard(
     private val selector: Selector,
     private val recycler: RecyclerView,
