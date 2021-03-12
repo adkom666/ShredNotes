@@ -7,6 +7,8 @@ import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import junit.framework.TestCase
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Test
 import java.util.Date
 
@@ -65,5 +67,53 @@ class StoreNoteTest : TestCase() {
             return
         }
         assertFalse(true)
+    }
+
+    @Test
+    fun testDeletionByIdsAndSubname() = runBlocking {
+        val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
+        val noteList = noteDao.listPortion(sublistSize, 0)
+        val ids = noteList.map { it.noteId }
+        var deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
+            ids,
+            StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
+        )
+        Assert.assertEquals(0, deletedNoteCount)
+        val countWithExerciseSubname = noteList.count {
+            it.exerciseName
+                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME)
+                ?: false
+        }
+        deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
+            ids,
+            StoreExerciseTestHelper.EXERCISE_SUBNAME
+        )
+        Assert.assertEquals(countWithExerciseSubname, deletedNoteCount)
+    }
+
+    @Test
+    fun testDeletionOtherByIdsAndExerciseSubname() = runBlocking {
+        val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
+        val noteList = noteDao.listPortion(sublistSize, 0)
+        val ids = noteList.map { it.noteId }
+        var deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
+            ids,
+            StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
+        )
+        Assert.assertEquals(0, deletedNoteCount)
+        val otherNoteList = noteDao.listPortion(
+            size = StoreNoteTestHelper.NOTE_COUNT - sublistSize,
+            offset = sublistSize
+        )
+        val countWithExerciseSubname = otherNoteList.count {
+            it.exerciseName
+                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME)
+                ?: false
+        }
+        deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
+            ids,
+            StoreExerciseTestHelper.EXERCISE_SUBNAME
+        )
+        Assert.assertEquals(countWithExerciseSubname, deletedNoteCount)
     }
 }

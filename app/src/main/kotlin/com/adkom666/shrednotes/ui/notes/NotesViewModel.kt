@@ -135,7 +135,7 @@ class NotesViewModel @Inject constructor(
      */
     var isSearchActive: Boolean = false
 
-    private var _manageableSelection: ManageableSelection? = ManageableSelection()
+    private var _manageableSelection: ManageableSelection = ManageableSelection()
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
         .setEnablePlaceholders(false)
@@ -170,10 +170,43 @@ class NotesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Initiate the deletion of the selected notes.
+     */
+    fun deleteSelectedNotes() {
+        setState(State.Waiting)
+        viewModelScope.launch {
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                val deletionCount = deleteSelectedNotes(_manageableSelection.state)
+                setState(State.Ready)
+                _messageChannel.offer(Message.Deleted(deletionCount))
+            } catch (e: Exception) {
+                e.localizedMessage?.let {
+                    setState(State.Error.Clarified(it))
+                } ?: setState(State.Error.Unknown)
+            }
+        }
+    }
+
     private fun invalidateNotes() {
         setState(State.Waiting)
         noteSourceFactory.invalidate()
         setState(State.Ready)
+    }
+
+    private suspend fun deleteSelectedNotes(
+        selectionState: ManageableSelection.State
+    ): Int = when (selectionState) {
+        is ManageableSelection.State.Active.Inclusive -> {
+            val selectedNoteIdList = selectionState.selectedItemIdSet.toList()
+            noteRepository.deleteSuspending(selectedNoteIdList, exerciseSubname)
+        }
+        is ManageableSelection.State.Active.Exclusive -> {
+            val unselectedNoteIdList = selectionState.unselectedItemIdSet.toList()
+            noteRepository.deleteOtherSuspending(unselectedNoteIdList, exerciseSubname)
+        }
+        ManageableSelection.State.Inactive -> 0
     }
 
     private fun setState(state: State) {

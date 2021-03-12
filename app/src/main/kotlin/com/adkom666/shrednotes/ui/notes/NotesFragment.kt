@@ -26,6 +26,7 @@ import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -198,6 +199,24 @@ class NotesFragment :
     )
 
     private fun deleteSelectedNotesIfConfirmed(context: Context) {
+        val messageString = getString(
+            R.string.dialog_confirm_note_deletion_message,
+            model.selectableItems.selectedItemCount
+        )
+        MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
+            .setTitle(R.string.dialog_confirm_note_deletion_title)
+            .setMessage(messageString)
+            .setPositiveButton(R.string.button_title_ok) { _, _ ->
+                deleteSelectedNotes()
+            }
+            .setNegativeButton(R.string.button_title_cancel, null)
+            .create()
+            .show()
+    }
+
+    private fun deleteSelectedNotes() {
+        Timber.d("Start deleting the selected notes.")
+        model.deleteSelectedNotes()
     }
 
     private fun goToNoteScreen(note: Note? = null) {
@@ -213,8 +232,8 @@ class NotesFragment :
     private fun show(message: NotesViewModel.Message) = when (message) {
         is NotesViewModel.Message.Deleted -> {
             Timber.d("Deleted notes count is ${message.count}")
-            //val messageString = getString(R.string.message_deleted_notes, message.count)
-            //toast(messageString)
+            val messageString = getString(R.string.message_deleted_notes, message.count)
+            toast(messageString)
         }
     }
 

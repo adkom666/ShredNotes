@@ -66,6 +66,30 @@ private const val SELECT_PORTION_BY_EXERCISE_SUBNAME =
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
             OPTIONS_FOR_SELECT_ENTITIES
 
+private const val DELETE_BY_IDS =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN (:ids)"
+
+private const val DELETE_BY_IDS_AND_EXERCISE_SUBNAME =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $TABLE_NOTES.$TABLE_NOTES_FIELD_ID IN (:ids) " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME)"
+
+private const val DELETE_OTHER_BY_IDS =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID NOT IN (:ids)"
+
+private const val DELETE_OTHER_BY_IDS_AND_EXERCISE_SUBNAME =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $TABLE_NOTES.$TABLE_NOTES_FIELD_ID NOT IN (:ids) " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME)"
+
 /**
  * Operations with notes in the database.
  */
@@ -155,6 +179,52 @@ interface NoteDao : BaseDao<NoteEntity> {
         offset: Int,
         exerciseSubname: String
     ): List<NoteWithExerciseInfo>
+
+    /**
+     * Deleting information about notes with the specified [ids].
+     *
+     * @param ids identifiers of notes to delete.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS)
+    suspend fun deleteByIdsSuspending(ids: List<Id>): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose exercise names contain
+     * [exerciseSubname].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_AND_EXERCISE_SUBNAME)
+    suspend fun deleteByIdsAndExerciseSubnameSuspending(
+        ids: List<Id>,
+        exerciseSubname: String
+    ): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS)
+    suspend fun deleteOtherByIdsSuspending(ids: List<Id>): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose exercise
+     * names contain [exerciseSubname].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_AND_EXERCISE_SUBNAME)
+    suspend fun deleteOtherByIdsAndExerciseSubnameSuspending(
+        ids: List<Id>,
+        exerciseSubname: String
+    ): Int
 
     /**
      * Getting a [Page] of the [size] or fewer notes with their exercises' info in accordance with
@@ -257,6 +327,38 @@ interface NoteDao : BaseDao<NoteEntity> {
             )
         } else {
             listPortion(size = size, offset = offset)
+        }
+    }
+
+    /**
+     * Deleting information about notes with the specified [ids] whose exercise names contain
+     * [exerciseSubname] if it is not null or blank.
+     *
+     * @param ids identifiers of notes to delete.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    suspend fun deleteSuspending(ids: List<Id>, exerciseSubname: String?): Int {
+        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
+            deleteByIdsAndExerciseSubnameSuspending(ids, exerciseSubname)
+        } else {
+            deleteByIdsSuspending(ids)
+        }
+    }
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose exercise
+     * names contain [exerciseSubname] if it is not null or blank.
+     *
+     * @param ids identifiers of exercises that should not be deleted.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    suspend fun deleteOtherSuspending(ids: List<Id>, exerciseSubname: String?): Int {
+        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
+            deleteOtherByIdsAndExerciseSubnameSuspending(ids, exerciseSubname)
+        } else {
+            deleteOtherByIdsSuspending(ids)
         }
     }
 }

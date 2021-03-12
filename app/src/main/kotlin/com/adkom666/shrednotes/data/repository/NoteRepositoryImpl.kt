@@ -92,10 +92,10 @@ class NoteRepositoryImpl(
     }
 
     override suspend fun deleteSuspending(ids: List<Id>, exerciseSubname: String?): Int {
-        return 0
+        return noteDao.deleteSuspending(ids, exerciseSubname)
     }
 
     override suspend fun deleteOtherSuspending(ids: List<Id>, exerciseSubname: String?): Int {
-        return 0
+        return noteDao.deleteOtherSuspending(ids, exerciseSubname)
     }
 }

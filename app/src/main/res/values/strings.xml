@@ -35,12 +35,16 @@
     <string name="dialog_confirm_deletion_title">Confirmation</string>
     <string name="dialog_confirm_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d\nDo you confirm deletion?</string>
 
+    <string name="dialog_confirm_note_deletion_title">Confirmation</string>
+    <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>
+
     <string name="message_exercise_has_been_added">Exercise has been added</string>
     <string name="message_exercise_has_been_updated">Exercise has been updated</string>
     <string name="message_deleted_exercises">Deleted exercises: %d</string>
 
     <string name="message_note_has_been_added">Note has been added</string>
     <string name="message_note_has_been_updated">Note has been updated</string>
+    <string name="message_deleted_notes">Deleted notes: %d</string>
 
     <string name="error_missing_excercise_name">Exercise name is missing</string>
     <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>
