@@ -7,20 +7,6 @@ import com.adkom666.shrednotes.common.Id
  */
 interface SelectableItems {
 
-    companion object {
-        @Suppress("Reformat")
-        val DUMMY = object : SelectableItems {
-            override val selectedItemCount: Int = 0
-            override fun longClick(itemId: Id, changeSelection: (Boolean) -> Unit) = Unit
-            override fun click(
-                itemId: Long,
-                changeSelection: (Boolean) -> Unit,
-                clickWhenInactive: () -> Unit
-            ) = Unit
-            override fun isSelected(itemId: Long): Boolean = false
-        }
-    }
-
     /**
      * Calculation of the count of selected items.
      */

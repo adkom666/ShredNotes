@@ -5,15 +5,6 @@ package com.adkom666.shrednotes.util.selection
  */
 interface Selection {
 
-    companion object {
-        @Suppress("Reformat")
-        val DUMMY = object : Selection {
-            override val isActive: Boolean = false
-            override fun addOnActivenessChangeListener(listener: OnActivenessChangeListener) = Unit
-            override fun removeOnActivenessChangeListener(listener: OnActivenessChangeListener) = Unit
-        }
-    }
-
     /**
      * If at least one selected item exists.
      */
