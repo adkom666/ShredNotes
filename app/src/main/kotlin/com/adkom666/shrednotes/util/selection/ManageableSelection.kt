@@ -27,7 +27,7 @@ class ManageableSelection(private var itemCount: Int = 0) :
             /**
              * Accumulating the identifiers of the selected items.
              *
-             * @param selectedItemIdSet set of identifiers of the selected items.
+             * @property selectedItemIdSet set of identifiers of the selected items.
              */
             data class Inclusive(
                 val selectedItemIdSet: MutableSet<Id> = mutableSetOf()
@@ -36,7 +36,7 @@ class ManageableSelection(private var itemCount: Int = 0) :
             /**
              * Accumulating the identifiers of the unselected items.
              *
-             * @param unselectedItemIdSet set of identifiers of the unselected items.
+             * @property unselectedItemIdSet set of identifiers of the unselected items.
              */
             data class Exclusive(
                 val unselectedItemIdSet: MutableSet<Id> = mutableSetOf()
