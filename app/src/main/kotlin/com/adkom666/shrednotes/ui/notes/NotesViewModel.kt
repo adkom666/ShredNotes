@@ -119,10 +119,10 @@ class NotesViewModel @Inject constructor(
      * The text that must be contained in the names of the displayed notes' exercises
      * (case-insensitive).
      */
-    var subname: String? by Delegates.observable(null) { _, old, new ->
+    var exerciseSubname: String? by Delegates.observable(null) { _, old, new ->
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
-                noteSourceFactory.subname = new?.trim()
+                noteSourceFactory.exerciseSubname = new?.trim()
                 val noteCount = noteRepository.countSuspending(new)
                 _manageableSelection?.reset(noteCount)
                 invalidateNotes()
@@ -135,7 +135,7 @@ class NotesViewModel @Inject constructor(
      */
     var isSearchActive: Boolean = false
 
-    private var _manageableSelection: ManageableSelection? = null
+    private var _manageableSelection: ManageableSelection? = ManageableSelection()
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
         .setEnablePlaceholders(false)
@@ -146,7 +146,7 @@ class NotesViewModel @Inject constructor(
 
     private val noteSourceFactory: NoteSourceFactory = NoteSourceFactory(
         noteRepository,
-        subname
+        exerciseSubname
     )
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
@@ -157,8 +157,10 @@ class NotesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val noteInitialCount = noteRepository.countSuspending(subname)
-            _manageableSelection = ManageableSelection(noteInitialCount)
+            val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
+            Timber.d("noteInitialCount=$noteInitialCount")
+            _manageableSelection?.init(noteInitialCount)
+            setState(State.Ready)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
@@ -166,13 +168,6 @@ class NotesViewModel @Inject constructor(
                 invalidateNotes()
             }
         }
-    }
-
-    /**
-     * Start working with the exercise list.
-     */
-    fun start() {
-        setState(State.Ready)
     }
 
     private fun invalidateNotes() {
@@ -187,13 +182,13 @@ class NotesViewModel @Inject constructor(
 
     private class NoteSourceFactory(
         private val noteRepository: NoteRepository,
-        var subname: String?
+        var exerciseSubname: String?
     ) : DataSource.Factory<Int, Note>() {
 
         private var noteSource: NoteSource? = null
 
         override fun create(): DataSource<Int, Note> {
-            val exerciseSource = NoteSource(noteRepository, subname)
+            val exerciseSource = NoteSource(noteRepository, exerciseSubname)
             this.noteSource = exerciseSource
             return exerciseSource
         }
@@ -205,7 +200,7 @@ class NotesViewModel @Inject constructor(
 
     private class NoteSource(
         private val noteRepository: NoteRepository,
-        private var subname: String?
+        private var exerciseSubname: String?
     ) : PositionalDataSource<Note>() {
 
         override fun loadInitial(
@@ -215,9 +210,10 @@ class NotesViewModel @Inject constructor(
             val (noteList, startPosition) = noteRepository.page(
                 params.requestedLoadSize,
                 params.requestedStartPosition,
-                subname
+                exerciseSubname
             )
             Timber.d("Load initial notes: noteList.size=${noteList.size}")
+            Timber.d("Load initial notes: noteList=$noteList")
             callback.onResult(noteList, startPosition)
         }
 
@@ -228,7 +224,7 @@ class NotesViewModel @Inject constructor(
             val noteList = noteRepository.list(
                 params.loadSize,
                 params.startPosition,
-                subname
+                exerciseSubname
             )
             Timber.d("Load next notes: noteList.size=${noteList.size}")
             callback.onResult(noteList)

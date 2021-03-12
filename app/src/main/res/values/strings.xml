@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Shred Notes</string>
+    <string name="app_name" translatable="false">Shred Notes</string>
 
     <string name="menu_item_title_notes">Notes</string>
     <string name="menu_item_title_exercises">Exercises</string>
@@ -17,21 +17,38 @@
     <string name="desc_select_all">Select all</string>
     <string name="desc_cancel">Cancel</string>
 
-    <string name="button_title_ok">OK</string>
+    <string name="button_title_ok" translatable="false">OK</string>
     <string name="button_title_cancel">Cancel</string>
 
-    <string name="title_exercise_name">"Name: "</string>
+    <string name="title_exercise_name">Name:</string>
     <string name="hint_exercise_name">Exercise name</string>
 
+    <string name="title_note_exercise">Exercise:</string>
+    <string name="hint_note_exercise">Exercise name</string>
+
+    <string name="title_note_bpm" translatable="false">BPM:</string>
+    <string name="hint_note_bpm" translatable="false">BPM</string>
+
+    <string name="dialog_confirm_note_exercise_creating_title">Confirmation</string>
+    <string name="dialog_confirm_note_exercise_creating_message">There is no \"%s\" exercise.\nDo you confirm its creation?</string>
+
     <string name="dialog_confirm_deletion_title">Confirmation</string>
-    <string name="dialog_confirm_deletion_message">Number of selected exercises: %d\nDo you confirm deletion?</string>
+    <string name="dialog_confirm_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d\nDo you confirm deletion?</string>
 
     <string name="message_exercise_has_been_added">Exercise has been added</string>
     <string name="message_exercise_has_been_updated">Exercise has been updated</string>
     <string name="message_deleted_exercises">Deleted exercises: %d</string>
 
+    <string name="message_note_has_been_added">Note has been added</string>
+    <string name="message_note_has_been_updated">Note has been updated</string>
+
     <string name="error_missing_excercise_name">Exercise name is missing</string>
     <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>
+
+    <string name="error_missing_note_excercise_name">Exercise name is missing</string>
+    <string name="error_missing_note_bpm">BPM is missing</string>
+    <string name="error_wrong_note_bpm">BPM must be a number between %d and %d</string>
+
     <string name="error_clarified">Error occurred: %s</string>
     <string name="error_unknown">Unknown error occurred</string>
 </resources>

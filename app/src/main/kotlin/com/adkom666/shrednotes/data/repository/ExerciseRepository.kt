@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.util.paging.Page
 import kotlinx.coroutines.flow.Flow
@@ -67,6 +68,21 @@ interface ExerciseRepository {
     ): List<Exercise>
 
     /**
+     * Getting a [List] of all exercises.
+     *
+     * @return [List] of all exercises.
+     */
+    suspend fun allExercisesSuspending(): List<Exercise>
+
+    /**
+     * Getting a [List] of exercises whose name is equal to [name].
+     *
+     * @param name name of target exercises.
+     * @return [List] of exercises whose name is equal to [name].
+     */
+    suspend fun exercisesByNameSuspending(name: String): List<Exercise>
+
+    /**
      * Saving an exercise if it doesn't duplicate the exercise names.
      *
      * @param exercise exercise to saving.
@@ -74,6 +90,14 @@ interface ExerciseRepository {
      * duplicates the name of another saved exercise.
      */
     suspend fun saveIfNoSuchNameSuspending(exercise: Exercise): Boolean
+
+    /**
+     * Inserting an exercise into the storage.
+     *
+     * @param exercise exercise to inserting.
+     * @return identifier of the inserted exercise.
+     */
+    suspend fun insert(exercise: Exercise): Id
 
     /**
      * Deleting exercises with the specified [ids] whose names contain [subname] if it is not null

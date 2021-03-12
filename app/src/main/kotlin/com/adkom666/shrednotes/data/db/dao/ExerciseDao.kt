@@ -29,12 +29,21 @@ private const val SELECT_COUNT_BY_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME"
 
-private const val SELECT_ENTITIES =
+private const val SELECT_ENTITIES_ALL =
+    "SELECT * FROM $TABLE_EXERCISES " +
+            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
+
+private const val SELECT_ENTITIES_BY_NAME =
+    "SELECT * FROM $TABLE_EXERCISES " +
+            "WHERE $TABLE_EXERCISES_FIELD_NAME=:name " +
+            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
+
+private const val SELECT_ENTITIES_PORTION =
     "SELECT * FROM $TABLE_EXERCISES " +
             "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC " +
             "LIMIT :size OFFSET :offset"
 
-private const val SELECT_ENTITIES_BY_SUBNAME =
+private const val SELECT_ENTITIES_PORTION_BY_SUBNAME =
     "SELECT * FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME " +
             "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC " +
@@ -137,7 +146,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of all exercise entities.
      */
-    @Query(SELECT_ENTITIES)
+    @Query(SELECT_ENTITIES_PORTION)
     fun entities(size: Int, offset: Int): List<ExerciseEntity>
 
     /**
@@ -151,8 +160,25 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of exercise entities whose names contain [subname].
      */
-    @Query(SELECT_ENTITIES_BY_SUBNAME)
+    @Query(SELECT_ENTITIES_PORTION_BY_SUBNAME)
     fun entitiesBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
+
+    /**
+     * Getting a [List] of all exercise entities.
+     *
+     * @return [List] of all exercise entities.
+     */
+    @Query(SELECT_ENTITIES_ALL)
+    suspend fun entitiesAllSuspending(): List<ExerciseEntity>
+
+    /**
+     * Getting a [List] of exercise entities whose name is equal to [name].
+     *
+     * @param name name of target exercise entities.
+     * @return [List] of exercise entities whose name is equal to [name].
+     */
+    @Query(SELECT_ENTITIES_BY_NAME)
+    suspend fun entitiesByNameSuspending(name: String): List<ExerciseEntity>
 
     /**
      * Deleting information about exercises with the specified [ids].

@@ -14,3 +14,5 @@ fun Long.toId() = this
  * Ensure type compatibility with Int.
  */
 fun Int.toId() = this.toLong()
+
+const val NO_ID = 0L

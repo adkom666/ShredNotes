@@ -1,6 +1,8 @@
 package com.adkom666.shrednotes.ui.notes
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -41,6 +43,9 @@ class NotesFragment :
 
     companion object {
 
+        private const val REQUEST_CODE_ADD_NOTE = 666
+        private const val REQUEST_CODE_UPDATE_NOTE = 667
+
         /**
          * Preferred way to create a fragment.
          *
@@ -76,7 +81,7 @@ class NotesFragment :
         }
 
     override val currentQuery: String?
-        get() = model.subname
+        get() = model.exerciseSubname
 
     override val isFilterEnabled: Boolean
         get() = false
@@ -115,20 +120,35 @@ class NotesFragment :
 
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
-        val exerciseListObserver = NoteListObserver(adapter, binding.noteRecycler)
-        model.notePagedListAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
+        val noteListObserver = NoteListObserver(adapter, binding.noteRecycler)
+        model.notePagedListAsLiveData.observe(viewLifecycleOwner, noteListObserver)
 
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
         }
-
-        model.start()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         fabDashboard.dispose()
         _binding = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
+        when (requestCode) {
+            REQUEST_CODE_ADD_NOTE ->
+                if (resultCode == Activity.RESULT_OK) {
+                    Timber.d("Note has been added")
+                    toast(R.string.message_note_has_been_added)
+                }
+            REQUEST_CODE_UPDATE_NOTE ->
+                if (resultCode == Activity.RESULT_OK) {
+                    Timber.d("Note has been updated")
+                    toast(R.string.message_note_has_been_updated)
+                }
+            else -> super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     override fun search(query: String?): Boolean {
@@ -138,7 +158,7 @@ class NotesFragment :
 
     override fun preview(newText: String?): Boolean {
         Timber.d("preview: newText=$newText")
-        model.subname = newText
+        model.exerciseSubname = newText
         return true
     }
 
@@ -181,13 +201,13 @@ class NotesFragment :
     }
 
     private fun goToNoteScreen(note: Note? = null) {
-//        context?.let {
-//            val intent = NoteActivity.newIntent(it, note)
-//            val requestCode = note?.let {
-//                REQUEST_CODE_UPDATE_NOTE
-//            } ?: REQUEST_CODE_ADD_NOTE
-//            startActivityForResult(intent, requestCode)
-//        }
+        context?.let {
+            val intent = NoteActivity.newIntent(it, note)
+            val requestCode = note?.let {
+                REQUEST_CODE_UPDATE_NOTE
+            } ?: REQUEST_CODE_ADD_NOTE
+            startActivityForResult(intent, requestCode)
+        }
     }
 
     private fun show(message: NotesViewModel.Message) = when (message) {
@@ -230,7 +250,8 @@ class NotesFragment :
                 )
                 toast(message)
             }
-            NotesViewModel.State.Error.Unknown -> toast(R.string.error_unknown)
+            NotesViewModel.State.Error.Unknown ->
+                toast(R.string.error_unknown)
         }
     }
 

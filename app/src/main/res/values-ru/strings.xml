@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name">Shred Notes</string>
-
     <string name="menu_item_title_notes">Заметки</string>
     <string name="menu_item_title_exercises">Упражнения</string>
     <string name="menu_item_title_statistics">Статистика</string>
@@ -17,21 +15,34 @@
     <string name="desc_select_all">Выделить все</string>
     <string name="desc_cancel">Отмена</string>
 
-    <string name="button_title_ok">OK</string>
     <string name="button_title_cancel">Отмена</string>
 
-    <string name="title_exercise_name">"Название: "</string>
+    <string name="title_exercise_name">Название:</string>
     <string name="hint_exercise_name">Название упражнения</string>
 
+    <string name="title_note_exercise">Упражнение:</string>
+    <string name="hint_note_exercise">Название упражнения</string>
+
+    <string name="dialog_confirm_note_exercise_creating_title">Подтверждение</string>
+    <string name="dialog_confirm_note_exercise_creating_message">Нет упражнения \"%s\".\nВы подтверждаете его создание?</string>
+
     <string name="dialog_confirm_deletion_title">Подтверждение</string>
-    <string name="dialog_confirm_deletion_message">Выбрано упражнений: %d\nВы подтверждаете удаление?</string>
+    <string name="dialog_confirm_deletion_message">УДАЛЕНИЕ УПРАЖНЕНИЙ ПРИВЕДЕТ К УДАЛЕНИЮ СВЯЗАННЫХ С НИМИ ЗАМЕТОК!\nВыбрано упражнений: %d\nВы подтверждаете удаление?</string>
 
     <string name="message_exercise_has_been_added">Упражнение добавлено</string>
     <string name="message_exercise_has_been_updated">Упражнение обновлено</string>
     <string name="message_deleted_exercises">Удалено упражнений: %d</string>
 
+    <string name="message_note_has_been_added">Заметка добавлена</string>
+    <string name="message_note_has_been_updated">Заметка обновлена</string>
+
     <string name="error_missing_excercise_name">Нет названия упражнения</string>
     <string name="error_excercise_already_exists">Упражнение \"%s\" уже есть</string>
+
+    <string name="error_missing_note_excercise_name">Нет названия упражнения</string>
+    <string name="error_missing_note_bpm">Нет BPM</string>
+    <string name="error_wrong_note_bpm">В поле BPM должно быть число от %d до %d</string>
+
     <string name="error_clarified">Произошла ошибка: %s</string>
     <string name="error_unknown">Произошла неизвестная ошибка</string>
 </resources>

@@ -1,66 +1,101 @@
 package com.adkom666.shrednotes.data.repository
 
 import com.adkom666.shrednotes.common.Id
+import com.adkom666.shrednotes.common.NO_ID
+import com.adkom666.shrednotes.common.toId
+import com.adkom666.shrednotes.data.converter.toNote
+import com.adkom666.shrednotes.data.converter.toNoteEntity
+import com.adkom666.shrednotes.data.db.Transactor
+import com.adkom666.shrednotes.data.db.dao.NoteDao
+import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.util.paging.Page
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import java.util.Date
 
-class NoteRepositoryImpl : NoteRepository {
-
-    private companion object {
-        private val NOTE_LIST = listOf(
-            Note(
-                id = 1,
-                exercise = Exercise(name = "Ex. 666"),
-                dateTime = Date(),
-                bpm = 666
-            ),
-            Note(
-                id = 2,
-                exercise = Exercise(name = "Ex. 667"),
-                dateTime = Date(),
-                bpm = 667
-            ),
-        )
-    }
+/**
+ * Implementation of [NoteRepository].
+ *
+ * @property noteDao object for performing operations with notes in the database.
+ * @property transactor see [Transactor].
+ */
+class NoteRepositoryImpl(
+    private val noteDao: NoteDao,
+    private val transactor: Transactor
+) : NoteRepository {
 
     override val countFlow: Flow<Int>
-        get() = flowOf(NOTE_LIST.size)
+        get() = noteDao.countAllAsFlow()
 
-    override suspend fun countSuspending(subname: String?): Int {
-        return NOTE_LIST.size
+    override suspend fun countSuspending(exerciseSubname: String?): Int {
+        return noteDao.countSuspending(exerciseSubname)
     }
 
     override fun page(
         size: Int,
         requestedStartPosition: Int,
-        subname: String?
+        exerciseSubname: String?
     ): Page<Note> {
+        val noteWithExerciseEntityPage = noteDao.page(
+            size,
+            requestedStartPosition,
+            exerciseSubname
+        )
         return Page(
-            NOTE_LIST,
-            requestedStartPosition
+            noteWithExerciseEntityPage.items.map(NoteWithExerciseInfo::toNote),
+            noteWithExerciseEntityPage.offset
         )
     }
 
     override fun list(
         size: Int,
         startPosition: Int,
-        subname: String?
+        exerciseSubname: String?
     ): List<Note> {
-        return emptyList()
+        val noteWithExerciseEntityList = noteDao.list(
+            size,
+            startPosition,
+            exerciseSubname
+        )
+        return noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
     }
 
-    override suspend fun saveSuspending(note: Note) {
+    override suspend fun saveIfExerciseNamePresentSuspending(
+        note: Note,
+        exerciseRepository: ExerciseRepository
+    ): Boolean = transactor.transaction {
+        val noteEntity = note.toNoteEntity { exerciseName ->
+            val exerciseList = exerciseRepository.exercisesByNameSuspending(exerciseName)
+            if (exerciseList.isNotEmpty()) {
+                exerciseList.first().id
+            } else {
+                NO_ID
+            }
+        }
+        if (noteEntity.exerciseId != NO_ID) {
+            noteDao.upsertSuspending(noteEntity)
+            true
+        } else {
+            false
+        }
     }
 
-    override suspend fun deleteSuspending(ids: List<Id>, subname: String?): Int {
+    override suspend fun saveWithExerciseSuspending(
+        note: Note,
+        exerciseRepository: ExerciseRepository
+    ) = transactor.transaction {
+        val noteEntity = note.toNoteEntity { exerciseName ->
+            val exercise = Exercise(name = exerciseName)
+            exerciseRepository.insert(exercise).toId()
+        }
+        noteDao.upsertSuspending(noteEntity)
+    }
+
+    override suspend fun deleteSuspending(ids: List<Id>, exerciseSubname: String?): Int {
         return 0
     }
 
-    override suspend fun deleteOtherSuspending(ids: List<Id>, subname: String?): Int {
+    override suspend fun deleteOtherSuspending(ids: List<Id>, exerciseSubname: String?): Int {
         return 0
     }
 }
