@@ -37,19 +37,19 @@
         <item name="android:textColor">@color/dialog_text_color</item>
     </style>
 
-    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:background">?android:attr/selectableItemBackground</item>
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/dialog_confirmation_button_positive_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
     </style>
 
-    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:background">?android:attr/selectableItemBackground</item>
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/dialog_confirmation_button_negative_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
     </style>
 
-    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:background">?android:attr/selectableItemBackground</item>
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/dialog_confirmation_button_neutral_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
     </style>
 
     <style name="AppTheme.Text" parent="TextAppearance.AppCompat.Small">
