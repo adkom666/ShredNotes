@@ -107,13 +107,13 @@ class NotesViewModel @Inject constructor(
         get() = _messageChannel.openSubscription()
 
     val selectableItems: SelectableItems
-        get() = _manageableSelection ?: SelectableItems.DUMMY
+        get() = _manageableSelection
 
     val selectionDashboard: SelectionDashboard
-        get() = _manageableSelection ?: SelectionDashboard.DUMMY
+        get() = _manageableSelection
 
     val selection: Selection
-        get() = _manageableSelection ?: Selection.DUMMY
+        get() = _manageableSelection
 
     /**
      * The text that must be contained in the names of the displayed notes' exercises
@@ -124,7 +124,7 @@ class NotesViewModel @Inject constructor(
             viewModelScope.launch {
                 noteSourceFactory.exerciseSubname = new?.trim()
                 val noteCount = noteRepository.countSuspending(new)
-                _manageableSelection?.reset(noteCount)
+                _manageableSelection.reset(noteCount)
                 invalidateNotes()
             }
         }
@@ -159,12 +159,12 @@ class NotesViewModel @Inject constructor(
         viewModelScope.launch {
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
             Timber.d("noteInitialCount=$noteInitialCount")
-            _manageableSelection?.init(noteInitialCount)
+            _manageableSelection.init(noteInitialCount)
             setState(State.Ready)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
-                _manageableSelection?.reset(noteCount)
+                _manageableSelection.reset(noteCount)
                 invalidateNotes()
             }
         }
