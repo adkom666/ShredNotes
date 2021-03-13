@@ -109,7 +109,8 @@ class NoteActivity : AppCompatActivity() {
         override fun onChanged(state: NoteViewModel.State?) {
             Timber.d("State is $state")
             when (state) {
-                NoteViewModel.State.Waiting -> setWaiting(true)
+                NoteViewModel.State.Waiting ->
+                    setWaiting(true)
                 is NoteViewModel.State.Ready -> {
                     initExerciseList(state.exerciseList)
                     setWaiting(false)
