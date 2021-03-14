@@ -231,25 +231,25 @@ class NoteActivity : AppCompatActivity() {
         }
 
         private fun initNote(
-            noteDateTime: TruncatedToMinutesDate,
-            noteExerciseName: String?,
-            noteBpmString: String?
+            dateTime: TruncatedToMinutesDate,
+            exerciseName: String?,
+            bpmString: String?
         ) {
-            setNoteDateTime(noteDateTime)
-            noteExerciseName?.let {
+            setNoteDateTime(dateTime)
+            exerciseName?.let {
                 binding.noteExerciseAutoCompleteTextView.setText(it)
                 binding.noteExerciseAutoCompleteTextView.forwardCursor()
             }
             binding.noteExerciseAutoCompleteTextView.clearFocus()
-            noteBpmString?.let {
+            bpmString?.let {
                 binding.noteBpmEditText.setText(it)
                 binding.noteBpmEditText.forwardCursor()
             }
             binding.noteBpmEditText.clearFocus()
         }
 
-        private fun setNoteDateTime(noteDateTime: TruncatedToMinutesDate) {
-            binding.noteDateTimeTextView.text = dateFormat.format(noteDateTime.date)
+        private fun setNoteDateTime(dateTime: TruncatedToMinutesDate) {
+            binding.noteDateTimeTextView.text = dateFormat.format(dateTime.date)
         }
 
         private fun saveWithExercise(context: Context, note: Note) {
