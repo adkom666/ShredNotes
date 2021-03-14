@@ -18,6 +18,7 @@ const val TABLE_EXERCISES_FIELD_NAME = "name"
 @Entity(
     tableName = TABLE_EXERCISES,
     indices = [
+        Index(value = [TABLE_EXERCISES_FIELD_ID], unique = true),
         Index(value = [TABLE_EXERCISES_FIELD_NAME], unique = true)
     ]
 )

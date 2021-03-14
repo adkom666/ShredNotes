@@ -5,6 +5,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+@Deprecated("Use ManageableSelectionTest")
 class SelectorTest {
 
     private companion object {

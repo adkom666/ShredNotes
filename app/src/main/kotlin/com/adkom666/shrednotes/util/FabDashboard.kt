@@ -1,19 +1,21 @@
-package com.adkom666.shrednotes.util.fab
+package com.adkom666.shrednotes.util
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.Px
 import androidx.recyclerview.widget.RecyclerView
-import com.adkom666.shrednotes.util.Selector
-import com.adkom666.shrednotes.util.measureHeight
+import com.adkom666.shrednotes.util.fab.ChildScrollAwareFab
+import com.adkom666.shrednotes.util.fab.VariableScrollAwareFab
+import com.adkom666.shrednotes.util.selection.Selection
+import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
- * Decorator for three floating action buttons above [recycler]. One of the FABs is the parent,
- * and the other two are child ones. Child FABs are hidden behind the parent one and appear from
- * under it if there is at least one selected item in the [recycler]. When one scroll through the
+ * Decorator for three floating action buttons above [recycler]. One of the FABs is the parent, and
+ * the other two are child ones. Child FABs are hidden behind the parent one and appear from under
+ * it if there is at least one selected item in the [recycler]. When one scroll through the
  * [recycler], all the FABs disappear.
  *
- * @property selector information about the selected items in [recycler].
+ * @property selection information about the presence of selected items in [recycler].
  * @property recycler [RecyclerView] to decorate.
  * @param parentFab parent [FloatingActionButton] to decorate.
  * @param bottomChildFab bottom child [FloatingActionButton] to decorate.
@@ -26,9 +28,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
  * @property bottomChildFabMargin the margin between the bottom child FAB and the parent one in
  * pixels.
  */
-@Deprecated("Use com.adkom666.shrednotes.util.FabDashboard")
 class FabDashboard(
-    private val selector: Selector,
+    private val selection: Selection,
     private val recycler: RecyclerView,
     parentFab: FloatingActionButton,
     bottomChildFab: FloatingActionButton,
@@ -46,7 +47,7 @@ class FabDashboard(
     private var bottomChildFabDecorator: ChildScrollAwareFab? = null
     private var topChildFabDecorator: ChildScrollAwareFab? = null
 
-    private val onSelectorActivenessChangeListener = object : Selector.OnActivenessChangeListener {
+    private val onSelectionActivenessChangeListener = object : OnActivenessChangeListener {
         override fun onActivenessChange(isActive: Boolean) = changeDecorators(isActive)
     }
 
@@ -72,9 +73,9 @@ class FabDashboard(
             additionalMargin = additionalMargin
         )
 
-        setupDecorators(selector.state is Selector.State.Active)
+        setupDecorators(selection.isActive)
 
-        selector.addOnActivenessChangeListener(onSelectorActivenessChangeListener)
+        selection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
     }
 
     /**
@@ -85,7 +86,7 @@ class FabDashboard(
         bottomChildFabDecorator?.detachFrom(recycler)
         topChildFabDecorator?.detachFrom(recycler)
 
-        selector.removeOnActivenessChangeListener(onSelectorActivenessChangeListener)
+        selection.removeOnActivenessChangeListener(onSelectionActivenessChangeListener)
     }
 
     private fun setupDecorators(isSelectorActive: Boolean) {
@@ -100,8 +101,8 @@ class FabDashboard(
         }
     }
 
-    private fun changeDecorators(isSelectorActive: Boolean) {
-        if (isSelectorActive) {
+    private fun changeDecorators(isSelectionActive: Boolean) {
+        if (isSelectionActive) {
             parentFabDecorator.changeImageResourceAnimating(parentFabDestructiveImageRes)
             bottomChildFabDecorator?.showAnimatingAndAttachTo(recycler)
             topChildFabDecorator?.showAnimatingAndAttachTo(recycler)

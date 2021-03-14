@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.common.Id
+import com.adkom666.shrednotes.common.toId
 import com.adkom666.shrednotes.data.converter.toExercise
 import com.adkom666.shrednotes.data.converter.toExerciseEntity
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
@@ -53,9 +55,24 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
         return exerciseEntityList.map(ExerciseEntity::toExercise)
     }
 
+    override suspend fun allExercisesSuspending(): List<Exercise> {
+        val exerciseEntityList = exerciseDao.entitiesAllSuspending()
+        return exerciseEntityList.map(ExerciseEntity::toExercise)
+    }
+
+    override suspend fun exercisesByNameSuspending(name: String): List<Exercise> {
+        val exerciseEntityList = exerciseDao.entitiesByNameSuspending(name)
+        return exerciseEntityList.map(ExerciseEntity::toExercise)
+    }
+
     override suspend fun saveIfNoSuchNameSuspending(exercise: Exercise): Boolean {
         val exerciseEntity = exercise.toExerciseEntity()
         return exerciseDao.upsertIfNoSuchNameSuspending(exerciseEntity)
+    }
+
+    override suspend fun insert(exercise: Exercise): Id {
+        val exerciseEntity = exercise.toExerciseEntity()
+        return exerciseDao.insert(exerciseEntity).toId()
     }
 
     override suspend fun deleteSuspending(ids: List<Long>, subname: String?): Int {
