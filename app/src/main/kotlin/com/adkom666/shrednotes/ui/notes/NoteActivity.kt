@@ -240,10 +240,12 @@ class NoteActivity : AppCompatActivity() {
                 binding.noteExerciseAutoCompleteTextView.setText(it)
                 binding.noteExerciseAutoCompleteTextView.forwardCursor()
             }
+            binding.noteExerciseAutoCompleteTextView.clearFocus()
             noteBpmString?.let {
                 binding.noteBpmEditText.setText(it)
                 binding.noteBpmEditText.forwardCursor()
             }
+            binding.noteBpmEditText.clearFocus()
         }
 
         private fun setNoteDateTime(noteDateTime: TruncatedToMinutesDate) {
