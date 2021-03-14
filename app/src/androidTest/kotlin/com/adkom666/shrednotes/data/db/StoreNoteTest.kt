@@ -9,8 +9,6 @@ import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Test
 
 class StoreNoteTest : TestCase() {
 
@@ -34,13 +32,11 @@ class StoreNoteTest : TestCase() {
         _dbKeeper.destroyDb()
     }
 
-    @Test
     fun testCount() {
         val noteCount = noteDao.countAll()
         assertEquals(StoreNoteTestHelper.NOTE_COUNT, noteCount)
     }
 
-    @Test
     fun testInsertNoteWithExercise() {
         val noteWithExerciseEntity = NoteEntity(
             id = NO_ID,
@@ -52,7 +48,6 @@ class StoreNoteTest : TestCase() {
         assertFalse(NO_ID == noteId)
     }
 
-    @Test
     fun testInsertNoteWithoutExercise() {
         val noteWithoutExerciseEntity = NoteEntity(
             id = NO_ID,
@@ -69,7 +64,6 @@ class StoreNoteTest : TestCase() {
         assertFalse(true)
     }
 
-    @Test
     fun testDeletionByIdsAndSubname() = runBlocking {
         val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
         val noteList = noteDao.listPortion(sublistSize, 0)
@@ -78,20 +72,19 @@ class StoreNoteTest : TestCase() {
             ids,
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
-        Assert.assertEquals(0, deletedNoteCount)
+        assertEquals(0, deletedNoteCount)
         val countWithExerciseSubname = noteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME)
+                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
             ids,
             StoreExerciseTestHelper.EXERCISE_SUBNAME
         )
-        Assert.assertEquals(countWithExerciseSubname, deletedNoteCount)
+        assertEquals(countWithExerciseSubname, deletedNoteCount)
     }
 
-    @Test
     fun testDeletionOtherByIdsAndExerciseSubname() = runBlocking {
         val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
         val noteList = noteDao.listPortion(sublistSize, 0)
@@ -100,20 +93,20 @@ class StoreNoteTest : TestCase() {
             ids,
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
-        Assert.assertEquals(0, deletedNoteCount)
+        assertEquals(0, deletedNoteCount)
         val otherNoteList = noteDao.listPortion(
             size = StoreNoteTestHelper.NOTE_COUNT - sublistSize,
             offset = sublistSize
         )
         val countWithExerciseSubname = otherNoteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME)
+                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
             ids,
             StoreExerciseTestHelper.EXERCISE_SUBNAME
         )
-        Assert.assertEquals(countWithExerciseSubname, deletedNoteCount)
+        assertEquals(countWithExerciseSubname, deletedNoteCount)
     }
 }

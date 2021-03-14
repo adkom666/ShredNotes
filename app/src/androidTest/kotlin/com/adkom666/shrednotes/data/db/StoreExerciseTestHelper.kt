@@ -19,16 +19,6 @@ object StoreExerciseTestHelper {
         }
     }
 
-    fun countBySubname(exerciseList: List<ExerciseEntity>, subname: String): Int {
-        var count = 0
-        exerciseList.forEach {
-            if (it.name.contains(subname)) {
-                ++count
-            }
-        }
-        return count
-    }
-
     private fun newExerciseEntity(number: Int): ExerciseEntity {
         val exerciseName = "$EXERCISE_NAME_PREFIX$number"
         val exercise = Exercise(name = exerciseName)

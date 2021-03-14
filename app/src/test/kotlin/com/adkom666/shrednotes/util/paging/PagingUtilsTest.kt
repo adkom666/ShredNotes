@@ -1,11 +1,9 @@
 package com.adkom666.shrednotes.util.paging
 
-import org.junit.Assert.*
-import org.junit.Test
+import junit.framework.TestCase
 
-class PagingUtilsTest {
+class PagingUtilsTest : TestCase() {
 
-    @Test
     fun testSafeOffset() {
         val offset = safeOffset(
             requestedOffset = 666,
@@ -15,7 +13,6 @@ class PagingUtilsTest {
         assertEquals(666, offset)
     }
 
-    @Test
     fun testUnsafeOffset() {
         val offset = safeOffset(
             requestedOffset = 666,

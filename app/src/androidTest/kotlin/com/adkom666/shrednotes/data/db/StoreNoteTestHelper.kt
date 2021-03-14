@@ -16,7 +16,7 @@ object StoreNoteTestHelper {
     const val NOTE_COUNT = 777
 
     fun insertNotes(noteDao: NoteDao, exerciseDao: ExerciseDao) {
-        val exerciseEntityList = exerciseDao.entities(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseEntityList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         (1..NOTE_COUNT).forEach { _ ->
             val exerciseEntityIndex = Random.nextInt(StoreExerciseTestHelper.EXERCISE_COUNT)
             val exerciseEntity = exerciseEntityList[exerciseEntityIndex]
@@ -26,12 +26,12 @@ object StoreNoteTestHelper {
     }
 
     fun existentExerciseId(exerciseDao: ExerciseDao): Id {
-        val exerciseEntityList = exerciseDao.entities(1, 0)
+        val exerciseEntityList = exerciseDao.listPortion(1, 0)
         return exerciseEntityList.first().id
     }
 
     fun nonExistentExerciseId(exerciseDao: ExerciseDao): Id {
-        val exerciseEntityList = exerciseDao.entities(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseEntityList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         do {
             val id = Random.nextLong().toId()
             if (exerciseEntityList.map { it.id }.contains(id).not()) {
