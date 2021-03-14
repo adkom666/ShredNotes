@@ -41,10 +41,6 @@ private const val SELECT_COUNT_BY_EXERCISE_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_NOTES_WITH_EXERCISES " +
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME"
 
-private const val OPTIONS_FOR_SELECT_ENTITIES =
-    "ORDER BY $TABLE_NOTES_FIELD_TIMESTAMP DESC " +
-            "LIMIT :size OFFSET :offset"
-
 private const val NOTES_WITH_EXERCISES_FIELDS =
     "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
@@ -55,16 +51,20 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
             "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
 
+private const val OPTIONS_FOR_SELECT_PORTION =
+    "ORDER BY $TABLE_NOTES_FIELD_TIMESTAMP DESC " +
+            "LIMIT :size OFFSET :offset"
+
 private const val SELECT_PORTION =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM $TABLE_NOTES_WITH_EXERCISES " +
-            OPTIONS_FOR_SELECT_ENTITIES
+            OPTIONS_FOR_SELECT_PORTION
 
 private const val SELECT_PORTION_BY_EXERCISE_SUBNAME =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM $TABLE_NOTES_WITH_EXERCISES " +
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
-            OPTIONS_FOR_SELECT_ENTITIES
+            OPTIONS_FOR_SELECT_PORTION
 
 private const val DELETE_BY_IDS =
     "DELETE FROM $TABLE_NOTES " +
@@ -113,6 +113,23 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun countAllSuspending(): Int
 
     /**
+     * Getting the count of all notes as [Flow].
+     *
+     * @return [Flow] of the count of all notes.
+     */
+    @Query(SELECT_COUNT_ALL)
+    fun countAllAsFlow(): Flow<Int>
+
+    /**
+     * Getting the count of notes with the specified [id].
+     *
+     * @param id identifier of the target note.
+     * @return count of notes with the specified [id]. Always 1 or 0, because [id] is unique.
+     */
+    @Query(SELECT_COUNT_BY_ID)
+    fun countById(id: Id): Int
+
+    /**
      * Getting the count of notes whose exercise names contain [exerciseSubname].
      *
      * @param exerciseSubname part of the names of the target notes' exercises.
@@ -130,23 +147,6 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_COUNT_BY_EXERCISE_SUBNAME)
     suspend fun countByExerciseSubnameSuspending(exerciseSubname: String): Int
-
-    /**
-     * Getting the count of all notes as [Flow].
-     *
-     * @return [Flow] of the count of all notes.
-     */
-    @Query(SELECT_COUNT_ALL)
-    fun countAllAsFlow(): Flow<Int>
-
-    /**
-     * Getting the count of notes with the specified [id].
-     *
-     * @param id identifier of the target note.
-     * @return count of notes with the specified [id]. Always 1 or 0, because [id] is unique.
-     */
-    @Query(SELECT_COUNT_BY_ID)
-    fun countById(id: Id): Int
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with

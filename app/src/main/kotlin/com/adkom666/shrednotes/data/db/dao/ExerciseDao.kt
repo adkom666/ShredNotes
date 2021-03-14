@@ -11,16 +11,16 @@ import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.paging.safeOffset
 import kotlinx.coroutines.flow.Flow
 
-private const val SELECT_COUNT = "SELECT COUNT(*) FROM $TABLE_EXERCISES"
+private const val SELECT_COUNT_ALL = "SELECT COUNT(*) FROM $TABLE_EXERCISES"
 
 private const val SELECT_COUNT_BY_ID =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID=:id"
+            "WHERE $TABLE_EXERCISES_FIELD_ID = :id"
 
 private const val SELECT_COUNT_BY_ANOTHER_ID_AND_NAME =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID<>:id " +
-            "AND $TABLE_EXERCISES_FIELD_NAME=:name"
+            "WHERE $TABLE_EXERCISES_FIELD_ID <> :id " +
+            "AND $TABLE_EXERCISES_FIELD_NAME = :name"
 
 private const val CONDITION_BY_SUBNAME =
     "UPPER($TABLE_EXERCISES_FIELD_NAME) LIKE UPPER('%' || :subname || '%')"
@@ -29,42 +29,46 @@ private const val SELECT_COUNT_BY_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME"
 
-private const val SELECT_ENTITIES_ALL =
-    "SELECT * FROM $TABLE_EXERCISES " +
-            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
+private const val ORDER = "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
+private const val SELECT_ALL = "SELECT * FROM $TABLE_EXERCISES $ORDER"
 
-private const val SELECT_ENTITIES_BY_NAME =
+private const val SELECT_PORTION_BY_NAME =
     "SELECT * FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_NAME=:name " +
-            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
+            "WHERE $TABLE_EXERCISES_FIELD_NAME = :name " +
+            ORDER
 
-private const val SELECT_ENTITIES_PORTION =
+private const val PORTION = "LIMIT :size OFFSET :offset"
+private const val OPTIONS_FOR_SELECT_PORTION = "$ORDER $PORTION"
+
+private const val SELECT_PORTION =
     "SELECT * FROM $TABLE_EXERCISES " +
-            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC " +
-            "LIMIT :size OFFSET :offset"
+            OPTIONS_FOR_SELECT_PORTION
 
-private const val SELECT_ENTITIES_PORTION_BY_SUBNAME =
+private const val SELECT_PORTION_BY_SUBNAME =
     "SELECT * FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME " +
-            "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC " +
-            "LIMIT :size OFFSET :offset"
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val CONDITION_BY_IDS = "$TABLE_EXERCISES_FIELD_ID IN (:ids)"
 
 private const val DELETE_BY_IDS =
     "DELETE FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID IN (:ids)"
+            "WHERE $CONDITION_BY_IDS"
 
 private const val DELETE_BY_IDS_AND_SUBNAME =
     "DELETE FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID IN (:ids) " +
+            "WHERE $CONDITION_BY_IDS " +
             "AND $CONDITION_BY_SUBNAME"
+
+private const val CONDITION_OTHER_BY_IDS = "$TABLE_EXERCISES_FIELD_ID NOT IN (:ids)"
 
 private const val DELETE_OTHER_BY_IDS =
     "DELETE FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID NOT IN (:ids)"
+            "WHERE $CONDITION_OTHER_BY_IDS"
 
 private const val DELETE_OTHER_BY_IDS_AND_SUBNAME =
     "DELETE FROM $TABLE_EXERCISES " +
-            "WHERE $TABLE_EXERCISES_FIELD_ID NOT IN (:ids) " +
+            "WHERE $CONDITION_OTHER_BY_IDS " +
             "AND $CONDITION_BY_SUBNAME"
 
 /**
@@ -78,43 +82,24 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      *
      * @return count of all exercises.
      */
-    @Query(SELECT_COUNT)
-    fun count(): Int
+    @Query(SELECT_COUNT_ALL)
+    fun countAll(): Int
 
     /**
      * Getting the count of all exercises stored in the database. Suspending version of [count].
      *
      * @return count of all exercises.
      */
-    @Query(SELECT_COUNT)
-    suspend fun countSuspending(): Int
-
-    /**
-     * Getting the count of exercises whose names contain [subname].
-     *
-     * @param subname part of the names of the target exercises.
-     * @return count of exercises whose names contain [subname].
-     */
-    @Query(SELECT_COUNT_BY_SUBNAME)
-    fun countBySubname(subname: String): Int
-
-    /**
-     * Getting the count of exercises whose names contain [subname]. Suspending version of
-     * [countBySubname].
-     *
-     * @param subname part of the names of the target exercises.
-     * @return count of exercises whose names contain [subname].
-     */
-    @Query(SELECT_COUNT_BY_SUBNAME)
-    suspend fun countBySubnameSuspending(subname: String): Int
+    @Query(SELECT_COUNT_ALL)
+    suspend fun countAllSuspending(): Int
 
     /**
      * Getting the count of all exercises as [Flow].
      *
      * @return [Flow] of the count of all exercises.
      */
-    @Query(SELECT_COUNT)
-    fun countAsFlow(): Flow<Int>
+    @Query(SELECT_COUNT_ALL)
+    fun countAllAsFlow(): Flow<Int>
 
     /**
      * Getting the count of exercises with the specified [id].
@@ -137,6 +122,25 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
     fun countByAnotherIdAndName(id: Long, name: String): Int
 
     /**
+     * Getting the count of exercises whose names contain [subname].
+     *
+     * @param subname part of the names of the target exercises.
+     * @return count of exercises whose names contain [subname].
+     */
+    @Query(SELECT_COUNT_BY_SUBNAME)
+    fun countBySubname(subname: String): Int
+
+    /**
+     * Getting the count of exercises whose names contain [subname]. Suspending version of
+     * [countBySubname].
+     *
+     * @param subname part of the names of the target exercises.
+     * @return count of exercises whose names contain [subname].
+     */
+    @Query(SELECT_COUNT_BY_SUBNAME)
+    suspend fun countBySubnameSuspending(subname: String): Int
+
+    /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of all exercise entities.
      *
@@ -146,8 +150,8 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of all exercise entities.
      */
-    @Query(SELECT_ENTITIES_PORTION)
-    fun entities(size: Int, offset: Int): List<ExerciseEntity>
+    @Query(SELECT_PORTION)
+    fun listPortion(size: Int, offset: Int): List<ExerciseEntity>
 
     /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
@@ -160,16 +164,16 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of exercise entities whose names contain [subname].
      */
-    @Query(SELECT_ENTITIES_PORTION_BY_SUBNAME)
-    fun entitiesBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
+    @Query(SELECT_PORTION_BY_SUBNAME)
+    fun listPortionBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
 
     /**
      * Getting a [List] of all exercise entities.
      *
      * @return [List] of all exercise entities.
      */
-    @Query(SELECT_ENTITIES_ALL)
-    suspend fun entitiesAllSuspending(): List<ExerciseEntity>
+    @Query(SELECT_ALL)
+    suspend fun listAllSuspending(): List<ExerciseEntity>
 
     /**
      * Getting a [List] of exercise entities whose name is equal to [name].
@@ -177,8 +181,8 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @param name name of target exercise entities.
      * @return [List] of exercise entities whose name is equal to [name].
      */
-    @Query(SELECT_ENTITIES_BY_NAME)
-    suspend fun entitiesByNameSuspending(name: String): List<ExerciseEntity>
+    @Query(SELECT_PORTION_BY_NAME)
+    suspend fun listPortionByNameSuspending(name: String): List<ExerciseEntity>
 
     /**
      * Deleting information about exercises with the specified [ids].
@@ -246,7 +250,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
         val count = if (subname != null && subname.isNotBlank()) {
             countBySubname(subname)
         } else {
-            count()
+            countAll()
         }
         return if (count > 0 && size > 0) {
             val offset = safeOffset(
@@ -288,6 +292,22 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
     }
 
     /**
+     * Getting the count of exercises whose names contain [subname] or count of all exercises if
+     * [subname] is null or blank.
+     *
+     * @param subname part of the names of the target exercises.
+     * @return count of exercises whose names contain [subname] or count of all exercises if
+     * [subname] is null or blank.
+     */
+    suspend fun countSuspending(subname: String?): Int {
+        return if (subname != null && subname.isNotBlank()) {
+            countBySubnameSuspending(subname)
+        } else {
+            countAllSuspending()
+        }
+    }
+
+    /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of exercise entities whose names contain [subname], or in the list of all exercise
      * entities if [subname] is null or blank.
@@ -307,9 +327,9 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
         subname: String?
     ): List<ExerciseEntity> {
         return if (subname != null && subname.isNotBlank()) {
-            entitiesBySubname(size = size, offset = offset, subname = subname)
+            listPortionBySubname(size = size, offset = offset, subname = subname)
         } else {
-            entities(size = size, offset = offset)
+            listPortion(size = size, offset = offset)
         }
     }
 

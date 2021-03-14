@@ -18,12 +18,10 @@ import kotlinx.coroutines.flow.Flow
 class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRepository {
 
     override val countFlow: Flow<Int>
-        get() = exerciseDao.countAsFlow()
+        get() = exerciseDao.countAllAsFlow()
 
     override suspend fun countSuspending(subname: String?): Int {
-        return subname?.let {
-            exerciseDao.countBySubnameSuspending(it)
-        } ?: exerciseDao.countSuspending()
+        return exerciseDao.countSuspending(subname)
     }
 
     override fun page(
@@ -56,12 +54,12 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
     }
 
     override suspend fun allExercisesSuspending(): List<Exercise> {
-        val exerciseEntityList = exerciseDao.entitiesAllSuspending()
+        val exerciseEntityList = exerciseDao.listAllSuspending()
         return exerciseEntityList.map(ExerciseEntity::toExercise)
     }
 
     override suspend fun exercisesByNameSuspending(name: String): List<Exercise> {
-        val exerciseEntityList = exerciseDao.entitiesByNameSuspending(name)
+        val exerciseEntityList = exerciseDao.listPortionByNameSuspending(name)
         return exerciseEntityList.map(ExerciseEntity::toExercise)
     }
 
