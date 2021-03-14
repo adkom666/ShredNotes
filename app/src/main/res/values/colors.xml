@@ -25,6 +25,8 @@
     <color name="dialog_text_color">@color/yellow</color>
     <color name="dialog_button_color">@color/yellow</color>
     <color name="dialog_button_ripple_color">@color/grey_dark</color>
+    <color name="dialog_confirmation_surface_color">@color/dialog_background_color</color>
+    <color name="dialog_confirmation_on_surface_color">@color/yellow</color>
     <color name="dialog_confirmation_button_positive_color">@color/red</color>
     <color name="dialog_confirmation_button_negative_color">@color/dialog_button_color</color>
     <color name="dialog_confirmation_button_neutral_color">@color/dialog_button_color</color>

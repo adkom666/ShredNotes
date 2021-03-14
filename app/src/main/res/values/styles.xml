@@ -23,20 +23,11 @@
     </style>
 
     <style name="AppTheme.MaterialAlertDialog.Confirmation" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="android:background">@color/dialog_background_color</item>
-        <item name="materialAlertDialogTitleTextStyle">@style/AppTheme.MaterialAlertDialog.Title.Text</item>
-        <item name="materialAlertDialogBodyTextStyle">@style/AppTheme.MaterialAlertDialog.Body.Text</item>
+        <item name="colorSurface">@color/dialog_confirmation_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_confirmation_on_surface_color</item>
         <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Positive</item>
         <item name="buttonBarNegativeButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Negative</item>
         <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Neutral</item>
-    </style>
-
-    <style name="AppTheme.MaterialAlertDialog.Title.Text" parent="@style/MaterialAlertDialog.MaterialComponents.Title.Text">
-        <item name="android:textColor">@color/dialog_title_color</item>
-    </style>
-
-    <style name="AppTheme.MaterialAlertDialog.Body.Text" parent="@style/MaterialAlertDialog.MaterialComponents.Body.Text">
-        <item name="android:textColor">@color/dialog_text_color</item>
     </style>
 
     <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
