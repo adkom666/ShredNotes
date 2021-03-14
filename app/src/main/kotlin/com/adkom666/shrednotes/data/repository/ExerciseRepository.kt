@@ -107,7 +107,7 @@ interface ExerciseRepository {
      * @param subname part of the names of the exercises to delete.
      * @return count of deleted exercises.
      */
-    suspend fun deleteSuspending(ids: List<Long>, subname: String? = null): Int
+    suspend fun deleteSuspending(ids: List<Id>, subname: String? = null): Int
 
     /**
      * Deleting exercises whose identifiers are not in the [ids] and whose names contain [subname]
@@ -117,5 +117,5 @@ interface ExerciseRepository {
      * @param subname part of the names of the exercises to delete.
      * @return count of deleted exercises.
      */
-    suspend fun deleteOtherSuspending(ids: List<Long>, subname: String? = null): Int
+    suspend fun deleteOtherSuspending(ids: List<Id>, subname: String? = null): Int
 }

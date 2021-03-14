@@ -73,11 +73,11 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
         return exerciseDao.insert(exerciseEntity).toId()
     }
 
-    override suspend fun deleteSuspending(ids: List<Long>, subname: String?): Int {
+    override suspend fun deleteSuspending(ids: List<Id>, subname: String?): Int {
         return exerciseDao.deleteSuspending(ids, subname)
     }
 
-    override suspend fun deleteOtherSuspending(ids: List<Long>, subname: String?): Int {
+    override suspend fun deleteOtherSuspending(ids: List<Id>, subname: String?): Int {
         return exerciseDao.deleteOtherSuspending(ids, subname)
     }
 }

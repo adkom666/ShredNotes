@@ -3,6 +3,7 @@ package com.adkom666.shrednotes.data.db.dao
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_ID
@@ -108,7 +109,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of exercises with the specified [id]. Always 1 or 0, because [id] is unique.
      */
     @Query(SELECT_COUNT_BY_ID)
-    fun countById(id: Long): Int
+    fun countById(id: Id): Int
 
     /**
      * Getting the count of exercises with the specified [name], whose identifier is not equal to
@@ -119,7 +120,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of exercises with the specified [name], whose identifier is not equal to [id].
      */
     @Query(SELECT_COUNT_BY_ANOTHER_ID_AND_NAME)
-    fun countByAnotherIdAndName(id: Long, name: String): Int
+    fun countByAnotherIdAndName(id: Id, name: String): Int
 
     /**
      * Getting the count of exercises whose names contain [subname].
@@ -191,7 +192,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS)
-    suspend fun deleteByIdsSuspending(ids: List<Long>): Int
+    suspend fun deleteByIdsSuspending(ids: List<Id>): Int
 
     /**
      * Deleting information about exercises with the specified [ids] whose names contain [subname].
@@ -201,7 +202,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_AND_SUBNAME)
-    suspend fun deleteByIdsAndSubnameSuspending(ids: List<Long>, subname: String): Int
+    suspend fun deleteByIdsAndSubnameSuspending(ids: List<Id>, subname: String): Int
 
     /**
      * Deleting information about exercises whose identifiers are not in the [ids].
@@ -210,7 +211,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS)
-    suspend fun deleteOtherByIdsSuspending(ids: List<Long>): Int
+    suspend fun deleteOtherByIdsSuspending(ids: List<Id>): Int
 
     /**
      * Deleting information about exercises whose identifiers are not in the [ids] and whose names
@@ -221,7 +222,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_AND_SUBNAME)
-    suspend fun deleteOtherByIdsAndSubnameSuspending(ids: List<Long>, subname: String): Int
+    suspend fun deleteOtherByIdsAndSubnameSuspending(ids: List<Id>, subname: String): Int
 
     /**
      * Getting a [Page] of the [size] or fewer exercise entities in accordance with the
@@ -341,7 +342,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @param subname part of the names of the exercises to delete.
      * @return count of deleted rows from the database table.
      */
-    suspend fun deleteSuspending(ids: List<Long>, subname: String?): Int {
+    suspend fun deleteSuspending(ids: List<Id>, subname: String?): Int {
         return if (subname != null && subname.isNotBlank()) {
             deleteByIdsAndSubnameSuspending(ids, subname)
         } else {
@@ -357,7 +358,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @param subname part of the names of the exercises to delete.
      * @return count of deleted rows from the database table.
      */
-    suspend fun deleteOtherSuspending(ids: List<Long>, subname: String?): Int {
+    suspend fun deleteOtherSuspending(ids: List<Id>, subname: String?): Int {
         return if (subname != null && subname.isNotBlank()) {
             deleteOtherByIdsAndSubnameSuspending(ids, subname)
         } else {

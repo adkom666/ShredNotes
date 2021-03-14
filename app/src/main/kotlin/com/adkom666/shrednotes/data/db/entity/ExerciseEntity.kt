@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.adkom666.shrednotes.common.Id
 
 const val TABLE_EXERCISES = "exercises"
 const val TABLE_EXERCISES_FIELD_ID = "id"
@@ -25,7 +26,7 @@ const val TABLE_EXERCISES_FIELD_NAME = "name"
 data class ExerciseEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = TABLE_EXERCISES_FIELD_ID)
-    val id: Long,
+    val id: Id,
     @ColumnInfo(name = TABLE_EXERCISES_FIELD_NAME)
     val name: String
 )

@@ -1,6 +1,8 @@
 package com.adkom666.shrednotes.data.model
 
 import android.os.Parcelable
+import com.adkom666.shrednotes.common.Id
+import com.adkom666.shrednotes.common.NO_ID
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -11,6 +13,6 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class Exercise(
-    val id: Long = 0L,
+    val id: Id = NO_ID,
     val name: String
 ) : Parcelable
