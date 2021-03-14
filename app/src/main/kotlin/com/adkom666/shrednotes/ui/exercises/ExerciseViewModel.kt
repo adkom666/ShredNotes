@@ -31,9 +31,9 @@ class ExerciseViewModel @Inject constructor(
         /**
          * The exercise is ready for interaction.
          *
-         * @param exercise ready-made exercise.
+         * @param exerciseName ready-made exercise name.
          */
-        data class Ready(val exercise: Exercise) : State()
+        data class Ready(val exerciseName: String?) : State()
 
         /**
          * Error when working with the exercise.
@@ -82,34 +82,20 @@ class ExerciseViewModel @Inject constructor(
     val stateAsLiveData: LiveData<State>
         get() = _stateAsLiveData
 
-    private var exercise: Exercise
-        get() = requireNotNull(_exercise)
-        set(value) {
-            _exercise = value
-        }
-
     private val initialExercise: Exercise?
         get() = _initialExercise
 
     private var _initialExercise: Exercise? = null
-    private var _exercise: Exercise? = null
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     /**
-     * Prepare working with the [exercise].
+     * Start working with the [exercise].
      *
      * @param exercise initial exercise.
      */
-    fun prepare(exercise: Exercise?) {
+    fun start(exercise: Exercise?) {
         _initialExercise = exercise
-        _exercise = exercise ?: Exercise()
-    }
-
-    /**
-     * Start working with the exercise.
-     */
-    fun start() {
-        setState(State.Ready(this.exercise))
+        setState(State.Ready(initialExercise?.name))
     }
 
     /**
@@ -117,7 +103,7 @@ class ExerciseViewModel @Inject constructor(
      * preset one.
      */
     fun save(exerciseName: String) {
-        exercise = exercise.copy(name = exerciseName)
+        val exercise = initialExercise?.copy(name = exerciseName) ?: Exercise(name = exerciseName)
         if (exercise == initialExercise) {
             setState(State.Declined)
             return

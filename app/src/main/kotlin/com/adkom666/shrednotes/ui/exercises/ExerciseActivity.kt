@@ -80,9 +80,8 @@ class ExerciseActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             val exercise = intent?.extras?.getParcelable<Exercise>(EXTRA_EXERCISE)
             Timber.d("Initial exercise is $exercise")
-            model.prepare(exercise)
+            model.start(exercise)
         }
-        model.start()
     }
 
     private fun setWaiting(active: Boolean) {
@@ -104,9 +103,7 @@ class ExerciseActivity : AppCompatActivity() {
                     setWaiting(true)
                 is ExerciseViewModel.State.Ready -> {
                     setWaiting(false)
-                    binding.exerciseNameEditText.setText(state.exercise.name)
-                    binding.exerciseNameEditText.forwardCursor()
-                    binding.exerciseNameEditText.clearFocus()
+                    initExercise(state.exerciseName)
                 }
                 is ExerciseViewModel.State.Error -> {
                     setWaiting(false)
@@ -121,6 +118,14 @@ class ExerciseActivity : AppCompatActivity() {
                     finish()
                 }
             }
+        }
+
+        private fun initExercise(name: String?) {
+            name?.let {
+                binding.exerciseNameEditText.setText(it)
+                binding.exerciseNameEditText.forwardCursor()
+            }
+            binding.exerciseNameEditText.clearFocus()
         }
 
         private fun handleError(error: ExerciseViewModel.State.Error) = when (error) {
