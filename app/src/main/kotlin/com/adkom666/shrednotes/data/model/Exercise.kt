@@ -12,5 +12,5 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Exercise(
     val id: Long = 0L,
-    val name: String = ""
+    val name: String
 ) : Parcelable
