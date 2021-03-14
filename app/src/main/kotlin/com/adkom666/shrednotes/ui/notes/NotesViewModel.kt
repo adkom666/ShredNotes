@@ -135,7 +135,7 @@ class NotesViewModel @Inject constructor(
      */
     var isSearchActive: Boolean = false
 
-    private var _manageableSelection: ManageableSelection = ManageableSelection()
+    private val _manageableSelection: ManageableSelection = ManageableSelection()
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
         .setEnablePlaceholders(false)
