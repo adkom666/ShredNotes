@@ -100,7 +100,8 @@ class ExerciseActivity : AppCompatActivity() {
         override fun onChanged(state: ExerciseViewModel.State?) {
             Timber.d("State is $state")
             when (state) {
-                ExerciseViewModel.State.Waiting -> setWaiting(true)
+                ExerciseViewModel.State.Waiting ->
+                    setWaiting(true)
                 is ExerciseViewModel.State.Ready -> {
                     setWaiting(false)
                     binding.exerciseNameEditText.setText(state.exercise.name)
