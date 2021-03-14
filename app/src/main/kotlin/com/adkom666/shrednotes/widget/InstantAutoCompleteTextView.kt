@@ -1,10 +1,14 @@
 package com.adkom666.shrednotes.widget
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Rect
 import android.util.AttributeSet
 import androidx.appcompat.R
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatAutoCompleteTextView
+import androidx.lifecycle.Lifecycle
+import java.lang.ref.WeakReference
 
 /**
  * The kind of [AppCompatAutoCompleteTextView], which shows the dropdown list immediately after
@@ -22,13 +26,28 @@ class InstantAutoCompleteTextView @JvmOverloads constructor(
     defStyleAttr: Int = R.attr.autoCompleteTextViewStyle
 ) : AppCompatAutoCompleteTextView(context, attrs, defStyleAttr) {
 
+    private val activityRef: WeakReference<AppCompatActivity> = WeakReference(getActivity(context))
+
     override fun enoughToFilter(): Boolean = true
 
     override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect)
-        if (focused && adapter != null) {
+        if (focused && adapter != null
+            && activityRef.get()?.lifecycle?.currentState == Lifecycle.State.RESUMED
+        ) {
             performFiltering(text, 0)
             showDropDown()
         }
+    }
+
+    private fun getActivity(initialContext: Context): AppCompatActivity? {
+        var context = initialContext
+        while (context is ContextWrapper) {
+            if (context is AppCompatActivity) {
+                return context
+            }
+            context = context.baseContext
+        }
+        return null
     }
 }
