@@ -107,24 +107,20 @@ class NoteActivity : AppCompatActivity() {
     private fun pickDateTime() = pickDate { pickTime() }
 
     private fun pickDate(afterPick: () -> Unit) {
-
-        fun millisAfterMidnight(millis: Long): Long {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = millis
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            return millis - calendar.timeInMillis
-        }
-
-        val builder = MaterialDatePicker.Builder.datePicker()
         val initialEpochMillis = model.noteDateTime.epochMillis
+        val oldCalendar = Calendar.getInstance()
+        oldCalendar.timeInMillis = initialEpochMillis
+        val hour = oldCalendar.get(Calendar.HOUR_OF_DAY)
+        val minute = oldCalendar.get(Calendar.MINUTE)
+        val builder = MaterialDatePicker.Builder.datePicker()
         builder.setSelection(initialEpochMillis)
-        val millisAfterMidnight = millisAfterMidnight(initialEpochMillis)
         val picker = builder.build()
         picker.addOnPositiveButtonClickListener { epochMillis ->
-            model.noteDateTime = TruncatedToMinutesDate(epochMillis + millisAfterMidnight)
+            val newCalendar = Calendar.getInstance()
+            newCalendar.timeInMillis = epochMillis
+            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
+            newCalendar.set(Calendar.MINUTE, minute)
+            model.noteDateTime = TruncatedToMinutesDate(newCalendar.time)
             afterPick()
         }
         picker.show(supportFragmentManager, picker.toString())
