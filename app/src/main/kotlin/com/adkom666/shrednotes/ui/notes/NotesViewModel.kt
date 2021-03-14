@@ -64,7 +64,7 @@ class NotesViewModel @Inject constructor(
             /**
              * The details of this error are described in the [message].
              *
-             * @param message the details of the error.
+             * @property message the details of the error.
              */
             data class Clarified(val message: String) : Error()
 
@@ -83,7 +83,7 @@ class NotesViewModel @Inject constructor(
         /**
          * Message about the count of deleted notes.
          *
-         * @param count count of deleted notes.
+         * @property count count of deleted notes.
          */
         data class Deleted(val count: Int) : Message()
     }

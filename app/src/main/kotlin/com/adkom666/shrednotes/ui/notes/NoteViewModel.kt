@@ -37,10 +37,10 @@ class NoteViewModel @Inject constructor(
         /**
          * The note is ready for interaction.
          *
-         * @param exerciseList [List] of all exercises.
-         * @param noteDateTime date and time of training.
-         * @param noteExerciseName training exercise name.
-         * @param noteBpmString training BPM.
+         * @property exerciseList [List] of all exercises.
+         * @property noteDateTime date and time of training.
+         * @property noteExerciseName training exercise name.
+         * @property noteBpmString training BPM.
          */
         data class Ready(
             val exerciseList: List<Exercise>,
@@ -52,7 +52,7 @@ class NoteViewModel @Inject constructor(
         /**
          * The date and time of the training have changed.
          *
-         * @param noteDateTime new date and time of training.
+         * @property noteDateTime new date and time of training.
          */
         data class NoteDateTimeChanged(val noteDateTime: TruncatedToMinutesDate) : State()
 
@@ -79,7 +79,7 @@ class NoteViewModel @Inject constructor(
             /**
              * The details of this error are described in the [message].
              *
-             * @param message the details of the error.
+             * @property message the details of the error.
              */
             data class Clarified(val message: String) : Error()
 

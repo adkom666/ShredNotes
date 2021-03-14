@@ -66,7 +66,7 @@ class ExercisesViewModel @Inject constructor(
             /**
              * The details of this error are described in the [message].
              *
-             * @param message the details of the error.
+             * @property message the details of the error.
              */
             data class Clarified(val message: String) : Error()
 
@@ -85,7 +85,7 @@ class ExercisesViewModel @Inject constructor(
         /**
          * Message about the count of deleted messages.
          *
-         * @param count count of deleted messages.
+         * @property count count of deleted messages.
          */
         data class Deleted(val count: Int) : Message()
     }

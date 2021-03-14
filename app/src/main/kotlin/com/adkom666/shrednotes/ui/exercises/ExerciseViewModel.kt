@@ -31,7 +31,7 @@ class ExerciseViewModel @Inject constructor(
         /**
          * The exercise is ready for interaction.
          *
-         * @param exerciseName ready-made exercise name.
+         * @property exerciseName ready-made exercise name.
          */
         data class Ready(val exerciseName: String?) : State()
 
@@ -48,14 +48,14 @@ class ExerciseViewModel @Inject constructor(
             /**
              * Another exercise with [exerciseName] already exists.
              *
-             * @param exerciseName duplicate name of exercise.
+             * @property exerciseName duplicate name of exercise.
              */
             data class ExerciseAlreadyExists(val exerciseName: String) : Error()
 
             /**
              * The details of this error are described in the [message].
              *
-             * @param message the details of the error.
+             * @property message the details of the error.
              */
             data class Clarified(val message: String) : Error()
 
