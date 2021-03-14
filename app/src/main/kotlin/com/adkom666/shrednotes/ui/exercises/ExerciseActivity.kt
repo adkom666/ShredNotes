@@ -105,6 +105,7 @@ class ExerciseActivity : AppCompatActivity() {
                     setWaiting(false)
                     binding.exerciseNameEditText.setText(state.exercise.name)
                     binding.exerciseNameEditText.forwardCursor()
+                    binding.exerciseNameEditText.clearFocus()
                 }
                 is ExerciseViewModel.State.Error -> {
                     setWaiting(false)
