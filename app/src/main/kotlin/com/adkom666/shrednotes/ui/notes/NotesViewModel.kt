@@ -106,12 +106,21 @@ class NotesViewModel @Inject constructor(
     val messageChannel: ReceiveChannel<Message>
         get() = _messageChannel.openSubscription()
 
+    /**
+     * Notes to select.
+     */
     val selectableItems: SelectableItems
         get() = _manageableSelection
 
+    /**
+     * Tools for manipulating the selection.
+     */
     val selectionDashboard: SelectionDashboard
         get() = _manageableSelection
 
+    /**
+     * Information about the presence of selected notes.
+     */
     val selection: Selection
         get() = _manageableSelection
 
