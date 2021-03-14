@@ -6,9 +6,9 @@ import com.adkom666.shrednotes.common.toId
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
+import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
-import java.util.Date
 import kotlin.random.Random
 
 object StoreNoteTestHelper {
@@ -43,7 +43,7 @@ object StoreNoteTestHelper {
     private fun newNoteEntity(exerciseId: Id): NoteEntity {
         return NoteEntity(
             id = NO_ID,
-            dateTime = Date(),
+            timestamp = TruncatedToMinutesDate().epochMillis,
             exerciseId = exerciseId,
             bpm = Random.nextInt(NOTE_BPM_MIN, NOTE_BPM_MAX + 1)
         )

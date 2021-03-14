@@ -16,6 +16,7 @@
     <string name="desc_add_del">Add or delete</string>
     <string name="desc_select_all">Select all</string>
     <string name="desc_cancel">Cancel</string>
+    <string name="desc_pick_note_date_time">Pick note date and time</string>
 
     <string name="button_title_ok" translatable="false">OK</string>
     <string name="button_title_cancel">Cancel</string>

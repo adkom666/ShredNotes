@@ -11,11 +11,11 @@ import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_NAME
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_ID
-import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_DATE_TIME
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_TIMESTAMP
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_EXERCISE_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_BPM
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID
-import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_DATE_TIME
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM
 import com.adkom666.shrednotes.util.paging.Page
@@ -42,14 +42,14 @@ private const val SELECT_COUNT_BY_EXERCISE_SUBNAME =
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME"
 
 private const val OPTIONS_FOR_SELECT_ENTITIES =
-    "ORDER BY $TABLE_NOTES_FIELD_DATE_TIME DESC " +
+    "ORDER BY $TABLE_NOTES_FIELD_TIMESTAMP DESC " +
             "LIMIT :size OFFSET :offset"
 
 private const val NOTES_WITH_EXERCISES_FIELDS =
     "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
-            "$TABLE_NOTES.$TABLE_NOTES_FIELD_DATE_TIME " +
-            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_DATE_TIME, " +
+            "$TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP " +
+            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP, " +
             "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_NAME " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME, " +
             "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +

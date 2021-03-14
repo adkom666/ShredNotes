@@ -18,6 +18,8 @@
         <item name="colorControlNormal">@color/color_control</item>
         <item name="colorControlActivated">@color/color_accent</item>
         <item name="colorControlHighlight">@color/color_accent</item>
+        <item name="materialCalendarTheme">@style/AppTheme.MaterialAlertDialog.DatePicker</item>
+        <item name="materialTimePickerTheme">@style/AppTheme.MaterialAlertDialog.TimePicker</item>
     </style>
 
     <style name="AppTheme.MaterialAlertDialog.Confirmation" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
@@ -52,7 +54,41 @@
         <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
     </style>
 
+    <style name="AppTheme.MaterialAlertDialog.DatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="android:textColor">@color/dialog_date_picker_text_color</item>
+        <item name="android:textColorPrimary">@color/dialog_date_picker_text_color_primary</item>
+        <item name="colorPrimary">@color/dialog_date_picker_primary_color</item>
+        <item name="colorOnPrimary">@color/dialog_date_picker_on_primary_color</item>
+        <item name="colorSurface">@color/dialog_date_time_picker_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_date_time_picker_on_surface_color</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.Button</item>
+        <item name="materialButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.TextButton</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.DatePicker.Button" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_date_picker_button_color</item>
+        <item name="rippleColor">@color/dialog_date_picker_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.DatePicker.TextButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog.Flush">
+        <item name="android:textColor">@color/dialog_date_picker_button_color</item>
+        <item name="rippleColor">@color/dialog_date_picker_button_ripple_color</item>
+        <item name="iconTint">@color/dialog_date_picker_button_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.TimePicker" parent="ThemeOverlay.MaterialComponents.TimePicker">
+        <item name="colorPrimary">@color/dialog_time_picker_primary_color</item>
+        <item name="colorOnPrimary">@color/dialog_time_picker_on_primary_color</item>
+        <item name="colorSurface">@color/dialog_date_time_picker_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_date_time_picker_on_surface_color</item>
+    </style>
+
     <style name="AppTheme.Text" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/yellow</item>
+    </style>
+
+    <style name="AppTheme.HeaderText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/yellow</item>
     </style>
 

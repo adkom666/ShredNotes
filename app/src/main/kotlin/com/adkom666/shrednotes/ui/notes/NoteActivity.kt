@@ -16,11 +16,17 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ActivityNoteBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
+import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.toast
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.timepicker.MaterialTimePicker
 import dagger.android.AndroidInjection
 import timber.log.Timber
+import java.text.DateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -69,6 +75,10 @@ class NoteActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        binding.pickNoteDateTimeImageButton.setOnClickListener {
+            pickDateTime()
+        }
+
         binding.okButton.setOnClickListener {
             val noteExerciseName = binding.noteExerciseAutoCompleteTextView.text.toString().trim()
             val noteBpmString = binding.noteBpmEditText.text.toString().trim()
@@ -94,6 +104,49 @@ class NoteActivity : AppCompatActivity() {
         }
     }
 
+    private fun pickDateTime() = pickDate { pickTime() }
+
+    private fun pickDate(afterPick: () -> Unit) {
+
+        fun millisAfterMidnight(millis: Long): Long {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = millis
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            return millis - calendar.timeInMillis
+        }
+
+        val builder = MaterialDatePicker.Builder.datePicker()
+        val initialEpochMillis = model.noteDateTime.epochMillis
+        builder.setSelection(initialEpochMillis)
+        val millisAfterMidnight = millisAfterMidnight(initialEpochMillis)
+        val picker = builder.build()
+        picker.addOnPositiveButtonClickListener { epochMillis ->
+            model.noteDateTime = TruncatedToMinutesDate(epochMillis + millisAfterMidnight)
+            afterPick()
+        }
+        picker.show(supportFragmentManager, picker.toString())
+    }
+
+    private fun pickTime() {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = model.noteDateTime.epochMillis
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        val builder = MaterialTimePicker.Builder()
+        builder.setHour(hour)
+        builder.setMinute(minute)
+        val picker = builder.build()
+        picker.addOnPositiveButtonClickListener {
+            calendar.set(Calendar.HOUR_OF_DAY, picker.hour)
+            calendar.set(Calendar.MINUTE, picker.minute)
+            model.noteDateTime = TruncatedToMinutesDate(calendar.time)
+        }
+        picker.show(supportFragmentManager, picker.toString())
+    }
+
     private fun setWaiting(active: Boolean) {
         return if (active) {
             binding.noteCard.visibility = View.GONE
@@ -106,6 +159,12 @@ class NoteActivity : AppCompatActivity() {
 
     private inner class StateObserver : Observer<NoteViewModel.State> {
 
+        private val dateFormat = DateFormat.getDateTimeInstance(
+            DateFormat.SHORT,
+            DateFormat.SHORT,
+            Locale.getDefault()
+        )
+
         override fun onChanged(state: NoteViewModel.State?) {
             Timber.d("State is $state")
             when (state) {
@@ -114,10 +173,10 @@ class NoteActivity : AppCompatActivity() {
                 is NoteViewModel.State.Ready -> {
                     initExerciseList(state.exerciseList)
                     setWaiting(false)
-                    state.note?.let {
-                        initNote(it)
-                    }
+                    initNote(state.noteDateTime, state.noteExerciseName, state.noteBpmString)
                 }
+                is NoteViewModel.State.NoteDateTimeChanged ->
+                    setNoteDateTime(state.noteDateTime)
                 is NoteViewModel.State.Error -> {
                     setWaiting(false)
                     handleError(state)
@@ -171,11 +230,24 @@ class NoteActivity : AppCompatActivity() {
             binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)
         }
 
-        private fun initNote(note: Note) {
-            binding.noteExerciseAutoCompleteTextView.setText(note.exerciseName)
-            binding.noteExerciseAutoCompleteTextView.forwardCursor()
-            binding.noteBpmEditText.setText(note.bpm.toString())
-            binding.noteBpmEditText.forwardCursor()
+        private fun initNote(
+            noteDateTime: TruncatedToMinutesDate,
+            noteExerciseName: String?,
+            noteBpmString: String?
+        ) {
+            setNoteDateTime(noteDateTime)
+            noteExerciseName?.let {
+                binding.noteExerciseAutoCompleteTextView.setText(it)
+                binding.noteExerciseAutoCompleteTextView.forwardCursor()
+            }
+            noteBpmString?.let {
+                binding.noteBpmEditText.setText(it)
+                binding.noteBpmEditText.forwardCursor()
+            }
+        }
+
+        private fun setNoteDateTime(noteDateTime: TruncatedToMinutesDate) {
+            binding.noteDateTimeTextView.text = dateFormat.format(noteDateTime.date)
         }
 
         private fun saveWithExercise(context: Context, note: Note) {

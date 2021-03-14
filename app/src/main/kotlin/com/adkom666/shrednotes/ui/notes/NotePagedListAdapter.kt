@@ -69,7 +69,7 @@ class NotePagedListAdapter(
          * @param note information to paste into the note item view.
          */
         fun bind(note: Note) {
-            binding.dateTimeTextView.text = dateFormat.format(note.dateTime)
+            binding.dateTimeTextView.text = dateFormat.format(note.dateTime.date)
             binding.exerciseNameTextView.text = note.exerciseName
             binding.bpmTextView.text = note.bpm.toString()
             binding.noteCard.isSelected = selectableItems.isSelected(note.id)

@@ -2,8 +2,6 @@ package com.adkom666.shrednotes.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.adkom666.shrednotes.data.converter.DateConverter
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
@@ -21,7 +19,6 @@ private const val DB_VERSION = 1
     ],
     version = DB_VERSION
 )
-@TypeConverters(DateConverter::class)
 abstract class ShredNotesDatabase : RoomDatabase() {
 
     /**

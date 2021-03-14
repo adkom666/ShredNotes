@@ -14,6 +14,7 @@
     <string name="desc_add_del">Добавить или удалить</string>
     <string name="desc_select_all">Выделить все</string>
     <string name="desc_cancel">Отмена</string>
+    <string name="desc_pick_note_date_time">Установить дату и время заметки</string>
 
     <string name="button_title_cancel">Отмена</string>
 

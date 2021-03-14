@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1eb97e83ab7844a665db5c98adb1b711",
+    "identityHash": "70a82c355c90eca01475e58298e80b9a",
     "entities": [
       {
         "tableName": "exercises",
@@ -49,7 +49,7 @@
       },
       {
         "tableName": "notes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date_time` INTEGER NOT NULL, `exercise_id` INTEGER NOT NULL, `bpm` INTEGER NOT NULL, FOREIGN KEY(`exercise_id`) REFERENCES `exercises`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `exercise_id` INTEGER NOT NULL, `bpm` INTEGER NOT NULL, FOREIGN KEY(`exercise_id`) REFERENCES `exercises`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -58,8 +58,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "dateTime",
-            "columnName": "date_time",
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -92,12 +92,12 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_notes_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
-            "name": "index_notes_date_time",
+            "name": "index_notes_timestamp",
             "unique": false,
             "columnNames": [
-              "date_time"
+              "timestamp"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_notes_date_time` ON `${TABLE_NAME}` (`date_time`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notes_timestamp` ON `${TABLE_NAME}` (`timestamp`)"
           },
           {
             "name": "index_notes_exercise_id",
@@ -134,7 +134,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1eb97e83ab7844a665db5c98adb1b711')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '70a82c355c90eca01475e58298e80b9a')"
     ]
   }
 }

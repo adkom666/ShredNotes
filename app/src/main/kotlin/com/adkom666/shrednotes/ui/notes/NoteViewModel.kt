@@ -10,8 +10,8 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 
 /**
@@ -38,9 +38,23 @@ class NoteViewModel @Inject constructor(
          * The note is ready for interaction.
          *
          * @param exerciseList [List] of all exercises.
-         * @param note ready-made note.
+         * @param noteDateTime date and time of training.
+         * @param noteExerciseName training exercise name.
+         * @param noteBpmString training BPM.
          */
-        data class Ready(val exerciseList: List<Exercise>, val note: Note?) : State()
+        data class Ready(
+            val exerciseList: List<Exercise>,
+            val noteDateTime: TruncatedToMinutesDate,
+            val noteExerciseName: String?,
+            val noteBpmString: String?
+        ) : State()
+
+        /**
+         * The date and time of the training have changed.
+         *
+         * @param noteDateTime new date and time of training.
+         */
+        data class NoteDateTimeChanged(val noteDateTime: TruncatedToMinutesDate) : State()
 
         /**
          * Error when working with the note.
@@ -99,10 +113,23 @@ class NoteViewModel @Inject constructor(
     val stateAsLiveData: LiveData<State>
         get() = _stateAsLiveData
 
+    /**
+     * Date and time of training.
+     */
+    var noteDateTime: TruncatedToMinutesDate
+        get() = requireNotNull(_noteDateTime)
+        set(value) {
+            if (value != _noteDateTime) {
+                _noteDateTime = value
+                setState(State.NoteDateTimeChanged(value))
+            }
+        }
+
     private val initialNote: Note?
         get() = _initialNote
 
     private var _initialNote: Note? = null
+    private var _noteDateTime: TruncatedToMinutesDate? = null
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     /**
@@ -112,9 +139,17 @@ class NoteViewModel @Inject constructor(
      */
     fun start(note: Note?) {
         _initialNote = note
+        _noteDateTime = note?.dateTime ?: TruncatedToMinutesDate()
         viewModelScope.launch {
             val exerciseList = exerciseRepository.allExercisesSuspending()
-            setState(State.Ready(exerciseList, initialNote))
+            setState(
+                State.Ready(
+                    exerciseList,
+                    noteDateTime,
+                    initialNote?.exerciseName,
+                    initialNote?.bpm?.toString()
+                )
+            )
         }
     }
 
@@ -197,10 +232,11 @@ class NoteViewModel @Inject constructor(
 
     private fun createNote(noteExerciseName: String, noteBpm: Int): Note {
         return initialNote?.copy(
+            dateTime = noteDateTime,
             exerciseName = noteExerciseName,
             bpm = noteBpm
         ) ?: Note(
-            dateTime = Date(),
+            dateTime = noteDateTime,
             exerciseName = noteExerciseName,
             bpm = noteBpm
         )

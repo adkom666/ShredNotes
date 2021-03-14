@@ -3,8 +3,8 @@ package com.adkom666.shrednotes.data.model
 import android.os.Parcelable
 import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.common.NO_ID
+import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import kotlinx.parcelize.Parcelize
-import java.util.Date
 
 const val NOTE_BPM_MIN = 13
 const val NOTE_BPM_MAX = 666
@@ -20,7 +20,7 @@ const val NOTE_BPM_MAX = 666
 @Parcelize
 data class Note(
     val id: Id = NO_ID,
-    val dateTime: Date,
+    val dateTime: TruncatedToMinutesDate,
     val exerciseName: String,
     val bpm: Int
 ) : Parcelable
