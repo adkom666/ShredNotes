@@ -14,11 +14,11 @@ import java.util.Locale
 /**
  * Adapter for interacting with the note list.
  *
- * @property selectableItems notes to interact.
+ * @property selectableNotes notes to interact.
  * @property onEditNote callback for editing a clicked note.
  */
 class NotePagedListAdapter(
-    private val selectableItems: SelectableItems,
+    private val selectableNotes: SelectableItems,
     private val onEditNote: (Note) -> Unit
 ) : PagedListAdapter<Note, NotePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
@@ -72,7 +72,7 @@ class NotePagedListAdapter(
             binding.dateTimeTextView.text = dateFormat.format(note.dateTime.date)
             binding.exerciseNameTextView.text = note.exerciseName
             binding.bpmTextView.text = note.bpm.toString()
-            binding.noteCard.isSelected = selectableItems.isSelected(note.id)
+            binding.noteCard.isSelected = selectableNotes.isSelected(note.id)
 
             val edit = { onEditNote(note) }
 
@@ -81,11 +81,11 @@ class NotePagedListAdapter(
             }
 
             binding.root.setOnClickListener {
-                selectableItems.click(note.id, changeSelection, edit)
+                selectableNotes.click(note.id, changeSelection, edit)
             }
 
             binding.root.setOnLongClickListener {
-                selectableItems.longClick(note.id, changeSelection)
+                selectableNotes.longClick(note.id, changeSelection)
                 true
             }
         }

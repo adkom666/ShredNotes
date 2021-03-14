@@ -176,7 +176,7 @@ class NotesFragment :
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         binding.noteRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
 
-        val adapter = NotePagedListAdapter(model.selectableItems) { note ->
+        val adapter = NotePagedListAdapter(model.selectableNotes) { note ->
             Timber.d("Edit note: note=$note")
             goToNoteScreen(note)
         }
@@ -201,7 +201,7 @@ class NotesFragment :
     private fun deleteSelectedNotesIfConfirmed(context: Context) {
         val messageString = getString(
             R.string.dialog_confirm_note_deletion_message,
-            model.selectableItems.selectedItemCount
+            model.selectableNotes.selectedItemCount
         )
         MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
             .setTitle(R.string.dialog_confirm_note_deletion_title)

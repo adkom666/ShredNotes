@@ -109,7 +109,7 @@ class NotesViewModel @Inject constructor(
     /**
      * Notes to select.
      */
-    val selectableItems: SelectableItems
+    val selectableNotes: SelectableItems
         get() = _manageableSelection
 
     /**
