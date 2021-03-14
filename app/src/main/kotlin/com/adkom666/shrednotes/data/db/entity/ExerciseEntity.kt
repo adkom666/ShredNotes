@@ -13,8 +13,8 @@ const val TABLE_EXERCISES_FIELD_NAME = "name"
 /**
  * Information about the table in the database for storing exercises.
  *
- * @param id unique identifier of the exercise.
- * @param name name of this exercise.
+ * @property id unique identifier of the exercise.
+ * @property name name of this exercise.
  */
 @Entity(
     tableName = TABLE_EXERCISES,

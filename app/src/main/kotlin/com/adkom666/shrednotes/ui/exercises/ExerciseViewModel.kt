@@ -103,29 +103,38 @@ class ExerciseViewModel @Inject constructor(
      * preset one.
      */
     fun save(exerciseName: String) {
-        val exercise = initialExercise?.copy(name = exerciseName) ?: Exercise(name = exerciseName)
-        if (exercise == initialExercise) {
-            setState(State.Declined)
-            return
-        }
-        if (exercise.name.isEmpty()) {
-            setState(State.Error.MissingExerciseName)
-            return
-        }
-        setState(State.Waiting)
-        viewModelScope.launch {
-            @Suppress("TooGenericExceptionCaught")
-            try {
-                if (exerciseRepository.saveIfNoSuchNameSuspending(exercise)) {
-                    setState(State.Done)
-                } else {
-                    setState(State.Error.ExerciseAlreadyExists(exercise.name))
-                }
-            } catch (e: Exception) {
-                e.localizedMessage?.let {
-                    setState(State.Error.Clarified(it))
-                } ?: setState(State.Error.Unknown)
+        val exercise = initialExercise?.copy(
+            name = exerciseName
+        ) ?: Exercise(
+            name = exerciseName
+        )
+        saveIfValid(exercise)
+    }
+
+    @Suppress("IMPLICIT_CAST_TO_ANY")
+    private fun saveIfValid(exercise: Exercise) = when {
+        exercise == initialExercise -> setState(State.Declined)
+        exercise.name.isBlank() -> setState(State.Error.MissingExerciseName)
+        else -> {
+            setState(State.Waiting)
+            viewModelScope.launch {
+                tryToSave(exercise)
             }
+        }
+    }
+
+    private suspend fun tryToSave(exercise: Exercise) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            if (exerciseRepository.saveIfNoSuchNameSuspending(exercise)) {
+                setState(State.Done)
+            } else {
+                setState(State.Error.ExerciseAlreadyExists(exercise.name))
+            }
+        } catch (e: Exception) {
+            e.localizedMessage?.let {
+                setState(State.Error.Clarified(it))
+            } ?: setState(State.Error.Unknown)
         }
     }
 

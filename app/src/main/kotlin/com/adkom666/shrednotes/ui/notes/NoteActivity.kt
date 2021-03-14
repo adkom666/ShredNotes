@@ -257,7 +257,7 @@ class NoteActivity : AppCompatActivity() {
                 .setTitle(R.string.dialog_confirm_note_exercise_creating_title)
                 .setMessage(messageString)
                 .setPositiveButton(R.string.button_title_ok) { _, _ ->
-                    model.saveWithExercise(note)
+                    model.saveWithExerciseIfValid(note)
                 }
                 .setNegativeButton(R.string.button_title_cancel, null)
                 .create()

@@ -171,7 +171,7 @@ class NoteViewModel @Inject constructor(
                 setState(State.Error.WrongNoteBpm)
             } else {
                 val note = createNote(noteExerciseName, noteBpm)
-                save(note)
+                saveIfValid(note)
             }
         } catch (e: NumberFormatException) {
             setState(State.Error.WrongNoteBpm)
@@ -184,7 +184,7 @@ class NoteViewModel @Inject constructor(
      * @param note [Note] to save.
      */
     @Suppress("IMPLICIT_CAST_TO_ANY")
-    fun saveWithExercise(note: Note) = when {
+    fun saveWithExerciseIfValid(note: Note) = when {
         note.exerciseName.isBlank() -> setState(State.Error.MissingNoteExerciseName)
         isNoteBpmInvalid(note.bpm) -> setState(State.Error.WrongNoteBpm)
         note == initialNote -> setState(State.Declined)
@@ -197,7 +197,7 @@ class NoteViewModel @Inject constructor(
     }
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
-    private fun save(note: Note) = when (note) {
+    private fun saveIfValid(note: Note) = when (note) {
         initialNote -> setState(State.Declined)
         else -> {
             setState(State.Waiting)

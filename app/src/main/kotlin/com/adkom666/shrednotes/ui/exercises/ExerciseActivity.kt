@@ -32,7 +32,7 @@ class ExerciseActivity : AppCompatActivity() {
          * exercise if [exercise] is null.
          *
          * @param context [Context] to create an intent.
-         * @param exercise for the edit.
+         * @param exercise [Exercise] for the edit.
          * @return intent to open the edit screen for a given [exercise], or to create a new
          * exercise if [exercise] is null.
          */

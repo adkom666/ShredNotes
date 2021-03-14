@@ -36,9 +36,9 @@ class ExercisesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private companion object {
-        private const val EXERCISE_PAGE_SIZE = 15
-        private const val EXERCISE_INITIAL_LOAD_HINT = 30
-        private const val EXERCISE_PREFETCH_DISTANCE = 15
+        private const val PAGE_SIZE = 15
+        private const val PAGED_LIST_INITIAL_LOAD_HINT = 30
+        private const val PAGED_LIST_PREFETCH_DISTANCE = 15
 
         private const val MESSAGE_CHANNEL_CAPACITY = 3
     }
@@ -83,7 +83,7 @@ class ExercisesViewModel @Inject constructor(
     sealed class Message {
 
         /**
-         * Message about the count of deleted messages.
+         * Message about the count of deleted exercises.
          *
          * @property count count of deleted messages.
          */
@@ -149,17 +149,18 @@ class ExercisesViewModel @Inject constructor(
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
         .setEnablePlaceholders(false)
-        .setPageSize(EXERCISE_PAGE_SIZE)
-        .setInitialLoadSizeHint(EXERCISE_INITIAL_LOAD_HINT)
-        .setPrefetchDistance(EXERCISE_PREFETCH_DISTANCE)
+        .setPageSize(PAGE_SIZE)
+        .setInitialLoadSizeHint(PAGED_LIST_INITIAL_LOAD_HINT)
+        .setPrefetchDistance(PAGED_LIST_PREFETCH_DISTANCE)
         .build()
 
     private val exerciseSourceFactory = ExerciseSourceFactory(exerciseRepository, subname)
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
+    private val _messageChannel: BroadcastChannel<Message> = BroadcastChannel(
+        MESSAGE_CHANNEL_CAPACITY
+    )
 
     init {
         viewModelScope.launch {
@@ -199,12 +200,12 @@ class ExercisesViewModel @Inject constructor(
         selectionState: ManageableSelection.State
     ): Int = when (selectionState) {
         is ManageableSelection.State.Active.Inclusive -> {
-            val selectedItemIdList = selectionState.selectedItemIdSet.toList()
-            exerciseRepository.deleteSuspending(selectedItemIdList, subname)
+            val selectedExerciseIdList = selectionState.selectedItemIdSet.toList()
+            exerciseRepository.deleteSuspending(selectedExerciseIdList, subname)
         }
         is ManageableSelection.State.Active.Exclusive -> {
-            val unselectedItemIdList = selectionState.unselectedItemIdSet.toList()
-            exerciseRepository.deleteOtherSuspending(unselectedItemIdList, subname)
+            val unselectedExerciseIdList = selectionState.unselectedItemIdSet.toList()
+            exerciseRepository.deleteOtherSuspending(unselectedExerciseIdList, subname)
         }
         ManageableSelection.State.Inactive -> 0
     }

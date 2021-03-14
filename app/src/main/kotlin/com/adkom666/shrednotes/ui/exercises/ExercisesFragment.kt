@@ -93,7 +93,7 @@ class ExercisesFragment :
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         _model = viewModel(viewModelFactory)
-        _adapter = initExercisesRecycler()
+        _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
 
         binding.control.fabAddDel.setOnClickListener {
@@ -158,7 +158,7 @@ class ExercisesFragment :
         return true
     }
 
-    private fun initExercisesRecycler(): ExercisePagedListAdapter {
+    private fun initExerciseRecycler(): ExercisePagedListAdapter {
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.exercisesRecycler.layoutManager = llm
@@ -167,7 +167,7 @@ class ExercisesFragment :
         binding.exercisesRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
 
         val adapter = ExercisePagedListAdapter(model.selectableExercises) { exercise ->
-            Timber.d("Edit exercise: exercise.name=${exercise.name}")
+            Timber.d("Edit exercise: exercise=$exercise")
             goToExerciseScreen(exercise)
         }
 
@@ -190,11 +190,11 @@ class ExercisesFragment :
 
     private fun deleteSelectedExercisesIfConfirmed(context: Context) {
         val messageString = getString(
-            R.string.dialog_confirm_deletion_message,
+            R.string.dialog_confirm_exercise_deletion_message,
             model.selectableExercises.selectedItemCount
         )
         MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
-            .setTitle(R.string.dialog_confirm_deletion_title)
+            .setTitle(R.string.dialog_confirm_exercise_deletion_title)
             .setMessage(messageString)
             .setPositiveButton(R.string.button_title_ok) { _, _ ->
                 deleteSelectedExercises()
