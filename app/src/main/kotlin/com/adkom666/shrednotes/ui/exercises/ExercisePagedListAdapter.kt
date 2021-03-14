@@ -7,16 +7,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.ItemExerciseBinding
-import com.adkom666.shrednotes.util.Selector
+import com.adkom666.shrednotes.util.selection.SelectableItems
 
 /**
  * Adapter for interacting with the exercise list.
  *
- * @property selector information about the selected exercises.
+ * @property selectableExercises exercises to interact.
  * @property onEditExercise callback for editing a clicked exercise.
  */
 class ExercisePagedListAdapter(
-    private val selector: Selector,
+    private val selectableExercises: SelectableItems,
     private val onEditExercise: (Exercise) -> Unit
 ) : PagedListAdapter<Exercise, ExercisePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
@@ -62,7 +62,7 @@ class ExercisePagedListAdapter(
          */
         fun bind(exercise: Exercise) {
             binding.exerciseNameTextView.text = exercise.name
-            binding.exerciseCard.isSelected = selector.isSelected(exercise.id)
+            binding.exerciseCard.isSelected = selectableExercises.isSelected(exercise.id)
 
             val edit = { onEditExercise(exercise) }
 
@@ -71,11 +71,11 @@ class ExercisePagedListAdapter(
             }
 
             binding.root.setOnClickListener {
-                selector.click(exercise.id, edit, changeSelection)
+                selectableExercises.click(exercise.id, changeSelection, edit)
             }
 
             binding.root.setOnLongClickListener {
-                selector.longClick(exercise.id, changeSelection)
+                selectableExercises.longClick(exercise.id, changeSelection)
                 true
             }
         }

@@ -21,9 +21,9 @@ import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.FragmentExercisesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Searchable
-import com.adkom666.shrednotes.util.fab.FabDashboard
+import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
-import com.adkom666.shrednotes.util.Selector
+import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerFragment
@@ -94,10 +94,10 @@ class ExercisesFragment :
         super.onActivityCreated(savedInstanceState)
         _model = viewModel(viewModelFactory)
         _adapter = initExercisesRecycler()
-        _fabDashboard = initFabDashboard(model.selector)
+        _fabDashboard = initFabDashboard(model.selection)
 
         binding.control.fabAddDel.setOnClickListener {
-            if (model.selector.state is Selector.State.Active) {
+            if (model.selection.isActive) {
                 context?.let { deleteSelectedExercisesIfConfirmed(it) }
             } else {
                 goToExerciseScreen()
@@ -105,12 +105,12 @@ class ExercisesFragment :
         }
 
         binding.control.fabSelectAll.setOnClickListener {
-            model.selector.selectAll()
+            model.selectionDashboard.selectAll()
             adapter.notifyDataSetChanged()
         }
 
         binding.control.fabCancel.setOnClickListener {
-            model.selector.deselectAll()
+            model.selectionDashboard.deselectAll()
             adapter.notifyDataSetChanged()
         }
 
@@ -166,7 +166,7 @@ class ExercisesFragment :
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         binding.exercisesRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
 
-        val adapter = ExercisePagedListAdapter(model.selector) { exercise ->
+        val adapter = ExercisePagedListAdapter(model.selectableExercises) { exercise ->
             Timber.d("Edit exercise: exercise.name=${exercise.name}")
             goToExerciseScreen(exercise)
         }
@@ -176,8 +176,8 @@ class ExercisesFragment :
         return adapter
     }
 
-    private fun initFabDashboard(selector: Selector): FabDashboard = FabDashboard(
-        selector = selector,
+    private fun initFabDashboard(selection: Selection): FabDashboard = FabDashboard(
+        selection = selection,
         recycler = binding.exercisesRecycler,
         parentFab = binding.control.fabAddDel,
         bottomChildFab = binding.control.fabSelectAll,
@@ -191,7 +191,7 @@ class ExercisesFragment :
     private fun deleteSelectedExercisesIfConfirmed(context: Context) {
         val messageString = getString(
             R.string.dialog_confirm_deletion_message,
-            model.selector.selectedItemCount
+            model.selectableExercises.selectedItemCount
         )
         MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
             .setTitle(R.string.dialog_confirm_deletion_title)

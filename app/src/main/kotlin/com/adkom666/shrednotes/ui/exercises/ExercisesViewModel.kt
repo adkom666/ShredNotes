@@ -10,8 +10,11 @@ import androidx.paging.PositionalDataSource
 import androidx.paging.toLiveData
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.model.Exercise
-import com.adkom666.shrednotes.util.Selector
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
+import com.adkom666.shrednotes.util.selection.ManageableSelection
+import com.adkom666.shrednotes.util.selection.SelectableItems
+import com.adkom666.shrednotes.util.selection.Selection
+import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -106,9 +109,22 @@ class ExercisesViewModel @Inject constructor(
         get() = _messageChannel.openSubscription()
 
     /**
-     * Information about the selected exercises.
+     * Exercises to select.
      */
-    val selector: Selector = Selector(0)
+    val selectableExercises: SelectableItems
+        get() = _manageableSelection
+
+    /**
+     * Tools for manipulating the selection.
+     */
+    val selectionDashboard: SelectionDashboard
+        get() = _manageableSelection
+
+    /**
+     * Information about the presence of selected exercises.
+     */
+    val selection: Selection
+        get() = _manageableSelection
 
     /**
      * The text that must be contained in the names of the displayed exercises (case-insensitive).
@@ -118,7 +134,7 @@ class ExercisesViewModel @Inject constructor(
             viewModelScope.launch {
                 exerciseSourceFactory.subname = new?.trim()
                 val exerciseCount = exerciseRepository.countSuspending(new)
-                selector.reset(exerciseCount)
+                _manageableSelection.reset(exerciseCount)
                 invalidateExercises()
             }
         }
@@ -128,6 +144,8 @@ class ExercisesViewModel @Inject constructor(
      * Property for storing a flag indicating whether the search is active.
      */
     var isSearchActive: Boolean = false
+
+    private val _manageableSelection: ManageableSelection = ManageableSelection()
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
         .setEnablePlaceholders(false)
@@ -147,12 +165,12 @@ class ExercisesViewModel @Inject constructor(
         viewModelScope.launch {
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")
-            selector.reset(exerciseInitialCount)
+            _manageableSelection.init(exerciseInitialCount)
             setState(State.Ready)
             // Ignore initial value
             exerciseRepository.countFlow.drop(1).collect { exerciseCount ->
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
-                selector.reset(exerciseCount)
+                _manageableSelection.reset(exerciseCount)
                 invalidateExercises()
             }
         }
@@ -166,7 +184,7 @@ class ExercisesViewModel @Inject constructor(
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {
-                val deletionCount = deleteSelectedExercises(selector.state)
+                val deletionCount = deleteSelectedExercises(_manageableSelection.state)
                 setState(State.Ready)
                 _messageChannel.offer(Message.Deleted(deletionCount))
             } catch (e: Exception) {
@@ -178,17 +196,17 @@ class ExercisesViewModel @Inject constructor(
     }
 
     private suspend fun deleteSelectedExercises(
-        selectorState: Selector.State
-    ): Int = when (selectorState) {
-        is Selector.State.Active.Inclusive -> {
-            val selectedItemIdList = selectorState.selectedItemIdSet.toList()
+        selectionState: ManageableSelection.State
+    ): Int = when (selectionState) {
+        is ManageableSelection.State.Active.Inclusive -> {
+            val selectedItemIdList = selectionState.selectedItemIdSet.toList()
             exerciseRepository.deleteSuspending(selectedItemIdList, subname)
         }
-        is Selector.State.Active.Exclusive -> {
-            val unselectedItemIdList = selectorState.unselectedItemIdSet.toList()
+        is ManageableSelection.State.Active.Exclusive -> {
+            val unselectedItemIdList = selectionState.unselectedItemIdSet.toList()
             exerciseRepository.deleteOtherSuspending(unselectedItemIdList, subname)
         }
-        Selector.State.Inactive -> 0
+        ManageableSelection.State.Inactive -> 0
     }
 
     private fun invalidateExercises() {
