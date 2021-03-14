@@ -145,6 +145,10 @@ class ExercisesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val exerciseInitialCount = exerciseRepository.countSuspending(subname)
+            Timber.d("exerciseInitialCount=$exerciseInitialCount")
+            selector.reset(exerciseInitialCount)
+            setState(State.Ready)
             // Ignore initial value
             exerciseRepository.countFlow.drop(1).collect { exerciseCount ->
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
@@ -152,23 +156,6 @@ class ExercisesViewModel @Inject constructor(
                 invalidateExercises()
             }
         }
-    }
-
-    /**
-     * Prepare working with the exercise list.
-     */
-    fun prepare() {
-        viewModelScope.launch {
-            val exerciseCount = exerciseRepository.countSuspending(subname)
-            selector.reset(exerciseCount)
-        }
-    }
-
-    /**
-     * Start working with the exercise list.
-     */
-    fun start() {
-        setState(State.Ready)
     }
 
     /**

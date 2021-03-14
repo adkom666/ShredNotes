@@ -122,11 +122,6 @@ class ExercisesFragment :
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
         }
-
-        if (savedInstanceState == null) {
-            model.prepare()
-        }
-        model.start()
     }
 
     override fun onDestroyView() {
