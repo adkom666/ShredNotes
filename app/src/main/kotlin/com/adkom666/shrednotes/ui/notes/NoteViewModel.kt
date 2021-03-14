@@ -108,12 +108,6 @@ class NoteViewModel @Inject constructor(
     }
 
     /**
-     * Subscribe to the current state in the UI thread.
-     */
-    val stateAsLiveData: LiveData<State>
-        get() = _stateAsLiveData
-
-    /**
      * Date and time of training.
      */
     var noteDateTime: TruncatedToMinutesDate
@@ -124,6 +118,12 @@ class NoteViewModel @Inject constructor(
                 setState(State.NoteDateTimeChanged(value))
             }
         }
+
+    /**
+     * Subscribe to the current state in the UI thread.
+     */
+    val stateAsLiveData: LiveData<State>
+        get() = _stateAsLiveData
 
     private val initialNote: Note?
         get() = _initialNote
