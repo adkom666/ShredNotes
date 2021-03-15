@@ -14,13 +14,13 @@ import dagger.multibindings.IntoMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
 @Module(includes = [RepositoryModule::class])
 abstract class ViewModelModule {
 
     @Binds
     abstract fun viewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
 
-    @ExperimentalCoroutinesApi
     @Binds
     @IntoMap
     @ViewModelKey(ExercisesViewModel::class)
@@ -31,7 +31,6 @@ abstract class ViewModelModule {
     @ViewModelKey(ExerciseViewModel::class)
     abstract fun exerciseViewModel(viewModel: ExerciseViewModel): ViewModel
 
-    @ExperimentalCoroutinesApi
     @Binds
     @IntoMap
     @ViewModelKey(NotesViewModel::class)

@@ -7,6 +7,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Exercise
@@ -15,12 +16,15 @@ import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Exercise screen.
  */
+@ExperimentalCoroutinesApi
 class ExerciseActivity : AppCompatActivity() {
 
     companion object {
@@ -68,10 +72,14 @@ class ExerciseActivity : AppCompatActivity() {
 
         model.stateAsLiveData.observe(this, StateObserver())
 
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
+        }
+
         if (savedInstanceState == null) {
             val exercise = intent?.extras?.getParcelable<Exercise>(EXERCISE_EXTRA)
             Timber.d("Initial exercise is $exercise")
-            model.start(exercise)
+            model.prepare(exercise)
         }
     }
 
@@ -89,6 +97,31 @@ class ExerciseActivity : AppCompatActivity() {
         }
     }
 
+    private fun show(message: ExerciseViewModel.Message) = when (message) {
+        is ExerciseViewModel.Message.Error -> showError(message)
+    }
+
+    private fun showError(message: ExerciseViewModel.Message.Error) = when (message) {
+        ExerciseViewModel.Message.Error.MissingExerciseName ->
+            toast(R.string.error_missing_excercise_name)
+        is ExerciseViewModel.Message.Error.ExerciseAlreadyExists -> {
+            val messageString = getString(
+                R.string.error_excercise_already_exists,
+                message.exerciseName
+            )
+            toast(messageString)
+        }
+        is ExerciseViewModel.Message.Error.Clarified -> {
+            val messageString = getString(
+                R.string.error_clarified,
+                message.details
+            )
+            toast(messageString)
+        }
+        ExerciseViewModel.Message.Error.Unknown ->
+            toast(R.string.error_unknown)
+    }
+
     private inner class StateObserver : Observer<ExerciseViewModel.State> {
 
         override fun onChanged(state: ExerciseViewModel.State?) {
@@ -96,14 +129,12 @@ class ExerciseActivity : AppCompatActivity() {
             when (state) {
                 ExerciseViewModel.State.Waiting ->
                     setWaiting(true)
-                is ExerciseViewModel.State.Ready -> {
-                    setWaiting(false)
+                is ExerciseViewModel.State.Init -> {
                     initExercise(state.exerciseName)
+                    model.initiated()
                 }
-                is ExerciseViewModel.State.Error -> {
+                ExerciseViewModel.State.Normal ->
                     setWaiting(false)
-                    handleError(state)
-                }
                 ExerciseViewModel.State.Declined -> {
                     setResult(RESULT_CANCELED)
                     finish()
@@ -131,27 +162,6 @@ class ExerciseActivity : AppCompatActivity() {
                 binding.exerciseNameEditText.forwardCursor()
             }
             binding.exerciseNameEditText.clearFocus()
-        }
-
-        private fun handleError(error: ExerciseViewModel.State.Error) = when (error) {
-            ExerciseViewModel.State.Error.MissingExerciseName ->
-                toast(R.string.error_missing_excercise_name)
-            is ExerciseViewModel.State.Error.ExerciseAlreadyExists -> {
-                val message = getString(
-                    R.string.error_excercise_already_exists,
-                    error.exerciseName
-                )
-                toast(message)
-            }
-            is ExerciseViewModel.State.Error.Clarified -> {
-                val message = getString(
-                    R.string.error_clarified,
-                    error.message
-                )
-                toast(message)
-            }
-            ExerciseViewModel.State.Error.Unknown ->
-                toast(R.string.error_unknown)
         }
     }
 }

@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.ui.notes
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
@@ -52,27 +53,9 @@ class NotesViewModel @Inject constructor(
         object Waiting : State()
 
         /**
-         * The note list is ready for interaction.
+         * Interacting with the user.
          */
-        object Ready : State()
-
-        /**
-         * Error when working with the list.
-         */
-        sealed class Error : State() {
-
-            /**
-             * The details of this error are described in the [message].
-             *
-             * @property message the details of the error.
-             */
-            data class Clarified(val message: String) : Error()
-
-            /**
-             * Unknown error.
-             */
-            object Unknown : Error()
-        }
+        object Normal : State()
     }
 
     /**
@@ -85,14 +68,32 @@ class NotesViewModel @Inject constructor(
          *
          * @property count count of deleted notes.
          */
-        data class Deleted(val count: Int) : Message()
+        data class Deletion(val count: Int) : Message()
+
+        /**
+         * Error message.
+         */
+        sealed class Error : Message() {
+
+            /**
+             * The details of this error are described in the [details].
+             *
+             * @property details the details of the error.
+             */
+            data class Clarified(val details: String) : Error()
+
+            /**
+             * Unknown error.
+             */
+            object Unknown : Error()
+        }
     }
 
     /**
      * Subscribe to the current state in the UI thread.
      */
     val stateAsLiveData: LiveData<State>
-        get() = _stateAsLiveData
+        get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
      * Subscribe to the current list of notes in the UI thread.
@@ -129,6 +130,7 @@ class NotesViewModel @Inject constructor(
      * (case-insensitive).
      */
     var exerciseSubname: String? by Delegates.observable(null) { _, old, new ->
+        Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
                 noteSourceFactory.exerciseSubname = new?.trim()
@@ -142,7 +144,9 @@ class NotesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean = false
+    var isSearchActive: Boolean by Delegates.observable(false) { _, old, new ->
+        Timber.d("Change isSearchActive: old=$old, new=$new")
+    }
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
 
@@ -160,16 +164,16 @@ class NotesViewModel @Inject constructor(
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
-    private val _messageChannel: BroadcastChannel<Message> = BroadcastChannel(
-        MESSAGE_CHANNEL_CAPACITY
-    )
+    private val _messageChannel: BroadcastChannel<Message> =
+        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
     init {
+        Timber.d("Init")
         viewModelScope.launch {
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
             Timber.d("noteInitialCount=$noteInitialCount")
             _manageableSelection.init(noteInitialCount)
-            setState(State.Ready)
+            setState(State.Normal)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
@@ -183,17 +187,19 @@ class NotesViewModel @Inject constructor(
      * Initiate the deletion of the selected notes.
      */
     fun deleteSelectedNotes() {
+        Timber.d("Delete selected notes")
         setState(State.Waiting)
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedNotes(_manageableSelection.state)
-                setState(State.Ready)
-                _messageChannel.offer(Message.Deleted(deletionCount))
+                setState(State.Normal)
+                report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
+                setState(State.Normal)
                 e.localizedMessage?.let {
-                    setState(State.Error.Clarified(it))
-                } ?: setState(State.Error.Unknown)
+                    report(Message.Error.Clarified(it))
+                } ?: report(Message.Error.Unknown)
             }
         }
     }
@@ -201,7 +207,7 @@ class NotesViewModel @Inject constructor(
     private fun invalidateNotes() {
         setState(State.Waiting)
         noteSourceFactory.invalidate()
-        setState(State.Ready)
+        setState(State.Normal)
     }
 
     private suspend fun deleteSelectedNotes(
@@ -219,7 +225,13 @@ class NotesViewModel @Inject constructor(
     }
 
     private fun setState(state: State) {
-        _stateAsLiveData.value = state
+        Timber.d("Set state: state=$state")
+        _stateAsLiveData.postValue(state)
+    }
+
+    private fun report(message: Message) {
+        Timber.d("Report: message=$message")
+        _messageChannel.offer(message)
     }
 
     private class NoteSourceFactory(

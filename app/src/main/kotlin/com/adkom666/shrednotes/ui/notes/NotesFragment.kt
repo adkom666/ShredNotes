@@ -211,10 +211,10 @@ class NotesFragment :
         MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
             .setTitle(R.string.dialog_confirm_note_deletion_title)
             .setMessage(messageString)
-            .setPositiveButton(R.string.button_title_ok) { _, _ ->
+            .setPositiveButton(R.string.button_title_yes) { _, _ ->
                 deleteSelectedNotes()
             }
-            .setNegativeButton(R.string.button_title_cancel, null)
+            .setNegativeButton(R.string.button_title_no, null)
             .create()
             .show()
     }
@@ -235,11 +235,25 @@ class NotesFragment :
     }
 
     private fun show(message: NotesViewModel.Message) = when (message) {
-        is NotesViewModel.Message.Deleted -> {
+        is NotesViewModel.Message.Deletion -> {
             Timber.d("Deleted notes count is ${message.count}")
             val messageString = getString(R.string.message_deleted_notes, message.count)
             toast(messageString)
         }
+        is NotesViewModel.Message.Error ->
+            showError(message)
+    }
+
+    private fun showError(message: NotesViewModel.Message.Error) = when (message) {
+        is NotesViewModel.Message.Error.Clarified -> {
+            val messageString = getString(
+                R.string.error_clarified,
+                message.details
+            )
+            toast(messageString)
+        }
+        NotesViewModel.Message.Error.Unknown ->
+            toast(R.string.error_unknown)
     }
 
     private inner class StateObserver : Observer<NotesViewModel.State> {
@@ -248,11 +262,7 @@ class NotesFragment :
             Timber.d("State is $state")
             when (state) {
                 NotesViewModel.State.Waiting -> setWaiting(true)
-                NotesViewModel.State.Ready -> setWaiting(false)
-                is NotesViewModel.State.Error -> {
-                    setWaiting(false)
-                    handleError(state)
-                }
+                NotesViewModel.State.Normal -> setWaiting(false)
             }
         }
 
@@ -264,18 +274,6 @@ class NotesFragment :
                 binding.content.visibility = View.VISIBLE
                 binding.progressBar.visibility = View.GONE
             }
-        }
-
-        private fun handleError(error: NotesViewModel.State.Error) = when (error) {
-            is NotesViewModel.State.Error.Clarified -> {
-                val message = getString(
-                    R.string.error_clarified,
-                    error.message
-                )
-                toast(message)
-            }
-            NotesViewModel.State.Error.Unknown ->
-                toast(R.string.error_unknown)
         }
     }
 

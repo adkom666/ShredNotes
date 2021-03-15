@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.ui.exercises
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
@@ -54,27 +55,9 @@ class ExercisesViewModel @Inject constructor(
         object Waiting : State()
 
         /**
-         * The exercise list is ready for interaction.
+         * Interacting with the user.
          */
-        object Ready : State()
-
-        /**
-         * Error when working with the list.
-         */
-        sealed class Error : State() {
-
-            /**
-             * The details of this error are described in the [message].
-             *
-             * @property message the details of the error.
-             */
-            data class Clarified(val message: String) : Error()
-
-            /**
-             * Unknown error.
-             */
-            object Unknown : Error()
-        }
+        object Normal : State()
     }
 
     /**
@@ -87,14 +70,32 @@ class ExercisesViewModel @Inject constructor(
          *
          * @property count count of deleted exercises.
          */
-        data class Deleted(val count: Int) : Message()
+        data class Deletion(val count: Int) : Message()
+
+        /**
+         * Error message.
+         */
+        sealed class Error : Message() {
+
+            /**
+             * The details of this error are described in the [details].
+             *
+             * @property details the details of the error.
+             */
+            data class Clarified(val details: String) : Error()
+
+            /**
+             * Unknown error.
+             */
+            object Unknown : Error()
+        }
     }
 
     /**
      * Subscribe to the current state in the UI thread.
      */
     val stateAsLiveData: LiveData<State>
-        get() = _stateAsLiveData
+        get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
      * Subscribe to the current list of exercises in the UI thread.
@@ -130,6 +131,7 @@ class ExercisesViewModel @Inject constructor(
      * The text that must be contained in the names of the displayed exercises (case-insensitive).
      */
     var subname: String? by Delegates.observable(null) { _, old, new ->
+        Timber.d("Change subname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
                 exerciseSourceFactory.subname = new?.trim()
@@ -143,7 +145,9 @@ class ExercisesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean = false
+    var isSearchActive: Boolean by Delegates.observable(false) { _, old, new ->
+        Timber.d("Change isSearchActive: old=$old, new=$new")
+    }
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
 
@@ -161,16 +165,16 @@ class ExercisesViewModel @Inject constructor(
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
-    private val _messageChannel: BroadcastChannel<Message> = BroadcastChannel(
-        MESSAGE_CHANNEL_CAPACITY
-    )
+    private val _messageChannel: BroadcastChannel<Message> =
+        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
     init {
+        Timber.d("Init")
         viewModelScope.launch {
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")
             _manageableSelection.init(exerciseInitialCount)
-            setState(State.Ready)
+            setState(State.Normal)
             // Ignore initial value
             exerciseRepository.countFlow.drop(1).collect { exerciseCount ->
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
@@ -184,17 +188,19 @@ class ExercisesViewModel @Inject constructor(
      * Initiate the deletion of the selected exercises.
      */
     fun deleteSelectedExercises() {
+        Timber.d("Delete selected exercises")
         setState(State.Waiting)
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedExercises(_manageableSelection.state)
-                setState(State.Ready)
-                _messageChannel.offer(Message.Deleted(deletionCount))
+                setState(State.Normal)
+                report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
+                setState(State.Normal)
                 e.localizedMessage?.let {
-                    setState(State.Error.Clarified(it))
-                } ?: setState(State.Error.Unknown)
+                    report(Message.Error.Clarified(it))
+                } ?: report(Message.Error.Unknown)
             }
         }
     }
@@ -216,11 +222,17 @@ class ExercisesViewModel @Inject constructor(
     private fun invalidateExercises() {
         setState(State.Waiting)
         exerciseSourceFactory.invalidate()
-        setState(State.Ready)
+        setState(State.Normal)
     }
 
     private fun setState(state: State) {
-        _stateAsLiveData.value = state
+        Timber.d("Set state: state=$state")
+        _stateAsLiveData.postValue(state)
+    }
+
+    private fun report(message: Message) {
+        Timber.d("Report: message=$message")
+        _messageChannel.offer(message)
     }
 
     private class ExerciseSourceFactory(

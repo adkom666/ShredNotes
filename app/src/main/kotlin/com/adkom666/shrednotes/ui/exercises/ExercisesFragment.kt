@@ -201,10 +201,10 @@ class ExercisesFragment :
         MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
             .setTitle(R.string.dialog_confirm_exercise_deletion_title)
             .setMessage(messageString)
-            .setPositiveButton(R.string.button_title_ok) { _, _ ->
+            .setPositiveButton(R.string.button_title_yes) { _, _ ->
                 deleteSelectedExercises()
             }
-            .setNegativeButton(R.string.button_title_cancel, null)
+            .setNegativeButton(R.string.button_title_no, null)
             .create()
             .show()
     }
@@ -225,11 +225,25 @@ class ExercisesFragment :
     }
 
     private fun show(message: ExercisesViewModel.Message) = when (message) {
-        is ExercisesViewModel.Message.Deleted -> {
+        is ExercisesViewModel.Message.Deletion -> {
             Timber.d("Deleted exercises count is ${message.count}")
             val messageString = getString(R.string.message_deleted_exercises, message.count)
             toast(messageString)
         }
+        is ExercisesViewModel.Message.Error ->
+            showError(message)
+    }
+
+    private fun showError(message: ExercisesViewModel.Message.Error) = when (message) {
+        is ExercisesViewModel.Message.Error.Clarified -> {
+            val messageString = getString(
+                R.string.error_clarified,
+                message.details
+            )
+            toast(messageString)
+        }
+        ExercisesViewModel.Message.Error.Unknown ->
+            toast(R.string.error_unknown)
     }
 
     private inner class StateObserver : Observer<ExercisesViewModel.State> {
@@ -238,11 +252,7 @@ class ExercisesFragment :
             Timber.d("State is $state")
             when (state) {
                 ExercisesViewModel.State.Waiting -> setWaiting(true)
-                ExercisesViewModel.State.Ready -> setWaiting(false)
-                is ExercisesViewModel.State.Error -> {
-                    setWaiting(false)
-                    handleError(state)
-                }
+                ExercisesViewModel.State.Normal -> setWaiting(false)
             }
         }
 
@@ -254,18 +264,6 @@ class ExercisesFragment :
                 binding.content.visibility = View.VISIBLE
                 binding.progressBar.visibility = View.GONE
             }
-        }
-
-        private fun handleError(error: ExercisesViewModel.State.Error) = when (error) {
-            is ExercisesViewModel.State.Error.Clarified -> {
-                val message = getString(
-                    R.string.error_clarified,
-                    error.message
-                )
-                toast(message)
-            }
-            ExercisesViewModel.State.Error.Unknown ->
-                toast(R.string.error_unknown)
         }
     }
 

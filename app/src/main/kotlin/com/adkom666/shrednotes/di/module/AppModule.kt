@@ -9,17 +9,16 @@ import dagger.android.ContributesAndroidInjector
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
 @Module
 abstract class AppModule {
 
-    @ExperimentalCoroutinesApi
     @ContributesAndroidInjector
     abstract fun exercisesFragment(): ExercisesFragment
 
     @ContributesAndroidInjector
     abstract fun exerciseActivity(): ExerciseActivity
 
-    @ExperimentalCoroutinesApi
     @ContributesAndroidInjector
     abstract fun notesFragment(): NotesFragment
 

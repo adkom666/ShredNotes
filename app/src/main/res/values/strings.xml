@@ -20,6 +20,8 @@
 
     <string name="button_title_ok" translatable="false">OK</string>
     <string name="button_title_cancel">Cancel</string>
+    <string name="button_title_yes">Yes</string>
+    <string name="button_title_no">No</string>
 
     <string name="title_exercise_name">Name:</string>
     <string name="hint_exercise_name">Exercise name</string>
