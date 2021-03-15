@@ -40,10 +40,10 @@ class NoteActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val NOTE_EXTRA = "${BuildConfig.APPLICATION_ID}.extras.note"
+        private const val EXTRA_NOTE = "${BuildConfig.APPLICATION_ID}.extras.note"
 
-        private const val DATE_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.date_picker"
-        private const val TIME_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.time_picker"
+        private const val TAG_DATE_PICKER = "${BuildConfig.APPLICATION_ID}.tags.date_picker"
+        private const val TAG_TIME_PICKER = "${BuildConfig.APPLICATION_ID}.tags.time_picker"
 
         /**
          * Creating an intent to open the edit screen for a given [note], or to create a new note if
@@ -57,7 +57,7 @@ class NoteActivity : AppCompatActivity() {
         fun newIntent(context: Context, note: Note?): Intent {
             val intent = Intent(context, NoteActivity::class.java)
             note?.let {
-                intent.putExtra(NOTE_EXTRA, it)
+                intent.putExtra(EXTRA_NOTE, it)
             }
             return intent
         }
@@ -92,7 +92,7 @@ class NoteActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            val note = intent?.extras?.getParcelable<Note>(NOTE_EXTRA)
+            val note = intent?.extras?.getParcelable<Note>(EXTRA_NOTE)
             Timber.d("Initial note is $note")
             model.prepare(note)
         }
@@ -124,11 +124,11 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun restoreFragmentListeners() {
-        val datePickerFragment = supportFragmentManager.findFragmentByTag(DATE_PICKER_TAG)
+        val datePickerFragment = supportFragmentManager.findFragmentByTag(TAG_DATE_PICKER)
         val datePicker = datePickerFragment as? MaterialDatePicker<*>
         datePicker?.addDateListeners(::pickTime)
 
-        val timePickerFragment = supportFragmentManager.findFragmentByTag(TIME_PICKER_TAG)
+        val timePickerFragment = supportFragmentManager.findFragmentByTag(TAG_TIME_PICKER)
         val timePicker = timePickerFragment as? MaterialTimePicker
         timePicker?.addTimeListeners()
     }
@@ -140,7 +140,7 @@ class NoteActivity : AppCompatActivity() {
         builder.setSelection(model.noteDateTime.epochMillis)
         val picker = builder.build()
         picker.addDateListeners(afterPick)
-        picker.show(supportFragmentManager, DATE_PICKER_TAG)
+        picker.show(supportFragmentManager, TAG_DATE_PICKER)
     }
 
     private fun pickTime(calendar: Calendar) {
@@ -151,7 +151,7 @@ class NoteActivity : AppCompatActivity() {
         builder.setMinute(minute)
         val picker = builder.build()
         picker.addTimeListeners()
-        picker.show(supportFragmentManager, TIME_PICKER_TAG)
+        picker.show(supportFragmentManager, TAG_TIME_PICKER)
     }
 
     private fun show(message: NoteViewModel.Message) = when (message) {

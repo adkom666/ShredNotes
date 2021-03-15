@@ -29,7 +29,7 @@ class ExerciseActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val EXERCISE_EXTRA = "${BuildConfig.APPLICATION_ID}.extras.exercise"
+        private const val EXTRA_EXERCISE = "${BuildConfig.APPLICATION_ID}.extras.exercise"
 
         /**
          * Creating an intent to open the edit screen for a given [exercise], or to create a new
@@ -43,7 +43,7 @@ class ExerciseActivity : AppCompatActivity() {
         fun newIntent(context: Context, exercise: Exercise?): Intent {
             val intent = Intent(context, ExerciseActivity::class.java)
             exercise?.let {
-                intent.putExtra(EXERCISE_EXTRA, it)
+                intent.putExtra(EXTRA_EXERCISE, it)
             }
             return intent
         }
@@ -77,7 +77,7 @@ class ExerciseActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            val exercise = intent?.extras?.getParcelable<Exercise>(EXERCISE_EXTRA)
+            val exercise = intent?.extras?.getParcelable<Exercise>(EXTRA_EXERCISE)
             Timber.d("Initial exercise is $exercise")
             model.prepare(exercise)
         }
