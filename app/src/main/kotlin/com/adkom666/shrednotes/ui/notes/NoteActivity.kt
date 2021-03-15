@@ -38,6 +38,9 @@ class NoteActivity : AppCompatActivity() {
 
         private const val EXTRA_NOTE = "${BuildConfig.APPLICATION_ID}.extras.note"
 
+        private const val DATE_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.date_picker"
+        private const val TIME_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.time_picker"
+
         /**
          * Creating an intent to open the edit screen for a given [note], or to create a new note if
          * [note] is null.
@@ -75,6 +78,19 @@ class NoteActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        setupListeners()
+        restoreFragmentListeners()
+
+        model.stateAsLiveData.observe(this, StateObserver())
+
+        if (savedInstanceState == null) {
+            val note = intent?.extras?.getParcelable<Note>(EXTRA_NOTE)
+            Timber.d("Initial note is $note")
+            model.start(note)
+        }
+    }
+
+    private fun setupListeners() {
         binding.pickNoteDateTimeImageButton.setOnClickListener {
             pickDateTime()
         }
@@ -94,53 +110,20 @@ class NoteActivity : AppCompatActivity() {
             setResult(RESULT_CANCELED)
             finish()
         }
-
-        model.stateAsLiveData.observe(this, StateObserver())
-
-        if (savedInstanceState == null) {
-            val note = intent?.extras?.getParcelable<Note>(EXTRA_NOTE)
-            Timber.d("Initial note is $note")
-            model.start(note)
-        }
     }
 
-    private fun pickDateTime() = pickDate { pickTime() }
+    private fun restoreFragmentListeners() {
+        val datePicker = supportFragmentManager
+            .findFragmentByTag(DATE_PICKER_TAG)
+                as? MaterialDatePicker<*>
 
-    private fun pickDate(afterPick: () -> Unit) {
-        val initialEpochMillis = model.noteDateTime.epochMillis
-        val oldCalendar = Calendar.getInstance()
-        oldCalendar.timeInMillis = initialEpochMillis
-        val hour = oldCalendar.get(Calendar.HOUR_OF_DAY)
-        val minute = oldCalendar.get(Calendar.MINUTE)
-        val builder = MaterialDatePicker.Builder.datePicker()
-        builder.setSelection(initialEpochMillis)
-        val picker = builder.build()
-        picker.addOnPositiveButtonClickListener { epochMillis ->
-            val newCalendar = Calendar.getInstance()
-            newCalendar.timeInMillis = epochMillis
-            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
-            newCalendar.set(Calendar.MINUTE, minute)
-            model.noteDateTime = TruncatedToMinutesDate(newCalendar.time)
-            afterPick()
-        }
-        picker.show(supportFragmentManager, picker.toString())
-    }
+        datePicker?.addDateListeners(::pickTime)
 
-    private fun pickTime() {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = model.noteDateTime.epochMillis
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(Calendar.MINUTE)
-        val builder = MaterialTimePicker.Builder()
-        builder.setHour(hour)
-        builder.setMinute(minute)
-        val picker = builder.build()
-        picker.addOnPositiveButtonClickListener {
-            calendar.set(Calendar.HOUR_OF_DAY, picker.hour)
-            calendar.set(Calendar.MINUTE, picker.minute)
-            model.noteDateTime = TruncatedToMinutesDate(calendar.time)
-        }
-        picker.show(supportFragmentManager, picker.toString())
+        val timePicker = supportFragmentManager
+            .findFragmentByTag(TIME_PICKER_TAG)
+                as? MaterialTimePicker
+
+        timePicker?.addTimeListeners()
     }
 
     private fun setWaiting(active: Boolean) {
@@ -151,6 +134,72 @@ class NoteActivity : AppCompatActivity() {
             binding.noteCard.visibility = View.VISIBLE
             binding.progressBar.visibility = View.GONE
         }
+    }
+
+    private fun pickDateTime() = pickDate(::pickTime)
+
+    private fun pickDate(afterPick: (Calendar) -> Unit) {
+        val builder = MaterialDatePicker.Builder.datePicker()
+        builder.setSelection(model.noteDateTime.epochMillis)
+        val picker = builder.build()
+        picker.addDateListeners(afterPick)
+        picker.show(supportFragmentManager, DATE_PICKER_TAG)
+    }
+
+    private fun pickTime(calendar: Calendar) {
+        val builder = MaterialTimePicker.Builder()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        builder.setHour(hour)
+        builder.setMinute(minute)
+        val picker = builder.build()
+        picker.addTimeListeners()
+        picker.show(supportFragmentManager, TIME_PICKER_TAG)
+    }
+
+    private fun MaterialDatePicker<*>.addDateListeners(afterPick: (Calendar) -> Unit) {
+
+        fun setDate(epochMillis: Long): Calendar {
+            val oldCalendar = model.noteDateTime.epochMillis.toCalendar()
+            val hour = oldCalendar.get(Calendar.HOUR_OF_DAY)
+            val minute = oldCalendar.get(Calendar.MINUTE)
+            val newCalendar = epochMillis.toCalendar()
+            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
+            newCalendar.set(Calendar.MINUTE, minute)
+            model.noteDateTime = newCalendar.toTruncatedToMinutesDate()
+            return newCalendar
+        }
+
+        addOnPositiveButtonClickListener { epochMillis ->
+            if (epochMillis is Long) {
+                val calendar = setDate(epochMillis)
+                afterPick(calendar)
+            }
+        }
+    }
+
+    private fun MaterialTimePicker.addTimeListeners() {
+
+        fun setTime(hour: Int, minute: Int) {
+            val calendar = model.noteDateTime.epochMillis.toCalendar()
+            calendar.set(Calendar.HOUR_OF_DAY, hour)
+            calendar.set(Calendar.MINUTE, minute)
+            model.noteDateTime = calendar.toTruncatedToMinutesDate()
+        }
+
+        addOnPositiveButtonClickListener {
+            setTime(hour, minute)
+        }
+    }
+
+    private fun Long.toCalendar(): Calendar {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = this
+        return calendar
+    }
+
+    private fun Calendar.toTruncatedToMinutesDate(): TruncatedToMinutesDate {
+        return TruncatedToMinutesDate(time)
     }
 
     private inner class StateObserver : Observer<NoteViewModel.State> {
