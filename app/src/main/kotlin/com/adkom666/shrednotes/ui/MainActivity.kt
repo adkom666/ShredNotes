@@ -40,18 +40,7 @@ class MainActivity :
     private var _model: MainViewModel? = null
 
     private val onExpandSearchViewListener: MenuItem.OnActionExpandListener =
-        object : MenuItem.OnActionExpandListener {
-
-            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                reportSearchActiveness(true)
-                return true
-            }
-
-            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                reportSearchActiveness(false)
-                return true
-            }
-        }
+        SearchActivenessListener()
 
     private val onQueryTextListener: SearchView.OnQueryTextListener =
         object : SearchView.OnQueryTextListener {
@@ -311,6 +300,19 @@ class MainActivity :
             } else {
                 isFirstFragmentActivityCreated = true
             }
+        }
+    }
+
+    private inner class SearchActivenessListener : MenuItem.OnActionExpandListener {
+
+        override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+            reportSearchActiveness(true)
+            return true
+        }
+
+        override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+            reportSearchActiveness(false)
+            return true
         }
     }
 }

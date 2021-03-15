@@ -85,7 +85,7 @@ class ExercisesViewModel @Inject constructor(
         /**
          * Message about the count of deleted exercises.
          *
-         * @property count count of deleted messages.
+         * @property count count of deleted exercises.
          */
         data class Deleted(val count: Int) : Message()
     }
@@ -154,7 +154,10 @@ class ExercisesViewModel @Inject constructor(
         .setPrefetchDistance(PAGED_LIST_PREFETCH_DISTANCE)
         .build()
 
-    private val exerciseSourceFactory = ExerciseSourceFactory(exerciseRepository, subname)
+    private val exerciseSourceFactory: ExerciseSourceFactory = ExerciseSourceFactory(
+        exerciseRepository,
+        subname
+    )
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 

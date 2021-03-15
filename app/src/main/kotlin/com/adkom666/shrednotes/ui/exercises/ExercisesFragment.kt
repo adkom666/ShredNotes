@@ -96,23 +96,7 @@ class ExercisesFragment :
         _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
 
-        binding.control.fabAddDel.setOnClickListener {
-            if (model.selection.isActive) {
-                context?.let { deleteSelectedExercisesIfConfirmed(it) }
-            } else {
-                goToExerciseScreen()
-            }
-        }
-
-        binding.control.fabSelectAll.setOnClickListener {
-            model.selectionDashboard.selectAll()
-            adapter.notifyDataSetChanged()
-        }
-
-        binding.control.fabCancel.setOnClickListener {
-            model.selectionDashboard.deselectAll()
-            adapter.notifyDataSetChanged()
-        }
+        setupFabListeners()
 
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
@@ -187,6 +171,27 @@ class ExercisesFragment :
         childFabMargin = resources.getDimension(R.dimen.child_fab_margin),
         bottomChildFabMargin = resources.getDimension(R.dimen.bottom_child_fab_margin)
     )
+
+    private fun setupFabListeners() {
+
+        binding.control.fabAddDel.setOnClickListener {
+            if (model.selection.isActive) {
+                context?.let { deleteSelectedExercisesIfConfirmed(it) }
+            } else {
+                goToExerciseScreen()
+            }
+        }
+
+        binding.control.fabSelectAll.setOnClickListener {
+            model.selectionDashboard.selectAll()
+            adapter.notifyDataSetChanged()
+        }
+
+        binding.control.fabCancel.setOnClickListener {
+            model.selectionDashboard.deselectAll()
+            adapter.notifyDataSetChanged()
+        }
+    }
 
     private fun deleteSelectedExercisesIfConfirmed(context: Context) {
         val messageString = getString(

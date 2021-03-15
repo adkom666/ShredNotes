@@ -25,7 +25,7 @@ class ExerciseActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val EXTRA_EXERCISE = "${BuildConfig.APPLICATION_ID}.extras.exercise"
+        private const val EXERCISE_EXTRA = "${BuildConfig.APPLICATION_ID}.extras.exercise"
 
         /**
          * Creating an intent to open the edit screen for a given [exercise], or to create a new
@@ -39,7 +39,7 @@ class ExerciseActivity : AppCompatActivity() {
         fun newIntent(context: Context, exercise: Exercise?): Intent {
             val intent = Intent(context, ExerciseActivity::class.java)
             exercise?.let {
-                intent.putExtra(EXTRA_EXERCISE, it)
+                intent.putExtra(EXERCISE_EXTRA, it)
             }
             return intent
         }
@@ -64,6 +64,19 @@ class ExerciseActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        setupButtonListeners()
+
+        model.stateAsLiveData.observe(this, StateObserver())
+
+        if (savedInstanceState == null) {
+            val exercise = intent?.extras?.getParcelable<Exercise>(EXERCISE_EXTRA)
+            Timber.d("Initial exercise is $exercise")
+            model.start(exercise)
+        }
+    }
+
+    private fun setupButtonListeners() {
+
         binding.okButton.setOnClickListener {
             val exerciseName = binding.exerciseNameEditText.text.toString().trim()
             Timber.d("Save exercise under the exerciseName=$exerciseName")
@@ -73,24 +86,6 @@ class ExerciseActivity : AppCompatActivity() {
         binding.cancelButton.setOnClickListener {
             setResult(RESULT_CANCELED)
             finish()
-        }
-
-        model.stateAsLiveData.observe(this, StateObserver())
-
-        if (savedInstanceState == null) {
-            val exercise = intent?.extras?.getParcelable<Exercise>(EXTRA_EXERCISE)
-            Timber.d("Initial exercise is $exercise")
-            model.start(exercise)
-        }
-    }
-
-    private fun setWaiting(active: Boolean) {
-        return if (active) {
-            binding.exerciseCard.visibility = View.GONE
-            binding.progressBar.visibility = View.VISIBLE
-        } else {
-            binding.exerciseCard.visibility = View.VISIBLE
-            binding.progressBar.visibility = View.GONE
         }
     }
 
@@ -117,6 +112,16 @@ class ExerciseActivity : AppCompatActivity() {
                     setResult(RESULT_OK)
                     finish()
                 }
+            }
+        }
+
+        private fun setWaiting(active: Boolean) {
+            return if (active) {
+                binding.exerciseCard.visibility = View.GONE
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.exerciseCard.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.GONE
             }
         }
 

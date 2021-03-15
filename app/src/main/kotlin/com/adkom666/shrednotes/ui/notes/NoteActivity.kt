@@ -36,7 +36,7 @@ class NoteActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val EXTRA_NOTE = "${BuildConfig.APPLICATION_ID}.extras.note"
+        private const val NOTE_EXTRA = "${BuildConfig.APPLICATION_ID}.extras.note"
 
         private const val DATE_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.date_picker"
         private const val TIME_PICKER_TAG = "${BuildConfig.APPLICATION_ID}.tags.time_picker"
@@ -53,7 +53,7 @@ class NoteActivity : AppCompatActivity() {
         fun newIntent(context: Context, note: Note?): Intent {
             val intent = Intent(context, NoteActivity::class.java)
             note?.let {
-                intent.putExtra(EXTRA_NOTE, it)
+                intent.putExtra(NOTE_EXTRA, it)
             }
             return intent
         }
@@ -78,19 +78,20 @@ class NoteActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
-        setupListeners()
+        setupButtonListeners()
         restoreFragmentListeners()
 
         model.stateAsLiveData.observe(this, StateObserver())
 
         if (savedInstanceState == null) {
-            val note = intent?.extras?.getParcelable<Note>(EXTRA_NOTE)
+            val note = intent?.extras?.getParcelable<Note>(NOTE_EXTRA)
             Timber.d("Initial note is $note")
             model.start(note)
         }
     }
 
-    private fun setupListeners() {
+    private fun setupButtonListeners() {
+
         binding.pickNoteDateTimeImageButton.setOnClickListener {
             pickDateTime()
         }
@@ -113,27 +114,13 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun restoreFragmentListeners() {
-        val datePicker = supportFragmentManager
-            .findFragmentByTag(DATE_PICKER_TAG)
-                as? MaterialDatePicker<*>
-
+        val datePickerFragment = supportFragmentManager.findFragmentByTag(DATE_PICKER_TAG)
+        val datePicker = datePickerFragment as? MaterialDatePicker<*>
         datePicker?.addDateListeners(::pickTime)
 
-        val timePicker = supportFragmentManager
-            .findFragmentByTag(TIME_PICKER_TAG)
-                as? MaterialTimePicker
-
+        val timePickerFragment = supportFragmentManager.findFragmentByTag(TIME_PICKER_TAG)
+        val timePicker = timePickerFragment as? MaterialTimePicker
         timePicker?.addTimeListeners()
-    }
-
-    private fun setWaiting(active: Boolean) {
-        return if (active) {
-            binding.noteCard.visibility = View.GONE
-            binding.progressBar.visibility = View.VISIBLE
-        } else {
-            binding.noteCard.visibility = View.VISIBLE
-            binding.progressBar.visibility = View.GONE
-        }
     }
 
     private fun pickDateTime() = pickDate(::pickTime)
@@ -241,28 +228,14 @@ class NoteActivity : AppCompatActivity() {
             }
         }
 
-        private fun handleError(error: NoteViewModel.State.Error) = when (error) {
-            NoteViewModel.State.Error.MissingNoteExerciseName ->
-                toast(R.string.error_missing_note_excercise_name)
-            NoteViewModel.State.Error.MissingNoteBpm ->
-                toast(R.string.error_missing_note_bpm)
-            NoteViewModel.State.Error.WrongNoteBpm -> {
-                val message = getString(
-                    R.string.error_wrong_note_bpm,
-                    NOTE_BPM_MIN,
-                    NOTE_BPM_MAX
-                )
-                toast(message)
+        private fun setWaiting(active: Boolean) {
+            return if (active) {
+                binding.noteCard.visibility = View.GONE
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.noteCard.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.GONE
             }
-            is NoteViewModel.State.Error.Clarified -> {
-                val message = getString(
-                    R.string.error_clarified,
-                    error.message
-                )
-                toast(message)
-            }
-            NoteViewModel.State.Error.Unknown ->
-                toast(R.string.error_unknown)
         }
 
         private fun initExerciseList(exerciseList: List<Exercise>) {
@@ -311,6 +284,30 @@ class NoteActivity : AppCompatActivity() {
                 .setNegativeButton(R.string.button_title_cancel, null)
                 .create()
                 .show()
+        }
+
+        private fun handleError(error: NoteViewModel.State.Error) = when (error) {
+            NoteViewModel.State.Error.MissingNoteExerciseName ->
+                toast(R.string.error_missing_note_excercise_name)
+            NoteViewModel.State.Error.MissingNoteBpm ->
+                toast(R.string.error_missing_note_bpm)
+            NoteViewModel.State.Error.WrongNoteBpm -> {
+                val message = getString(
+                    R.string.error_wrong_note_bpm,
+                    NOTE_BPM_MIN,
+                    NOTE_BPM_MAX
+                )
+                toast(message)
+            }
+            is NoteViewModel.State.Error.Clarified -> {
+                val message = getString(
+                    R.string.error_clarified,
+                    error.message
+                )
+                toast(message)
+            }
+            NoteViewModel.State.Error.Unknown ->
+                toast(R.string.error_unknown)
         }
     }
 }
