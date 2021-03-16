@@ -65,8 +65,8 @@ class StoreNoteTest : TestCase() {
     }
 
     fun testDeletionByIdsAndSubname() = runBlocking {
-        val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteList = noteDao.listPortion(sublistSize, 0)
+        val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
+        val noteList = noteDao.listPortion(groupSize, 0)
         val ids = noteList.map { it.noteId }
         var deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
             ids,
@@ -86,8 +86,8 @@ class StoreNoteTest : TestCase() {
     }
 
     fun testDeletionOtherByIdsAndExerciseSubname() = runBlocking {
-        val sublistSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteList = noteDao.listPortion(sublistSize, 0)
+        val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
+        val noteList = noteDao.listPortion(groupSize, 0)
         val ids = noteList.map { it.noteId }
         var deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
             ids,
@@ -95,8 +95,8 @@ class StoreNoteTest : TestCase() {
         )
         assertEquals(0, deletedNoteCount)
         val otherNoteList = noteDao.listPortion(
-            size = StoreNoteTestHelper.NOTE_COUNT - sublistSize,
-            offset = sublistSize
+            size = StoreNoteTestHelper.NOTE_COUNT - groupSize,
+            offset = groupSize
         )
         val countWithExerciseSubname = otherNoteList.count {
             it.exerciseName

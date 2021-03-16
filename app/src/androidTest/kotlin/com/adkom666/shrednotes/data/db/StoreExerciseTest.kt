@@ -65,8 +65,8 @@ class StoreExerciseTest : TestCase() {
     }
 
     fun testDeletionByIdsAndSubname() = runBlocking {
-        val sublistSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseList = exerciseDao.listPortion(sublistSize, 0)
+        val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
+        val exerciseList = exerciseDao.listPortion(groupSize, 0)
         val ids = exerciseList.map { it.id }
         var deletedExerciseCount = exerciseDao.deleteByIdsAndSubnameSuspending(
             ids,
@@ -84,9 +84,9 @@ class StoreExerciseTest : TestCase() {
     }
 
     fun testDeletionOtherByIdsAndSubname() = runBlocking {
-        val sublistSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
+        val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
         val exerciseList = exerciseDao.listPortion(
-            size = sublistSize,
+            size = groupSize,
             offset = 0
         )
         val ids = exerciseList.map { it.id }
@@ -96,8 +96,8 @@ class StoreExerciseTest : TestCase() {
         )
         assertEquals(0, deletedExerciseCount)
         val otherExerciseList = exerciseDao.listPortion(
-            size = StoreExerciseTestHelper.EXERCISE_COUNT - sublistSize,
-            offset = sublistSize
+            size = StoreExerciseTestHelper.EXERCISE_COUNT - groupSize,
+            offset = groupSize
         )
         val countWithSubname = otherExerciseList.count {
             it.name.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
