@@ -273,7 +273,7 @@ class NoteActivity : AppCompatActivity() {
                 is NoteViewModel.State.Init -> {
                     initExerciseList(state.exerciseList)
                     initNote(state.noteDateTime, state.noteExerciseName, state.noteBpmString)
-                    model.initiated()
+                    model.ok()
                 }
                 NoteViewModel.State.Normal ->
                     setWaiting(false)

@@ -130,10 +130,10 @@ class ExerciseViewModel @Inject constructor(
     }
 
     /**
-     * Tell the model that all the required objects are initialized.
+     * Tell the model that all the information received from it has been used.
      */
-    fun initiated() {
-        Timber.d("Initiated")
+    fun ok() {
+        Timber.d("OK!")
         setState(State.Normal)
     }
 
@@ -143,11 +143,7 @@ class ExerciseViewModel @Inject constructor(
      */
     fun save(exerciseName: String) {
         Timber.d("Save: exerciseName=$exerciseName")
-        val exercise = initialExercise?.copy(
-            name = exerciseName
-        ) ?: Exercise(
-            name = exerciseName
-        )
+        val exercise = createExercise(exerciseName)
         save(exercise)
     }
 
@@ -179,6 +175,14 @@ class ExerciseViewModel @Inject constructor(
             } ?: report(Message.Error.Unknown)
         }
     }
+
+    private fun createExercise(
+        exerciseName: String
+    ): Exercise = initialExercise?.copy(
+        name = exerciseName
+    ) ?: Exercise(
+        name = exerciseName
+    )
 
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")

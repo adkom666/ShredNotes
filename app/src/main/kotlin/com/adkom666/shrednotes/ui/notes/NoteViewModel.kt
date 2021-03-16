@@ -199,10 +199,10 @@ class NoteViewModel @Inject constructor(
     }
 
     /**
-     * Tell the model that all the required objects are initialized.
+     * Tell the model that all the information received from it has been used.
      */
-    fun initiated() {
-        Timber.d("Initiated")
+    fun ok() {
+        Timber.d("OK!")
         setState(State.Normal)
     }
 
@@ -307,17 +307,18 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun createNote(noteExerciseName: String, noteBpm: Int): Note {
-        return initialNote?.copy(
-            dateTime = noteDateTime,
-            exerciseName = noteExerciseName,
-            bpm = noteBpm
-        ) ?: Note(
-            dateTime = noteDateTime,
-            exerciseName = noteExerciseName,
-            bpm = noteBpm
-        )
-    }
+    private fun createNote(
+        noteExerciseName: String,
+        noteBpm: Int
+    ): Note = initialNote?.copy(
+        dateTime = noteDateTime,
+        exerciseName = noteExerciseName,
+        bpm = noteBpm
+    ) ?: Note(
+        dateTime = noteDateTime,
+        exerciseName = noteExerciseName,
+        bpm = noteBpm
+    )
 
     private fun isNoteBpmInvalid(bpm: Int): Boolean {
         return bpm < NOTE_BPM_MIN || NOTE_BPM_MAX < bpm

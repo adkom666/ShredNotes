@@ -131,7 +131,7 @@ class ExerciseActivity : AppCompatActivity() {
                     setWaiting(true)
                 is ExerciseViewModel.State.Init -> {
                     initExercise(state.exerciseName)
-                    model.initiated()
+                    model.ok()
                 }
                 ExerciseViewModel.State.Normal ->
                     setWaiting(false)
