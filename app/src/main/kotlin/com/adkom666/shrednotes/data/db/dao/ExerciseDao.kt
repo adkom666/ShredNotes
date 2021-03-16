@@ -142,6 +142,23 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
     suspend fun countBySubnameSuspending(subname: String): Int
 
     /**
+     * Getting a [List] of all exercise entities.
+     *
+     * @return [List] of all exercise entities.
+     */
+    @Query(SELECT_ALL)
+    suspend fun listAllSuspending(): List<ExerciseEntity>
+
+    /**
+     * Getting a [List] of exercise entities whose name is equal to [name].
+     *
+     * @param name name of target exercise entities.
+     * @return [List] of exercise entities whose name is equal to [name].
+     */
+    @Query(SELECT_BY_NAME)
+    suspend fun listByNameSuspending(name: String): List<ExerciseEntity>
+
+    /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of all exercise entities.
      *
@@ -167,23 +184,6 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      */
     @Query(SELECT_PORTION_BY_SUBNAME)
     fun listPortionBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
-
-    /**
-     * Getting a [List] of all exercise entities.
-     *
-     * @return [List] of all exercise entities.
-     */
-    @Query(SELECT_ALL)
-    suspend fun listAllSuspending(): List<ExerciseEntity>
-
-    /**
-     * Getting a [List] of exercise entities whose name is equal to [name].
-     *
-     * @param name name of target exercise entities.
-     * @return [List] of exercise entities whose name is equal to [name].
-     */
-    @Query(SELECT_BY_NAME)
-    suspend fun listByNameSuspending(name: String): List<ExerciseEntity>
 
     /**
      * Deleting information about exercises with the specified [ids].
