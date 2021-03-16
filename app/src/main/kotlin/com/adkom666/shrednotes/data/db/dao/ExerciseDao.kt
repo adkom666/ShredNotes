@@ -33,7 +33,7 @@ private const val SELECT_COUNT_BY_SUBNAME =
 private const val ORDER = "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
 private const val SELECT_ALL = "SELECT * FROM $TABLE_EXERCISES $ORDER"
 
-private const val SELECT_PORTION_BY_NAME =
+private const val SELECT_BY_NAME =
     "SELECT * FROM $TABLE_EXERCISES " +
             "WHERE $TABLE_EXERCISES_FIELD_NAME = :name " +
             ORDER
@@ -182,8 +182,8 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @param name name of target exercise entities.
      * @return [List] of exercise entities whose name is equal to [name].
      */
-    @Query(SELECT_PORTION_BY_NAME)
-    suspend fun listPortionByNameSuspending(name: String): List<ExerciseEntity>
+    @Query(SELECT_BY_NAME)
+    suspend fun listByNameSuspending(name: String): List<ExerciseEntity>
 
     /**
      * Deleting information about exercises with the specified [ids].

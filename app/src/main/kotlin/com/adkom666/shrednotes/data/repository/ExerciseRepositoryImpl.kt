@@ -59,7 +59,7 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
     }
 
     override suspend fun exercisesByNameSuspending(name: String): List<Exercise> {
-        val exerciseEntityList = exerciseDao.listPortionByNameSuspending(name)
+        val exerciseEntityList = exerciseDao.listByNameSuspending(name)
         return exerciseEntityList.map(ExerciseEntity::toExercise)
     }
 
