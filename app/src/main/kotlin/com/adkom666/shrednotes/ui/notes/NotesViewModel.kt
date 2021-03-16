@@ -197,9 +197,7 @@ class NotesViewModel @Inject constructor(
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
                 setState(State.Normal)
-                e.localizedMessage?.let {
-                    report(Message.Error.Clarified(it))
-                } ?: report(Message.Error.Unknown)
+                reportAbout(e)
             }
         }
     }
@@ -222,6 +220,12 @@ class NotesViewModel @Inject constructor(
             noteRepository.deleteOtherSuspending(unselectedNoteIdList, exerciseSubname)
         }
         ManageableSelection.State.Inactive -> 0
+    }
+
+    private fun reportAbout(e: Exception) {
+        e.localizedMessage?.let {
+            report(Message.Error.Clarified(it))
+        } ?: report(Message.Error.Unknown)
     }
 
     private fun setState(state: State) {

@@ -170,9 +170,7 @@ class ExerciseViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             setState(State.Normal)
-            e.localizedMessage?.let {
-                report(Message.Error.Clarified(it))
-            } ?: report(Message.Error.Unknown)
+            reportAbout(e)
         }
     }
 
@@ -183,6 +181,12 @@ class ExerciseViewModel @Inject constructor(
     ) ?: Exercise(
         name = exerciseName
     )
+
+    private fun reportAbout(e: Exception) {
+        e.localizedMessage?.let {
+            report(Message.Error.Clarified(it))
+        } ?: report(Message.Error.Unknown)
+    }
 
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
