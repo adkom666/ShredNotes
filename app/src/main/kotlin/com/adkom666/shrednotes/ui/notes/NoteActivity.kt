@@ -17,11 +17,11 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ActivityNoteBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
+import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,10 +40,17 @@ class NoteActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val EXTRA_NOTE = "${BuildConfig.APPLICATION_ID}.extras.note"
+        private const val EXTRA_NOTE =
+            "${BuildConfig.APPLICATION_ID}.extras.note"
 
-        private const val TAG_DATE_PICKER = "${BuildConfig.APPLICATION_ID}.tags.date_picker"
-        private const val TAG_TIME_PICKER = "${BuildConfig.APPLICATION_ID}.tags.time_picker"
+        private const val TAG_DATE_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.date_picker"
+
+        private const val TAG_TIME_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.time_picker"
+
+        private const val TAG_CONFIRM_SAVE_WITH_EXERCISE =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_save_with_exercise"
 
         /**
          * Creating an intent to open the edit screen for a given [note], or to create a new note if
@@ -131,6 +138,10 @@ class NoteActivity : AppCompatActivity() {
         val timePickerFragment = supportFragmentManager.findFragmentByTag(TAG_TIME_PICKER)
         val timePicker = timePickerFragment as? MaterialTimePicker
         timePicker?.addTimeListeners()
+
+        val fragment = supportFragmentManager.findFragmentByTag(TAG_CONFIRM_SAVE_WITH_EXERCISE)
+        val confirmation = fragment as? ConfirmationDialogFragment
+        confirmation?.setListeners()
     }
 
     private fun pickDateTime() = pickDate(::pickTime)
@@ -156,30 +167,19 @@ class NoteActivity : AppCompatActivity() {
 
     private fun show(message: NoteViewModel.Message) = when (message) {
         is NoteViewModel.Message.SuggestSaveWithExercise ->
-            suggestSaveWithExercise(this, message.noteExerciseName)
+            suggestSaveWithExercise(message.noteExerciseName)
         is NoteViewModel.Message.Error ->
             showError(message)
     }
 
-    private fun suggestSaveWithExercise(context: Context, noteExerciseName: String) {
-        val messageString = getString(
+    private fun suggestSaveWithExercise(noteExerciseName: String) {
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_note_exercise_creating_title,
             R.string.dialog_confirm_note_exercise_creating_message,
             noteExerciseName
         )
-        MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
-            .setTitle(R.string.dialog_confirm_note_exercise_creating_title)
-            .setMessage(messageString)
-            .setPositiveButton(R.string.button_title_yes) { _, _ ->
-                model.acceptSaveWithExercise()
-            }
-            .setNegativeButton(R.string.button_title_no) { _, _ ->
-                model.declineSaveWithExercise()
-            }
-            .setOnCancelListener {
-                model.declineSaveWithExercise()
-            }
-            .create()
-            .show()
+        dialogFragment.setListeners()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_SAVE_WITH_EXERCISE)
     }
 
     private fun showError(message: NoteViewModel.Message.Error) = when (message) {
@@ -239,6 +239,12 @@ class NoteActivity : AppCompatActivity() {
         addOnPositiveButtonClickListener {
             setTime(hour, minute)
         }
+    }
+
+    private fun ConfirmationDialogFragment.setListeners() {
+        setOnConfirmListener { model.acceptSaveWithExercise() }
+        setOnNotConfirmListener { model.declineSaveWithExercise() }
+        setOnCancelConfirmListener { model.declineSaveWithExercise() }
     }
 
     private fun Long.toCalendar(): Calendar {

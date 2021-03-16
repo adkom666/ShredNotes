@@ -1,7 +1,6 @@
 package com.adkom666.shrednotes.ui.exercises
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -16,16 +15,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.FragmentExercisesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Searchable
+import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -44,6 +44,9 @@ class ExercisesFragment :
 
         private const val REQUEST_CODE_ADD_EXERCISE = 666
         private const val REQUEST_CODE_UPDATE_EXERCISE = 667
+
+        private const val TAG_CONFIRM_EXERCISES_DELETION =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_exercises_deletion"
 
         /**
          * Preferred way to create a fragment.
@@ -97,6 +100,7 @@ class ExercisesFragment :
         _fabDashboard = initFabDashboard(model.selection)
 
         setupFabListeners()
+        restoreFragmentListeners()
 
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
@@ -176,7 +180,7 @@ class ExercisesFragment :
 
         binding.control.fabAddDel.setOnClickListener {
             if (model.selection.isActive) {
-                context?.let { deleteSelectedExercisesIfConfirmed(it) }
+                deleteSelectedExercisesIfConfirmed()
             } else {
                 goToExerciseScreen()
             }
@@ -193,25 +197,20 @@ class ExercisesFragment :
         }
     }
 
-    private fun deleteSelectedExercisesIfConfirmed(context: Context) {
-        val messageString = getString(
+    private fun restoreFragmentListeners() {
+        val fragment = childFragmentManager.findFragmentByTag(TAG_CONFIRM_EXERCISES_DELETION)
+        val dialogFragment = fragment as? ConfirmationDialogFragment
+        dialogFragment?.setListeners()
+    }
+
+    private fun deleteSelectedExercisesIfConfirmed() {
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_exercise_deletion_title,
             R.string.dialog_confirm_exercise_deletion_message,
             model.selectableExercises.selectedItemCount
         )
-        MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
-            .setTitle(R.string.dialog_confirm_exercise_deletion_title)
-            .setMessage(messageString)
-            .setPositiveButton(R.string.button_title_yes) { _, _ ->
-                deleteSelectedExercises()
-            }
-            .setNegativeButton(R.string.button_title_no, null)
-            .create()
-            .show()
-    }
-
-    private fun deleteSelectedExercises() {
-        Timber.d("Start deleting the selected exercises.")
-        model.deleteSelectedExercises()
+        dialogFragment.setListeners()
+        dialogFragment.show(childFragmentManager, TAG_CONFIRM_EXERCISES_DELETION)
     }
 
     private fun goToExerciseScreen(exercise: Exercise? = null) {
@@ -244,6 +243,12 @@ class ExercisesFragment :
         }
         ExercisesViewModel.Message.Error.Unknown ->
             toast(R.string.error_unknown)
+    }
+
+    private fun ConfirmationDialogFragment.setListeners() {
+        setOnConfirmListener {
+            model.deleteSelectedExercises()
+        }
     }
 
     private inner class StateObserver : Observer<ExercisesViewModel.State> {

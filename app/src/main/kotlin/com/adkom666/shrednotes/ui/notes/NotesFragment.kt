@@ -1,7 +1,6 @@
 package com.adkom666.shrednotes.ui.notes
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -16,17 +15,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.FragmentNotesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Filterable
 import com.adkom666.shrednotes.ui.Searchable
+import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -46,6 +46,9 @@ class NotesFragment :
 
         private const val REQUEST_CODE_ADD_NOTE = 666
         private const val REQUEST_CODE_UPDATE_NOTE = 667
+
+        private const val TAG_CONFIRM_NOTES_DELETION =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_notes_deletion"
 
         /**
          * Preferred way to create a fragment.
@@ -102,6 +105,7 @@ class NotesFragment :
         _fabDashboard = initFabDashboard(model.selection)
 
         setupFabListeners()
+        restoreFragmentListeners()
 
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
@@ -186,7 +190,7 @@ class NotesFragment :
 
         binding.control.fabAddDel.setOnClickListener {
             if (model.selection.isActive) {
-                context?.let { deleteSelectedNotesIfConfirmed(it) }
+                deleteSelectedNotesIfConfirmed()
             } else {
                 goToNoteScreen()
             }
@@ -203,25 +207,20 @@ class NotesFragment :
         }
     }
 
-    private fun deleteSelectedNotesIfConfirmed(context: Context) {
-        val messageString = getString(
+    private fun restoreFragmentListeners() {
+        val fragment = childFragmentManager.findFragmentByTag(TAG_CONFIRM_NOTES_DELETION)
+        val dialogFragment = fragment as? ConfirmationDialogFragment
+        dialogFragment?.setListeners()
+    }
+
+    private fun deleteSelectedNotesIfConfirmed() {
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_note_deletion_title,
             R.string.dialog_confirm_note_deletion_message,
             model.selectableNotes.selectedItemCount
         )
-        MaterialAlertDialogBuilder(context, R.style.AppTheme_MaterialAlertDialog_Confirmation)
-            .setTitle(R.string.dialog_confirm_note_deletion_title)
-            .setMessage(messageString)
-            .setPositiveButton(R.string.button_title_yes) { _, _ ->
-                deleteSelectedNotes()
-            }
-            .setNegativeButton(R.string.button_title_no, null)
-            .create()
-            .show()
-    }
-
-    private fun deleteSelectedNotes() {
-        Timber.d("Start deleting the selected notes.")
-        model.deleteSelectedNotes()
+        dialogFragment.setListeners()
+        dialogFragment.show(childFragmentManager, TAG_CONFIRM_NOTES_DELETION)
     }
 
     private fun goToNoteScreen(note: Note? = null) {
@@ -254,6 +253,12 @@ class NotesFragment :
         }
         NotesViewModel.Message.Error.Unknown ->
             toast(R.string.error_unknown)
+    }
+
+    private fun ConfirmationDialogFragment.setListeners() {
+        setOnConfirmListener {
+            model.deleteSelectedNotes()
+        }
     }
 
     private inner class StateObserver : Observer<NotesViewModel.State> {
