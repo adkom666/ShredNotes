@@ -98,13 +98,13 @@ class NoteActivity : AppCompatActivity() {
             model.messageChannel.consumeEach(::show)
         }
 
-        if (savedInstanceState == null) {
+        val isFirstStart = savedInstanceState == null
+        if (isFirstStart) {
             val note = intent?.extras?.getParcelable<Note>(EXTRA_NOTE)
             Timber.d("Initial note is $note")
             model.prepare(note)
         }
-
-        model.start()
+        model.start(isFirstStart)
     }
 
     private fun setupButtonListeners() {

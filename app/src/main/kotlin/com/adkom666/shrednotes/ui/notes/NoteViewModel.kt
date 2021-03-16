@@ -182,7 +182,7 @@ class NoteViewModel @Inject constructor(
     /**
      * Start working.
      */
-    fun start() {
+    fun start(isFirstStart: Boolean) {
         Timber.d("Start")
         setState(State.Waiting)
         viewModelScope.launch {
@@ -191,8 +191,8 @@ class NoteViewModel @Inject constructor(
                 State.Init(
                     exerciseList,
                     noteDateTime,
-                    initialNote?.exerciseName,
-                    initialNote?.bpm?.toString()
+                    if (isFirstStart) initialNote?.exerciseName else null,
+                    if (isFirstStart) initialNote?.bpm?.toString() else null
                 )
             )
         }
