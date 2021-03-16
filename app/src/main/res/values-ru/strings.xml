@@ -30,7 +30,7 @@
     <string name="dialog_confirm_note_exercise_creating_message">Нет упражнения \"%s\".\nВы подтверждаете его создание?</string>
 
     <string name="dialog_confirm_exercise_deletion_title">Подтверждение</string>
-    <string name="dialog_confirm_exercise_deletion_message">УДАЛЕНИЕ УПРАЖНЕНИЙ ПРИВЕДЕТ К УДАЛЕНИЮ СВЯЗАННЫХ С НИМИ ЗАМЕТОК!\nВыбрано упражнений: %d\nВы подтверждаете удаление?</string>
+    <string name="dialog_confirm_exercise_deletion_message">УДАЛЕНИЕ УПРАЖНЕНИЙ ПРИВЕДЕТ К УДАЛЕНИЮ СВЯЗАННЫХ С НИМИ ЗАМЕТОК!\nВыбрано упражнений: %d (связанных заметок: %d).\nВы подтверждаете удаление?</string>
 
     <string name="dialog_confirm_note_deletion_title">Подтверждение</string>
     <string name="dialog_confirm_note_deletion_message">Выбрано заметок: %d\nВы подтверждаете удаление?</string>

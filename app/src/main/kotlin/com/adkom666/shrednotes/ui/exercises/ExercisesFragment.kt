@@ -180,7 +180,7 @@ class ExercisesFragment :
 
         binding.control.fabAddDel.setOnClickListener {
             if (model.selection.isActive) {
-                deleteSelectedExercisesIfConfirmed()
+                model.requestAssociatedNoteCount()
             } else {
                 goToExerciseScreen()
             }
@@ -203,11 +203,12 @@ class ExercisesFragment :
         dialogFragment?.setListeners()
     }
 
-    private fun deleteSelectedExercisesIfConfirmed() {
+    private fun deleteSelectedExercisesIfConfirmed(associatedNoteCount: Int) {
         val dialogFragment = ConfirmationDialogFragment.newInstance(
             R.string.dialog_confirm_exercise_deletion_title,
             R.string.dialog_confirm_exercise_deletion_message,
-            model.selectableExercises.selectedItemCount
+            model.selectableExercises.selectedItemCount,
+            associatedNoteCount
         )
         dialogFragment.setListeners()
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_EXERCISES_DELETION)
@@ -224,6 +225,8 @@ class ExercisesFragment :
     }
 
     private fun show(message: ExercisesViewModel.Message) = when (message) {
+        is ExercisesViewModel.Message.AssociatedNoteCount ->
+            deleteSelectedExercisesIfConfirmed(message.noteCount)
         is ExercisesViewModel.Message.Deletion -> {
             Timber.d("Deleted exercises count is ${message.count}")
             val messageString = getString(R.string.message_deleted_exercises, message.count)

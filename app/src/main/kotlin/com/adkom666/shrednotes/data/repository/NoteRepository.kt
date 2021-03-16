@@ -26,6 +26,22 @@ interface NoteRepository {
     suspend fun countSuspending(exerciseSubname: String? = null): Int
 
     /**
+     * Getting the count of notes with the specified [exerciseIds].
+     *
+     * @param exerciseIds identifiers of the target notes' exercises.
+     * @return count of notes whose identifiers are in the [exerciseIds].
+     */
+    suspend fun countByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
+     * Getting the count of notes with exercises whose identifiers are not in the [exerciseIds].
+     *
+     * @param exerciseIds identifiers of notes that should not be counted.
+     * @return count of notes with exercises whose identifiers are not in the [exerciseIds].
+     */
+    suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
      * Getting a [Page] of the [size] or fewer notes in accordance with the [requestedStartPosition]
      * in the list of notes whose exercise names contain [exerciseSubname], or in the list of all
      * notes if [exerciseSubname] is null or blank. If the [requestedStartPosition] exceeds the

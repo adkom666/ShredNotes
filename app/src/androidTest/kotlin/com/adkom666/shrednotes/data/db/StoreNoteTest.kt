@@ -37,6 +37,30 @@ class StoreNoteTest : TestCase() {
         assertEquals(StoreNoteTestHelper.NOTE_COUNT, noteCount)
     }
 
+    fun testCountByExerciseIds() = runBlocking {
+        val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
+        val exerciseList = exerciseDao.listPortion(groupSize, 0)
+        val exerciseIds = exerciseList.map { it.id }
+        val noteCount = noteDao.countByExerciseIdsSuspending(exerciseIds)
+        val allNoteList = noteDao.listAllSuspending()
+        val noteCountReal = allNoteList.count {
+            exerciseIds.contains(it.exerciseId)
+        }
+        assertEquals(noteCountReal, noteCount)
+    }
+
+    fun testCountOtherByExerciseIds() = runBlocking {
+        val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
+        val exerciseList = exerciseDao.listPortion(groupSize, 0)
+        val exerciseIds = exerciseList.map { it.id }
+        val noteCount = noteDao.countOtherByExerciseIdsSuspending(exerciseIds)
+        val allNoteList = noteDao.listAllSuspending()
+        val noteCountReal = allNoteList.count {
+            exerciseIds.contains(it.exerciseId).not()
+        }
+        assertEquals(noteCountReal, noteCount)
+    }
+
     fun testInsertNoteWithExercise() {
         val noteWithExerciseEntity = NoteEntity(
             id = NO_ID,

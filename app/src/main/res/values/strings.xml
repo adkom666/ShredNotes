@@ -36,7 +36,7 @@
     <string name="dialog_confirm_note_exercise_creating_message">There is no \"%s\" exercise.\nDo you confirm its creation?</string>
 
     <string name="dialog_confirm_exercise_deletion_title">Confirmation</string>
-    <string name="dialog_confirm_exercise_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d\nDo you confirm deletion?</string>
+    <string name="dialog_confirm_exercise_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d (number of associated notes: %d).\nDo you confirm deletion?</string>
 
     <string name="dialog_confirm_note_deletion_title">Confirmation</string>
     <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>

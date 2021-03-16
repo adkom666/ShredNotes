@@ -46,6 +46,14 @@ private const val SELECT_COUNT_BY_EXERCISE_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME"
 
+private const val SELECT_COUNT_BY_EXERCISE_IDS =
+    "SELECT COUNT(*) FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_EXERCISE_ID IN (:exerciseIds)"
+
+private const val SELECT_COUNT_OTHER_BY_EXERCISE_IDS =
+    "SELECT COUNT(*) FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID NOT IN (:exerciseIds)"
+
 private const val NOTES_WITH_EXERCISES_FIELDS =
     "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
@@ -56,13 +64,15 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
             "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
 
-private const val ORDER =
+private const val SELECT_ALL = "SELECT * FROM $TABLE_NOTES"
+
+private const val ORDER_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
             "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC, " +
             "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM ASC"
 
 private const val PORTION = "LIMIT :size OFFSET :offset"
-private const val OPTIONS_FOR_SELECT_PORTION = "$ORDER $PORTION"
+private const val OPTIONS_FOR_SELECT_PORTION = "$ORDER_NOTES_WITH_EXERCISES $PORTION"
 
 private const val SELECT_PORTION =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
@@ -156,6 +166,32 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_COUNT_BY_EXERCISE_SUBNAME)
     suspend fun countByExerciseSubnameSuspending(exerciseSubname: String): Int
+
+    /**
+     * Getting the count of notes with the specified [exerciseIds].
+     *
+     * @param exerciseIds identifiers of the target notes' exercises.
+     * @return count of notes whose identifiers are in the [exerciseIds].
+     */
+    @Query(SELECT_COUNT_BY_EXERCISE_IDS)
+    suspend fun countByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
+     * Getting the count of notes with exercises whose identifiers are not in the [exerciseIds].
+     *
+     * @param exerciseIds identifiers of notes that should not be counted.
+     * @return count of notes with exercises whose identifiers are not in the [exerciseIds].
+     */
+    @Query(SELECT_COUNT_OTHER_BY_EXERCISE_IDS)
+    suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
+     * Getting a [List] of all note entities.
+     *
+     * @return [List] of all note entities.
+     */
+    @Query(SELECT_ALL)
+    suspend fun listAllSuspending(): List<NoteEntity>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with

@@ -31,6 +31,14 @@ class NoteRepositoryImpl(
         return noteDao.countSuspending(exerciseSubname)
     }
 
+    override suspend fun countByExerciseIdsSuspending(exerciseIds: List<Id>): Int {
+        return noteDao.countByExerciseIdsSuspending(exerciseIds)
+    }
+
+    override suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int {
+        return noteDao.countOtherByExerciseIdsSuspending(exerciseIds)
+    }
+
     override fun page(
         size: Int,
         requestedStartPosition: Int,

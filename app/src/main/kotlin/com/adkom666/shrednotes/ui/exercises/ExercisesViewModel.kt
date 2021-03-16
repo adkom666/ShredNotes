@@ -9,8 +9,9 @@ import androidx.paging.DataSource
 import androidx.paging.PagedList
 import androidx.paging.PositionalDataSource
 import androidx.paging.toLiveData
-import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.model.Exercise
+import com.adkom666.shrednotes.data.repository.ExerciseRepository
+import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.SelectableItems
@@ -33,7 +34,8 @@ import kotlin.properties.Delegates
  */
 @ExperimentalCoroutinesApi
 class ExercisesViewModel @Inject constructor(
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val noteRepository: NoteRepository
 ) : ViewModel() {
 
     private companion object {
@@ -64,6 +66,13 @@ class ExercisesViewModel @Inject constructor(
      * Information message.
      */
     sealed class Message {
+
+        /**
+         * Message about the count of notes associated with the selected exercises.
+         *
+         * @property noteCount count of notes associated with the selected exercises.
+         */
+        data class AssociatedNoteCount(val noteCount: Int) : Message()
 
         /**
          * Message about the count of deleted exercises.
@@ -185,6 +194,25 @@ class ExercisesViewModel @Inject constructor(
     }
 
     /**
+     * Request to generate the message [Message.AssociatedNoteCount].
+     */
+    fun requestAssociatedNoteCount() {
+        Timber.d("Request associated notes count")
+        setState(State.Waiting)
+        viewModelScope.launch {
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                val noteCount = requestAssociatedNoteCount(_manageableSelection.state)
+                setState(State.Normal)
+                report(Message.AssociatedNoteCount(noteCount))
+            } catch (e: Exception) {
+                setState(State.Normal)
+                reportAbout(e)
+            }
+        }
+    }
+
+    /**
      * Initiate the deletion of the selected exercises.
      */
     fun deleteSelectedExercises() {
@@ -198,11 +226,23 @@ class ExercisesViewModel @Inject constructor(
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
                 setState(State.Normal)
-                e.localizedMessage?.let {
-                    report(Message.Error.Clarified(it))
-                } ?: report(Message.Error.Unknown)
+                reportAbout(e)
             }
         }
+    }
+
+    private suspend fun requestAssociatedNoteCount(
+        selectionState: ManageableSelection.State
+    ): Int = when (selectionState) {
+        is ManageableSelection.State.Active.Inclusive -> {
+            val selectedExerciseIdList = selectionState.selectedItemIdSet.toList()
+            noteRepository.countByExerciseIdsSuspending(selectedExerciseIdList)
+        }
+        is ManageableSelection.State.Active.Exclusive -> {
+            val unselectedExerciseIdList = selectionState.unselectedItemIdSet.toList()
+            noteRepository.countOtherByExerciseIdsSuspending(unselectedExerciseIdList)
+        }
+        ManageableSelection.State.Inactive -> 0
     }
 
     private suspend fun deleteSelectedExercises(
@@ -223,6 +263,12 @@ class ExercisesViewModel @Inject constructor(
         setState(State.Waiting)
         exerciseSourceFactory.invalidate()
         setState(State.Normal)
+    }
+
+    private fun reportAbout(e: Exception) {
+        e.localizedMessage?.let {
+            report(Message.Error.Clarified(it))
+        } ?: report(Message.Error.Unknown)
     }
 
     private fun setState(state: State) {
