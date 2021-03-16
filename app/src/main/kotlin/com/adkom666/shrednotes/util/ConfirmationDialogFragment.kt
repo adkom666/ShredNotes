@@ -110,6 +110,12 @@ class ConfirmationDialogFragment : DialogFragment() {
         _formatArgsEnvelope = arguments.getParcelable(ARG_FORMAT_ARGS_ENVELOPE)
     }
 
+    override fun onStart() {
+        super.onStart()
+        hideKeyboard()
+        activity?.currentFocus?.clearFocus()
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = MaterialAlertDialogBuilder(
             requireContext(),
