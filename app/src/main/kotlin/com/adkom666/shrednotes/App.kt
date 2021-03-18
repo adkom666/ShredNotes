@@ -3,11 +3,13 @@ package com.adkom666.shrednotes
 import com.adkom666.shrednotes.di.component.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import timber.log.Timber
 
 /**
  * "Shred Notes" application.
  */
+@ExperimentalCoroutinesApi
 class App : DaggerApplication() {
 
     override fun onCreate() {
