@@ -31,10 +31,10 @@ class MainActivity :
     BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val binding: ActivityMainBinding
-        get() = _binding ?: error("View binding is not initialized!")
+        get() = requireNotNull(_binding)
 
     private val model: MainViewModel
-        get() = _model ?: error("View model is not initialized!")
+        get() = requireNotNull(_model)
 
     private var _binding: ActivityMainBinding? = null
     private var _model: MainViewModel? = null
