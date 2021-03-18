@@ -17,12 +17,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private val DEFAULT_SECTION = Section.NOTES
     }
 
-    private val _sectionAsLiveData: MutableLiveData<Section> = MutableLiveData(DEFAULT_SECTION)
-
     /**
      * Subscribe to the current section in the UI thread.
      */
-    val sectionAsLiveData: LiveData<Section> = distinctUntilChanged(_sectionAsLiveData)
+    val sectionAsLiveData: LiveData<Section>
+        get() = distinctUntilChanged(_sectionAsLiveData)
 
     /**
      * Get and set the current section in the UI thread.
@@ -32,4 +31,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         set(value) {
             _sectionAsLiveData.value = value
         }
+
+    private val _sectionAsLiveData: MutableLiveData<Section> = MutableLiveData(DEFAULT_SECTION)
 }
