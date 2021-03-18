@@ -1,17 +1,20 @@
 package com.adkom666.shrednotes.ui
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
+import androidx.lifecycle.ViewModel
+import com.adkom666.shrednotes.data.google.Google
+import javax.inject.Inject
 
 /**
  * Main screen model.
  *
- * @param application current [Application].
+ * @property google [Google] to access "Google Drive" to store app data.
  */
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel @Inject constructor(
+    private val google: Google
+) : ViewModel() {
 
     private companion object {
         private val DEFAULT_SECTION = Section.NOTES

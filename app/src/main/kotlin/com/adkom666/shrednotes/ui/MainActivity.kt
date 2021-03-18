@@ -13,14 +13,17 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityMainBinding
+import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Main screen.
@@ -29,6 +32,9 @@ import timber.log.Timber
 class MainActivity :
     AppCompatActivity(),
     BottomNavigationView.OnNavigationItemSelectedListener {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val binding: ActivityMainBinding
         get() = requireNotNull(_binding)
@@ -49,10 +55,11 @@ class MainActivity :
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        _model = ViewModelProvider(this).get(MainViewModel::class.java)
+        _model = viewModel(viewModelFactory)
 
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initNavigation()
