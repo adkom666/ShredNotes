@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -10,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityMainBinding
@@ -32,6 +34,10 @@ import javax.inject.Inject
 class MainActivity :
     AppCompatActivity(),
     BottomNavigationView.OnNavigationItemSelectedListener {
+
+    companion object {
+        private const val REQUEST_CODE_SIGN_IN = 228
+    }
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -61,10 +67,11 @@ class MainActivity :
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        invalidateSubtitle()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initNavigation()
-
         supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
+        model.stateAsLiveData.observe(this, StateObserver())
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -74,9 +81,13 @@ class MainActivity :
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         menu?.let {
+            val state = model.state
+            val forceInvisible = state == null || state is MainViewModel.State.Waiting
             val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
-            prepareSearch(fragment, it)
-            prepareFilter(fragment, it)
+            prepareSearch(it, forceInvisible, fragment)
+            prepareFilter(it, forceInvisible, fragment)
+            val itemsVisibility = model.googleDriveItemsVisibility
+            prepareGoogleDrivePanel(it, forceInvisible, itemsVisibility)
         }
         return true
     }
@@ -86,6 +97,19 @@ class MainActivity :
             true
         } else {
             super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Timber.d(
+            """onActivityResult:
+                |requestCode=$requestCode,
+                |resultCode=$resultCode,
+                |data=$data""".trimMargin()
+        )
+        when (requestCode) {
+            REQUEST_CODE_SIGN_IN -> model.handleSignInGoogleResult(resultCode, data)
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -114,53 +138,69 @@ class MainActivity :
         }
     }
 
+    private fun invalidateSubtitle() {
+        supportActionBar?.subtitle = model.googleAccountDisplayName
+    }
+
     private fun initNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
     }
 
-    private fun prepareSearch(fragment: Fragment?, menu: Menu) {
+    private fun prepareSearch(
+        menu: Menu,
+        forceInvisible: Boolean,
+        fragment: Fragment?
+    ) {
+        fun prepare(itemSearch: MenuItem, fragment: Fragment?) {
 
-        fun MenuItem.ensureActionViewExpanded() {
-            if (!isActionViewExpanded) {
-                expandActionView()
+            fun MenuItem.ensureActionViewExpanded() {
+                if (!isActionViewExpanded) {
+                    expandActionView()
+                }
             }
-        }
 
-        fun MenuItem.ensureActionViewCollapsed() {
-            if (isActionViewExpanded) {
-                collapseActionView()
+            fun MenuItem.ensureActionViewCollapsed() {
+                if (isActionViewExpanded) {
+                    collapseActionView()
+                }
+            }
+
+            itemSearch.setOnActionExpandListener(null)
+            val searchView = itemSearch.actionView as? SearchView
+            searchView?.setOnQueryTextListener(null)
+            val isSearchVisible = if (forceInvisible.not() && fragment is Searchable) {
+                val isSearchActive = fragment.isSearchActive
+                val currentQuery = fragment.currentQuery
+                if (currentQuery.isNullOrEmpty() && isSearchActive.not()) {
+                    itemSearch.ensureActionViewCollapsed()
+                } else {
+                    itemSearch.ensureActionViewExpanded()
+                    searchView?.setQuery(currentQuery, false)
+                }
+                true
+            } else {
+                itemSearch.ensureActionViewCollapsed()
+                false
+            }
+            searchView?.isVisible = isSearchVisible
+            menu.setGroupVisible(R.id.group_search, isSearchVisible)
+            if (isSearchVisible) {
+                itemSearch.setOnActionExpandListener(onExpandSearchViewListener)
+                searchView?.setOnQueryTextListener(onQueryTextListener)
             }
         }
 
         val itemSearch = menu.findItem(R.id.action_search)
-        itemSearch.setOnActionExpandListener(null)
-        val searchView = itemSearch.actionView as? SearchView
-        searchView?.setOnQueryTextListener(null)
-        val isSearchVisible = if (fragment is Searchable) {
-            val isSearchActive = fragment.isSearchActive
-            val currentQuery = fragment.currentQuery
-            if (currentQuery.isNullOrEmpty() && isSearchActive.not()) {
-                itemSearch.ensureActionViewCollapsed()
-            } else {
-                itemSearch.ensureActionViewExpanded()
-                searchView?.setQuery(currentQuery, false)
-            }
-            true
-        } else {
-            itemSearch.ensureActionViewCollapsed()
-            false
-        }
-        searchView?.isVisible = isSearchVisible
-        menu.setGroupVisible(R.id.group_search, isSearchVisible)
-        if (isSearchVisible) {
-            itemSearch.setOnActionExpandListener(onExpandSearchViewListener)
-            searchView?.setOnQueryTextListener(onQueryTextListener)
-        }
+        itemSearch?.let { prepare(it, fragment) }
     }
 
-    private fun prepareFilter(fragment: Fragment?, menu: Menu) {
-        val isFilterVisible = if (fragment is Filterable) {
+    private fun prepareFilter(
+        menu: Menu,
+        forceInvisible: Boolean,
+        fragment: Fragment?
+    ) {
+        val isFilterVisible = if (forceInvisible.not() && fragment is Filterable) {
             val iconRes = if (fragment.isFilterEnabled) {
                 R.drawable.ic_filter_on
             } else {
@@ -175,13 +215,28 @@ class MainActivity :
         menu.setGroupVisible(R.id.group_filter, isFilterVisible)
     }
 
+    private fun prepareGoogleDrivePanel(
+        menu: Menu,
+        forceInvisible: Boolean,
+        itemsVisibility: MainViewModel.GoogleDriveItemsVisibility
+    ) {
+        val itemRead = menu.findItem(R.id.action_read)
+        val itemWrite = menu.findItem(R.id.action_write)
+        val itemSignOut = menu.findItem(R.id.action_sign_out)
+        val itemSignIn = menu.findItem(R.id.action_sign_in)
+        itemRead?.isVisible = forceInvisible.not() && itemsVisibility.isItemReadVisibile
+        itemWrite?.isVisible = forceInvisible.not() && itemsVisibility.isItemWriteVisibile
+        itemSignOut?.isVisible = forceInvisible.not() && itemsVisibility.isItemSignOutVisibile
+        itemSignIn?.isVisible = forceInvisible.not() && itemsVisibility.isItemSignInVisibile
+    }
+
     private fun handleToolSelection(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_filter -> filter()
             R.id.action_read -> read()
             R.id.action_write -> write()
-            R.id.action_sign_in -> signIn()
             R.id.action_sign_out -> signOut()
+            R.id.action_sign_in -> signIn()
             else -> return false
         }
         return true
@@ -243,17 +298,20 @@ class MainActivity :
 
     private fun signIn() {
         Timber.d("Button pressed: sign in")
+        val intent = model.signInGoogleIntent
+        startActivityForResult(intent, REQUEST_CODE_SIGN_IN)
     }
 
     private fun signOut() {
         Timber.d("Button pressed: sign out")
+        model.signOutFromGoogle()
     }
 
     private fun addFragment(fragment: Fragment) {
         Timber.d("Add fragment: $fragment")
         supportFragmentManager
             .beginTransaction()
-            .replace(binding.content.id, fragment)
+            .replace(binding.section.id, fragment)
             .commit()
     }
 
@@ -265,7 +323,7 @@ class MainActivity :
                 android.R.anim.fade_in, android.R.anim.fade_out,
                 android.R.anim.fade_in, android.R.anim.fade_out
             )
-            .replace(binding.content.id, fragment)
+            .replace(binding.section.id, fragment)
             .commit()
     }
 
@@ -294,7 +352,7 @@ class MainActivity :
 
     private inner class OptionsMenuInvalidator : FragmentManager.FragmentLifecycleCallbacks() {
 
-        var isFirstFragmentActivityCreated: Boolean = false
+        private var isFirstFragmentActivityCreated: Boolean = false
 
         override fun onFragmentActivityCreated(
             fragmentManager: FragmentManager,
@@ -320,6 +378,41 @@ class MainActivity :
         override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
             reportSearchActiveness(false)
             return true
+        }
+    }
+
+    private inner class StateObserver : Observer<MainViewModel.State> {
+
+        override fun onChanged(state: MainViewModel.State?) {
+            Timber.d("State is $state")
+            when (state) {
+                is MainViewModel.State.Preparation -> {
+                    prepare(state)
+                    model.ok()
+                }
+                MainViewModel.State.Working ->
+                    setWaiting(false)
+                MainViewModel.State.Waiting -> {
+                    setWaiting(true)
+                    invalidateOptionsMenu()
+                }
+            }
+        }
+
+        private fun prepare(state: MainViewModel.State.Preparation) = when (state) {
+            MainViewModel.State.Preparation.Initial ->
+                Unit
+            MainViewModel.State.Preparation.Continuing ->
+                invalidateOptionsMenu()
+            MainViewModel.State.Preparation.GoogleDriveStateChanged -> {
+                invalidateSubtitle()
+                invalidateOptionsMenu()
+            }
+        }
+
+        private fun setWaiting(active: Boolean) {
+            binding.progressBar.isVisible = active
+            binding.content.isVisible = active.not()
         }
     }
 }
