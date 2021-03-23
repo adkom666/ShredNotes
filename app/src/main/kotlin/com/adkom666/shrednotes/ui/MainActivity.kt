@@ -84,7 +84,7 @@ class MainActivity :
 
         invalidateSubtitle()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
-        initNavigation()
+        initBottomNavigation()
         supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
         restoreFragmentListeners()
 
@@ -169,7 +169,7 @@ class MainActivity :
         supportActionBar?.subtitle = model.googleAccountDisplayName
     }
 
-    private fun initNavigation() {
+    private fun initBottomNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
     }
