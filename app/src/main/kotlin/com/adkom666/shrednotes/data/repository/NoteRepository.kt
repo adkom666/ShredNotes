@@ -46,7 +46,8 @@ interface NoteRepository {
      * in the list of notes whose exercise names contain [exerciseSubname], or in the list of all
      * notes if [exerciseSubname] is null or blank. If the [requestedStartPosition] exceeds the
      * count of required notes, the notes from the end of the target list are returned as part of
-     * the [Page].
+     * the [Page]. The notes are sorted in descending order by timestamp, then ascending by exercise
+     * name, and then ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param requestedStartPosition desired position of the first target note in the list of notes
@@ -56,7 +57,9 @@ interface NoteRepository {
      * @return [Page] of the [size] or fewer notes in accordance with the [requestedStartPosition]
      * in the list of notes whose exercise names contain [exerciseSubname], or in the list of all
      * notes if [exerciseSubname] is null or blank; or [Page] of notes from the end of the target
-     * list if the [requestedStartPosition] exceeds the count of required notes.
+     * list if the [requestedStartPosition] exceeds the count of required notes. The notes are
+     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * by BPM.
      */
     fun page(
         size: Int,
@@ -67,7 +70,8 @@ interface NoteRepository {
     /**
      * Getting a [List] of the [size] or fewer notes in accordance with the [startPosition] in the
      * list of notes whose exercise names contain [exerciseSubname], or in the list of all notes if
-     * [exerciseSubname] is null or blank.
+     * [exerciseSubname] is null or blank. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param startPosition position of the first target note in the list of notes whose exercise
@@ -76,7 +80,8 @@ interface NoteRepository {
      * @param exerciseSubname part of the names of the target notes' exercises.
      * @return [List] of the [size] or fewer notes in accordance with the [startPosition] in the
      * list of notes whose exercise names contain [exerciseSubname], or in the list of all notes if
-     * [exerciseSubname] is null or blank.
+     * [exerciseSubname] is null or blank. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then ascending by BPM.
      */
     fun list(
         size: Int,

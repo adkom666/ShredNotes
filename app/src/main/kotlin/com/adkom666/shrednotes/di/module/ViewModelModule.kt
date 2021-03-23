@@ -19,7 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @Module(
     includes = [
         RepositoryModule::class,
-        GoogleModule::class
+        DataManagerModule::class
     ]
 )
 abstract class ViewModelModule {

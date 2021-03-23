@@ -9,34 +9,44 @@ import androidx.fragment.app.Fragment
  * Show the view with [message] for a short time.
  *
  * @param message the text to show; can be formatted text.
+ * @param isShort should the duration of the toast be short, not long.
  */
-fun Context.toast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+fun Context.toast(message: String, isShort: Boolean = true) {
+    Toast.makeText(this, message, isShort.getDuration()).show()
 }
 
 /**
  * Show the view with text from the resource for a short time.
  *
  * @param resId the resource id of the string resource to use; can be formatted text.
+ * @param isShort should the duration of the toast be short, not long.
  */
-fun Context.toast(@StringRes resId: Int) {
-    Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
+fun Context.toast(@StringRes resId: Int, isShort: Boolean = true) {
+    Toast.makeText(this, resId, isShort.getDuration()).show()
 }
 
 /**
  * Show the view with [message] for a short time from the [Fragment].
  *
  * @param message the text to show; can be formatted text.
+ * @param isShort should the duration of the toast be short, not long.
  */
-fun Fragment.toast(message: String) {
-    context?.toast(message)
+fun Fragment.toast(message: String, isShort: Boolean = true) {
+    context?.toast(message, isShort)
 }
 
 /**
  * Show the view with text from the resource for a short time from the [Fragment].
  *
  * @param resId the resource id of the string resource to use; can be formatted text.
+ * @param isShort should the duration of the toast be short, not long.
  */
-fun Fragment.toast(@StringRes resId: Int) {
-    context?.toast(resId)
+fun Fragment.toast(@StringRes resId: Int, isShort: Boolean = true) {
+    context?.toast(resId, isShort)
+}
+
+private fun Boolean.getDuration() = if (this) {
+    Toast.LENGTH_SHORT
+} else {
+    Toast.LENGTH_LONG
 }

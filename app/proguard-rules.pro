@@ -132,3 +132,8 @@
 }
 
 -dontnote rx.internal.util.PlatformDependent
+
+-keep class com.adkom666.shrednotes.data.external.** {*;}
+
+-keep class com.google.** { *;}
+-keep class com.fasterxml.** { *;}

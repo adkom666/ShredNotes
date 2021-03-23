@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityMainBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
@@ -20,10 +22,14 @@ import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
+import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
+import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,6 +43,15 @@ class MainActivity :
 
     companion object {
         private const val REQUEST_CODE_SIGN_IN = 228
+
+        private const val REQUEST_CODE_AUTH_ON_READ = 229
+        private const val REQUEST_CODE_AUTH_ON_WRITE = 230
+
+        private const val TAG_CONFIRM_READ = "${BuildConfig.APPLICATION_ID}.tags.confirm_read"
+        private const val TAG_CONFIRM_WRITE = "${BuildConfig.APPLICATION_ID}.tags.confirm_write"
+
+        private const val TAG_CONFIRM_SIGN_OUT =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_sign_out"
     }
 
     @Inject
@@ -71,7 +86,17 @@ class MainActivity :
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initNavigation()
         supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
+        restoreFragmentListeners()
+
         model.stateAsLiveData.observe(this, StateObserver())
+
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -108,7 +133,9 @@ class MainActivity :
                 |data=$data""".trimMargin()
         )
         when (requestCode) {
-            REQUEST_CODE_SIGN_IN -> model.handleSignInGoogleResult(resultCode, data)
+            REQUEST_CODE_SIGN_IN -> model.handleSignInGoogleResult(this, resultCode, data)
+            REQUEST_CODE_AUTH_ON_READ -> model.handleAuthOnReadResult(resultCode)
+            REQUEST_CODE_AUTH_ON_WRITE -> model.handleAuthOnWriteResult(resultCode)
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -145,6 +172,18 @@ class MainActivity :
     private fun initNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
+    }
+
+    private fun restoreFragmentListeners() {
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_READ) {
+            it.setReadingListener()
+        }
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_WRITE) {
+            it.setWritingListener()
+        }
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SIGN_OUT) {
+            it.setSigningOutListener()
+        }
     }
 
     private fun prepareSearch(
@@ -232,11 +271,11 @@ class MainActivity :
 
     private fun handleToolSelection(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_filter -> filter()
-            R.id.action_read -> read()
-            R.id.action_write -> write()
-            R.id.action_sign_out -> signOut()
-            R.id.action_sign_in -> signIn()
+            R.id.action_filter -> onFilterItemSelected()
+            R.id.action_read -> onReadItemSelected()
+            R.id.action_write -> onWriteItemSelected()
+            R.id.action_sign_out -> onSignOutItemSelected()
+            R.id.action_sign_in -> onSignInItemSelected()
             else -> return false
         }
         return true
@@ -278,8 +317,8 @@ class MainActivity :
         }
     }
 
-    private fun filter() {
-        Timber.d("Button pressed: filter")
+    private fun onFilterItemSelected() {
+        Timber.d("Item selected: filter")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
             fragment.filter { filterEnabled ->
@@ -288,23 +327,39 @@ class MainActivity :
         }
     }
 
-    private fun read() {
-        Timber.d("Button pressed: read notes")
+    private fun onReadItemSelected() {
+        Timber.d("Item selected: read notes")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_read_title,
+            R.string.dialog_confirm_read_message
+        )
+        dialogFragment.setReadingListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_READ)
     }
 
-    private fun write() {
-        Timber.d("Button pressed: write notes")
+    private fun onWriteItemSelected() {
+        Timber.d("Item selected: write notes")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_write_title,
+            R.string.dialog_confirm_write_message
+        )
+        dialogFragment.setWritingListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_WRITE)
     }
 
-    private fun signIn() {
-        Timber.d("Button pressed: sign in")
-        val intent = model.signInGoogleIntent
-        startActivityForResult(intent, REQUEST_CODE_SIGN_IN)
+    private fun onSignOutItemSelected() {
+        Timber.d("Item selected: sign out")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_sign_out_title,
+            R.string.dialog_confirm_sign_out_message
+        )
+        dialogFragment.setSigningOutListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_SIGN_OUT)
     }
 
-    private fun signOut() {
-        Timber.d("Button pressed: sign out")
-        model.signOutFromGoogle()
+    private fun onSignInItemSelected() {
+        Timber.d("Item selected: sign in")
+        model.signInGoogle(this)
     }
 
     private fun addFragment(fragment: Fragment) {
@@ -335,6 +390,42 @@ class MainActivity :
         else -> null
     }
 
+    private fun goToScreen(direction: MainViewModel.NavDirection) = when (direction) {
+        is MainViewModel.NavDirection.ToSignIn ->
+            startActivityForResult(direction.intent, REQUEST_CODE_SIGN_IN)
+        is MainViewModel.NavDirection.ToAuthOnRead ->
+            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_READ)
+        is MainViewModel.NavDirection.ToAuthOnWrite ->
+            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_WRITE)
+    }
+
+    private fun show(message: MainViewModel.Message) = when (message) {
+        MainViewModel.Message.ShredNotesUpdate ->
+            toast(R.string.message_shred_notes_has_been_updated)
+        MainViewModel.Message.NoShredNotesUpdate ->
+            toast(R.string.message_shred_notes_has_not_been_updated, isShort = false)
+        MainViewModel.Message.GoogleDriveUpdate ->
+            toast(R.string.message_google_drive_has_been_updated)
+        is MainViewModel.Message.Error ->
+            showError(message)
+    }
+
+    private fun showError(message: MainViewModel.Message.Error) = when (message) {
+        MainViewModel.Message.Error.UnauthorizedUser ->
+            toast(R.string.error_unauthorized_user)
+        MainViewModel.Message.Error.WrongJsonSyntax ->
+            toast(R.string.error_wrong_json_syntax)
+        is MainViewModel.Message.Error.Clarified -> {
+            val messageString = getString(
+                R.string.error_clarified,
+                message.details
+            )
+            toast(messageString)
+        }
+        MainViewModel.Message.Error.Unknown ->
+            toast(R.string.error_unknown)
+    }
+
     @IdRes
     private fun Section.getActionId(): Int = when (this) {
         Section.NOTES -> R.id.action_notes
@@ -348,6 +439,24 @@ class MainActivity :
         Section.EXERCISES -> ExercisesFragment.newInstance()
         Section.STATISTICS -> StatisticsFragment.newInstance()
         Section.ASK -> AskFragment.newInstance()
+    }
+
+    private fun ConfirmationDialogFragment.setReadingListener() {
+        setOnConfirmListener {
+            model.read()
+        }
+    }
+
+    private fun ConfirmationDialogFragment.setWritingListener() {
+        setOnConfirmListener {
+            model.write()
+        }
+    }
+
+    private fun ConfirmationDialogFragment.setSigningOutListener() {
+        setOnConfirmListener {
+            model.signOutFromGoogle(this@MainActivity)
+        }
     }
 
     private inner class OptionsMenuInvalidator : FragmentManager.FragmentLifecycleCallbacks() {

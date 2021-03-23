@@ -64,7 +64,7 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
             "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
 
-private const val SELECT_ALL = "SELECT * FROM $TABLE_NOTES"
+private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_NOTES"
 
 private const val ORDER_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
@@ -84,6 +84,8 @@ private const val SELECT_PORTION_BY_EXERCISE_SUBNAME =
             "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
             OPTIONS_FOR_SELECT_PORTION
+
+private const val DELETE_ALL = "DELETE FROM $TABLE_NOTES"
 
 private const val DELETE_BY_IDS =
     "DELETE FROM $TABLE_NOTES " +
@@ -190,17 +192,19 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @return [List] of all note entities.
      */
-    @Query(SELECT_ALL)
-    suspend fun listAllSuspending(): List<NoteEntity>
+    @Query(SELECT_ALL_UNORDERED)
+    suspend fun listAllUnorderedSuspending(): List<NoteEntity>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
-     * the [offset] in the list of all notes.
+     * the [offset] in the list of all notes. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of all notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
-     * [offset] in the list of all notes.
+     * [offset] in the list of all notes. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then ascending by BPM.
      */
     @Transaction
     @Query(SELECT_PORTION)
@@ -208,14 +212,18 @@ interface NoteDao : BaseDao<NoteEntity> {
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
-     * the [offset] in the list of notes whose exercise names contain [exerciseSubname].
+     * the [offset] in the list of notes whose exercise names contain [exerciseSubname]. The notes
+     * are sorted in descending order by timestamp, then ascending by exercise name, and then
+     * ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
      * contain [exerciseSubname].
      * @param exerciseSubname part of the names of the target notes' exercises.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
-     * [offset] in the list of notes whose exercise names contain [exerciseSubname].
+     * [offset] in the list of notes whose exercise names contain [exerciseSubname]. The notes are
+     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * by BPM.
      */
     @Transaction
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME)
@@ -224,6 +232,14 @@ interface NoteDao : BaseDao<NoteEntity> {
         offset: Int,
         exerciseSubname: String
     ): List<NoteWithExerciseInfo>
+
+    /**
+     * Deleting information about all notes.
+     *
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_ALL)
+    fun deleteAll(): Int
 
     /**
      * Deleting information about notes with the specified [ids].
@@ -276,7 +292,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * the [requestedOffset] in the list of notes whose exercise names contain [exerciseSubname], or
      * in the list of all notes if [exerciseSubname] is null or blank. If the [requestedOffset]
      * exceeds the count of required notes, the notes from the end of the target list are returned
-     * as part of the [Page].
+     * as part of the [Page]. The notes are sorted in descending order by timestamp, then ascending
+     * by exercise name, and then ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param requestedOffset desired position of the first target note in the list of notes whose
@@ -286,7 +303,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @return [Page] of the [size] or fewer notes with their exercises' info in accordance with the
      * [requestedOffset] in the list of notes whose names contain [exerciseSubname], or in the list
      * of all notes if [exerciseSubname] is null or blank; or [Page] of notes from the end of the
-     * target list if the [requestedOffset] exceeds the count of required notes.
+     * target list if the [requestedOffset] exceeds the count of required notes. The notes are
+     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * by BPM.
      */
     @Transaction
     fun page(
@@ -349,7 +368,8 @@ interface NoteDao : BaseDao<NoteEntity> {
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
      * the [offset] in the list of notes whose exercise names contain [exerciseSubname], or in the
-     * list of all notes if [exerciseSubname] is null or blank.
+     * list of all notes if [exerciseSubname] is null or blank. The notes are sorted in descending
+     * order by timestamp, then ascending by exercise name, and then ascending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
@@ -357,7 +377,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @param exerciseSubname part of the names of the target notes' exercises.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose exercise names contain [exerciseSubname], or in the list
-     * of all notes if [exerciseSubname] is null or blank.
+     * of all notes if [exerciseSubname] is null or blank. The notes are sorted in descending order
+     * by timestamp, then ascending by exercise name, and then ascending by BPM.
      */
     fun list(
         size: Int,

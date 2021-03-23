@@ -30,7 +30,7 @@ interface ExerciseRepository {
      * [requestedStartPosition] in the list of exercises whose names contain [subname], or in the
      * list of all exercises if [subname] is null or blank. If the [requestedStartPosition] exceeds
      * the count of required exercises, the exercises from the end of the target list are returned
-     * as part of the [Page].
+     * as part of the [Page]. The exercises are sorted in ascending order by name.
      *
      * @param size limit the count of exercises.
      * @param requestedStartPosition desired position of the first target exercise in the list of
@@ -40,7 +40,8 @@ interface ExerciseRepository {
      * @return [Page] of the [size] or fewer exercises in accordance with the
      * [requestedStartPosition] in the list of exercises whose names contain [subname], or in the
      * list of all exercises if [subname] is null or blank; or [Page] of exercises from the end of
-     * the target list if the [requestedStartPosition] exceeds the count of required exercises.
+     * the target list if the [requestedStartPosition] exceeds the count of required exercises. The
+     * exercises are sorted in ascending order by name.
      */
     fun page(
         size: Int,
@@ -51,7 +52,7 @@ interface ExerciseRepository {
     /**
      * Getting a [List] of the [size] or fewer exercises in accordance with the [startPosition] in
      * the list of exercises whose names contain [subname], or in the list of all exercises if
-     * [subname] is null or blank.
+     * [subname] is null or blank. The exercises are sorted in ascending order by name.
      *
      * @param size limit the count of exercises.
      * @param startPosition position of the first target exercise in the list of exercises whose
@@ -59,7 +60,7 @@ interface ExerciseRepository {
      * @param subname part of the names of the target exercises.
      * @return [List] of the [size] or fewer exercises in accordance with the [startPosition] in the
      * list of exercises whose names contain [subname], or in the list of all exercises if [subname]
-     * is null or blank.
+     * is null or blank. The exercises are sorted in ascending order by name.
      */
     fun list(
         size: Int,
@@ -68,9 +69,9 @@ interface ExerciseRepository {
     ): List<Exercise>
 
     /**
-     * Getting a [List] of all exercises.
+     * Getting a [List] of all exercises sorted in ascending order by name.
      *
-     * @return [List] of all exercises.
+     * @return [List] of all exercises sorted in ascending order by name.
      */
     suspend fun allExercisesSuspending(): List<Exercise>
 

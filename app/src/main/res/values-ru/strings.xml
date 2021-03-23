@@ -26,6 +26,17 @@
     <string name="title_note_exercise">Упражнение:</string>
     <string name="hint_note_exercise">Название упражнения</string>
 
+    <string name="dialog_confirm_common_title">Подтверждение</string>
+
+    <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_read_message">ВСЕ ЗАМЕТКИ И УПРАЖНЕНИЯ НА ЭТОМ УСТРОЙСТВЕ БУДУТ ЗАМЕНЕНЫ ЗАМЕТКАМИ И УПРАЖНЕНИЯМИ, ХРАНЯЩИМИСЯ НА GOOGLE ДИСКЕ.\nВы подтверждаете чтение с Google Диска?</string>
+
+    <string name="dialog_confirm_write_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_write_message">ВСЕ ЗАМЕТКИ И УПРАЖНЕНИЯ НА GOOGLE ДИСКЕ БУДУТ ЗАМЕНЕНЫ ЗАМЕТКАМИ И УПРАЖНЕНИЯМИ, ХРАНЯЩИМИСЯ НА ЭТОМ УСТРОЙСТВЕ.\nВы подтверждаете запись на Google Диск?</string>
+
+    <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_sign_out_message">Вы подтверждаете выход из аккаунта?</string>
+
     <string name="dialog_confirm_note_exercise_creating_title">Подтверждение</string>
     <string name="dialog_confirm_note_exercise_creating_message">Нет упражнения \"%s\".\nВы подтверждаете его создание?</string>
 
@@ -35,6 +46,10 @@
     <string name="dialog_confirm_note_deletion_title">Подтверждение</string>
     <string name="dialog_confirm_note_deletion_message">Выбрано заметок: %d\nВы подтверждаете удаление?</string>
 
+    <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
+    <string name="message_shred_notes_has_not_been_updated">Информация не обновлена, потому что ее нет на Google Диске</string>
+    <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
+
     <string name="message_exercise_has_been_added">Упражнение добавлено</string>
     <string name="message_exercise_has_been_updated">Упражнение обновлено</string>
     <string name="message_deleted_exercises">Удалено упражнений: %d</string>
@@ -42,6 +57,9 @@
     <string name="message_note_has_been_added">Заметка добавлена</string>
     <string name="message_note_has_been_updated">Заметка обновлена</string>
     <string name="message_deleted_notes">Удалено заметок: %d</string>
+
+    <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
+    <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>
 
     <string name="error_missing_excercise_name">Нет названия упражнения</string>
     <string name="error_excercise_already_exists">Упражнение \"%s\" уже есть</string>
