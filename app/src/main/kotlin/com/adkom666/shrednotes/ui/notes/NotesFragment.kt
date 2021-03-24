@@ -44,8 +44,8 @@ class NotesFragment :
 
     companion object {
 
-        private const val REQUEST_CODE_ADD_NOTE = 666
-        private const val REQUEST_CODE_UPDATE_NOTE = 667
+        private const val REQUEST_CODE_ADD_NOTE = 6666
+        private const val REQUEST_CODE_UPDATE_NOTE = 6667
 
         private const val TAG_CONFIRM_NOTES_DELETION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_notes_deletion"
