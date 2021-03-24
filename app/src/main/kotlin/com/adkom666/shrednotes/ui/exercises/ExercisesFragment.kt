@@ -24,6 +24,7 @@ import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
+import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
@@ -195,9 +196,9 @@ class ExercisesFragment :
     }
 
     private fun restoreFragmentListeners() {
-        val fragment = childFragmentManager.findFragmentByTag(TAG_CONFIRM_EXERCISES_DELETION)
-        val dialogFragment = fragment as? ConfirmationDialogFragment
-        dialogFragment?.setListeners()
+        childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_EXERCISES_DELETION) {
+            it.setDeletingListener()
+        }
     }
 
     private fun deleteSelectedExercisesIfConfirmed(associatedNoteCount: Int) {
@@ -207,7 +208,7 @@ class ExercisesFragment :
             model.selectableExercises.selectedItemCount,
             associatedNoteCount
         )
-        dialogFragment.setListeners()
+        dialogFragment.setDeletingListener()
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_EXERCISES_DELETION)
     }
 
@@ -245,7 +246,7 @@ class ExercisesFragment :
             toast(R.string.error_unknown)
     }
 
-    private fun ConfirmationDialogFragment.setListeners() {
+    private fun ConfirmationDialogFragment.setDeletingListener() {
         setOnConfirmListener {
             model.deleteSelectedExercises()
         }

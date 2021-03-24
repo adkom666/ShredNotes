@@ -25,6 +25,7 @@ import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
+import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
@@ -205,9 +206,9 @@ class NotesFragment :
     }
 
     private fun restoreFragmentListeners() {
-        val fragment = childFragmentManager.findFragmentByTag(TAG_CONFIRM_NOTES_DELETION)
-        val dialogFragment = fragment as? ConfirmationDialogFragment
-        dialogFragment?.setListeners()
+        childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_NOTES_DELETION) {
+            it.setDeletingListener()
+        }
     }
 
     private fun deleteSelectedNotesIfConfirmed() {
@@ -216,7 +217,7 @@ class NotesFragment :
             R.string.dialog_confirm_note_deletion_message,
             model.selectableNotes.selectedItemCount
         )
-        dialogFragment.setListeners()
+        dialogFragment.setDeletingListener()
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_NOTES_DELETION)
     }
 
@@ -252,7 +253,7 @@ class NotesFragment :
             toast(R.string.error_unknown)
     }
 
-    private fun ConfirmationDialogFragment.setListeners() {
+    private fun ConfirmationDialogFragment.setDeletingListener() {
         setOnConfirmListener {
             model.deleteSelectedNotes()
         }

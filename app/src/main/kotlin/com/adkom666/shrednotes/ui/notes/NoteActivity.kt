@@ -18,8 +18,10 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ActivityNoteBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.ConfirmationDialogFragment
-import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.forwardCursor
+import com.adkom666.shrednotes.util.TruncatedToMinutesDate
+import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -128,20 +130,20 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun restoreFragmentListeners() {
-        val datePickerFragment = supportFragmentManager.findFragmentByTag(TAG_DATE_PICKER)
-        val datePicker = datePickerFragment as? MaterialDatePicker<*>
-        datePicker?.addDateListeners(::pickTime)
-
-        val timePickerFragment = supportFragmentManager.findFragmentByTag(TAG_TIME_PICKER)
-        val timePicker = timePickerFragment as? MaterialTimePicker
-        timePicker?.addTimeListeners()
-
-        val fragment = supportFragmentManager.findFragmentByTag(TAG_CONFIRM_SAVE_WITH_EXERCISE)
-        val confirmation = fragment as? ConfirmationDialogFragment
-        confirmation?.setListeners()
+        supportFragmentManager.performIfFoundByTag<MaterialDatePicker<*>>(TAG_DATE_PICKER) {
+            it.addDateListeners()
+        }
+        supportFragmentManager.performIfFoundByTag<MaterialTimePicker>(TAG_TIME_PICKER) {
+            it.addTimeListeners()
+        }
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SAVE_WITH_EXERCISE) {
+            it.setSavingWithExerciseListeners()
+        }
     }
 
-    private fun pickDateTime() = pickDate(::pickTime)
+    private fun afterPickDate(calendar: Calendar) = pickTime(calendar)
+
+    private fun pickDateTime() = pickDate(::afterPickDate)
 
     private fun pickDate(afterPick: (Calendar) -> Unit) {
         val builder = MaterialDatePicker.Builder.datePicker()
@@ -175,7 +177,7 @@ class NoteActivity : AppCompatActivity() {
             R.string.dialog_confirm_note_exercise_creating_message,
             noteExerciseName
         )
-        dialogFragment.setListeners()
+        dialogFragment.setSavingWithExerciseListeners()
         dialogFragment.show(supportFragmentManager, TAG_CONFIRM_SAVE_WITH_EXERCISE)
     }
 
@@ -202,6 +204,8 @@ class NoteActivity : AppCompatActivity() {
         NoteViewModel.Message.Error.Unknown ->
             toast(R.string.error_unknown)
     }
+
+    private fun MaterialDatePicker<*>.addDateListeners() = addDateListeners(::afterPickDate)
 
     private fun MaterialDatePicker<*>.addDateListeners(afterPick: (Calendar) -> Unit) {
 
@@ -238,7 +242,7 @@ class NoteActivity : AppCompatActivity() {
         }
     }
 
-    private fun ConfirmationDialogFragment.setListeners() {
+    private fun ConfirmationDialogFragment.setSavingWithExerciseListeners() {
         setOnConfirmListener { model.acceptSaveWithExercise() }
         setOnNotConfirmListener { model.declineSaveWithExercise() }
         setOnCancelConfirmListener { model.declineSaveWithExercise() }

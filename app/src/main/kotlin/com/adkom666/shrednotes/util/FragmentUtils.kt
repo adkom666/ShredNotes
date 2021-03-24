@@ -26,15 +26,18 @@ fun FragmentManager.getCurrentlyDisplayedFragment(): Fragment? {
 fun FragmentManager.performIfConfirmationFoundByTag(
     tag: String,
     block: (ConfirmationDialogFragment) -> Unit
-) = performIfFoundByTag(tag) { fragment ->
-    val confirmation = fragment as? ConfirmationDialogFragment
-    confirmation?.let { block(it) }
-}
+) = performIfFoundByTag(tag, block)
 
-private fun FragmentManager.performIfFoundByTag(
+/**
+ * Performs [block] if the fragment with the [tag] is [T].
+ *
+ * @param tag tag of the target fragment.
+ * @param block actions to perform if the fragment with the [tag] is [T].
+ */
+inline fun <reified T> FragmentManager.performIfFoundByTag(
     tag: String,
-    block: (Fragment) -> Unit
+    block: (T) -> Unit
 ) {
-    val fragment = findFragmentByTag(tag)
+    val fragment = findFragmentByTag(tag) as? T
     fragment?.let { block(it) }
 }
