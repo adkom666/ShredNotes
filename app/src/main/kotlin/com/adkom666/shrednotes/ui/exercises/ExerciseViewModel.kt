@@ -183,6 +183,7 @@ class ExerciseViewModel @Inject constructor(
                 report(Message.Error.ExerciseAlreadyExists(exercise.name))
             }
         } catch (e: Exception) {
+            Timber.e(e)
             setState(State.Working)
             reportAbout(e)
         }

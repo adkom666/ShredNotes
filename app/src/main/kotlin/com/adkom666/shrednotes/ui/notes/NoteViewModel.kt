@@ -249,6 +249,7 @@ class NoteViewModel @Inject constructor(
                     save(note)
                 }
             } catch (e: NumberFormatException) {
+                Timber.d(e)
                 report(Message.Error.WrongNoteBpm)
             }
         }
@@ -311,6 +312,7 @@ class NoteViewModel @Inject constructor(
                 report(Message.SuggestSaveWithExercise(note.exerciseName))
             }
         } catch (e: Exception) {
+            Timber.e(e)
             setState(State.Working)
             reportAbout(e)
         }
@@ -322,6 +324,7 @@ class NoteViewModel @Inject constructor(
             noteRepository.saveWithExerciseSuspending(note, exerciseRepository)
             setState(State.Finishing.Done)
         } catch (e: Exception) {
+            Timber.e(e)
             setState(State.Working)
             reportAbout(e)
         }

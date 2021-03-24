@@ -97,7 +97,7 @@ class Google(
         try {
             return readJson(driveHelper = driveHelper, fileName = fileName)
         } catch (e: UserRecoverableAuthIOException) {
-            Timber.e(e)
+            Timber.d(e)
             throw GoogleRecoverableAuthException(e)
         }
     }
@@ -112,7 +112,7 @@ class Google(
         try {
             writeJson(driveHelper = driveHelper, fileName = fileName, json = json)
         } catch (e: UserRecoverableAuthIOException) {
-            Timber.e(e)
+            Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
             authIOException.additionalData[jsonKey] = json
             throw authIOException

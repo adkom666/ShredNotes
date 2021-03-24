@@ -242,6 +242,7 @@ class NotesViewModel @Inject constructor(
                 setState(State.Working)
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
+                Timber.e(e)
                 setState(State.Working)
                 reportAbout(e)
             }
