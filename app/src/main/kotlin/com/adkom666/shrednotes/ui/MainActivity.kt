@@ -41,7 +41,7 @@ class MainActivity :
     AppCompatActivity(),
     BottomNavigationView.OnNavigationItemSelectedListener {
 
-    companion object {
+    private companion object {
         private const val REQUEST_CODE_SIGN_IN = 228
 
         private const val REQUEST_CODE_AUTH_ON_READ = 229

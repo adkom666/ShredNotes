@@ -24,7 +24,7 @@ class ExerciseViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
 
-    companion object {
+    private companion object {
         private const val MESSAGE_CHANNEL_CAPACITY = 3
     }
 

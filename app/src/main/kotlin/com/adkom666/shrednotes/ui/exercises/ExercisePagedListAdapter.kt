@@ -20,9 +20,9 @@ class ExercisePagedListAdapter(
     private val onEditExercise: (Exercise) -> Unit
 ) : PagedListAdapter<Exercise, ExercisePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
-    companion object {
+    private companion object {
 
-        val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Exercise>() {
+        private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Exercise>() {
 
             override fun areItemsTheSame(oldItem: Exercise, newItem: Exercise): Boolean {
                 return oldItem.id == newItem.id

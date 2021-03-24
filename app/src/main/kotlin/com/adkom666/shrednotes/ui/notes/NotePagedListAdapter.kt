@@ -22,9 +22,9 @@ class NotePagedListAdapter(
     private val onEditNote: (Note) -> Unit
 ) : PagedListAdapter<Note, NotePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
-    companion object {
+    private companion object {
 
-        val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Note>() {
+        private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Note>() {
 
             override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
                 return oldItem.id == newItem.id
