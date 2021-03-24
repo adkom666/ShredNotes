@@ -187,7 +187,6 @@ class NotesFragment :
     )
 
     private fun setupFabListeners() {
-
         binding.control.fabAddDel.setOnClickListener {
             if (model.selection.isActive) {
                 deleteSelectedNotesIfConfirmed()
@@ -195,12 +194,10 @@ class NotesFragment :
                 goToNoteScreen()
             }
         }
-
         binding.control.fabSelectAll.setOnClickListener {
             model.selectionDashboard.selectAll()
             adapter.notifyDataSetChanged()
         }
-
         binding.control.fabCancel.setOnClickListener {
             model.selectionDashboard.deselectAll()
             adapter.notifyDataSetChanged()
