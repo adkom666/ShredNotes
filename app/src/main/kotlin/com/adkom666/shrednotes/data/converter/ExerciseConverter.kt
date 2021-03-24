@@ -7,20 +7,32 @@ import com.adkom666.shrednotes.data.model.Exercise
 /**
  * Getting an exercise from a database entity.
  */
-fun ExerciseEntity.toExercise(): Exercise = Exercise(id, name)
+fun ExerciseEntity.toExercise(): Exercise = Exercise(
+    id = id,
+    name = name
+)
 
 /**
  * Getting a database entity from an exercise.
  */
-fun Exercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(id, name)
+fun Exercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(
+    id = id,
+    name = name
+)
 
 /**
  * Getting an external exercise from a database entity.
  */
-fun ExerciseEntity.toExternalExercise(): ExternalExercise = ExternalExercise(id, name)
+fun ExerciseEntity.toExternalExercise(): ExternalExercise = ExternalExercise(
+    id = id,
+    name = name
+)
 
 /**
  * Getting a database entity from an external exercise.
  */
-fun ExternalExercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(id, name)
+fun ExternalExercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(
+    id = id,
+    name = name
+)
 
