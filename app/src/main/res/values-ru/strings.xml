@@ -40,13 +40,13 @@
     <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_sign_out_message">Вы подтверждаете выход из аккаунта?</string>
 
-    <string name="dialog_confirm_note_exercise_creating_title">Подтверждение</string>
+    <string name="dialog_confirm_note_exercise_creating_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_exercise_creating_message">Нет упражнения \"%s\".\nВы подтверждаете его создание?</string>
 
-    <string name="dialog_confirm_exercise_deletion_title">Подтверждение</string>
+    <string name="dialog_confirm_exercise_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_exercise_deletion_message">УДАЛЕНИЕ УПРАЖНЕНИЙ ПРИВЕДЕТ К УДАЛЕНИЮ СВЯЗАННЫХ С НИМИ ЗАМЕТОК!\nВыбрано упражнений: %d (связанных заметок: %d).\nВы подтверждаете удаление?</string>
 
-    <string name="dialog_confirm_note_deletion_title">Подтверждение</string>
+    <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_deletion_message">Выбрано заметок: %d\nВы подтверждаете удаление?</string>
 
     <string name="message_shred_notes_has_been_updated">Информация обновлена</string>

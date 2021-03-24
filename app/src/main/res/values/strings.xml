@@ -46,13 +46,13 @@
     <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_sign_out_message">Do you confirm signing out of your account?</string>
 
-    <string name="dialog_confirm_note_exercise_creating_title">Confirmation</string>
+    <string name="dialog_confirm_note_exercise_creating_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_exercise_creating_message">There is no \"%s\" exercise.\nDo you confirm its creation?</string>
 
-    <string name="dialog_confirm_exercise_deletion_title">Confirmation</string>
+    <string name="dialog_confirm_exercise_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_exercise_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d (number of associated notes: %d).\nDo you confirm deletion?</string>
 
-    <string name="dialog_confirm_note_deletion_title">Confirmation</string>
+    <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>
 
     <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
