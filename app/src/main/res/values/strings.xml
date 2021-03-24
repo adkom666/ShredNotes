@@ -13,6 +13,9 @@
     <string name="menu_item_title_sing_in">Sign In</string>
     <string name="menu_item_title_sign_out">Sign Out</string>
 
+    <string name="progress_operation_reading">Reading</string>
+    <string name="progress_operation_writing">Writing</string>
+
     <string name="desc_add_del">Add or delete</string>
     <string name="desc_select_all">Select all</string>
     <string name="desc_cancel">Cancel</string>
@@ -32,6 +35,17 @@
     <string name="title_note_bpm" translatable="false">BPM:</string>
     <string name="hint_note_bpm" translatable="false">BPM</string>
 
+    <string name="dialog_confirm_common_title">Confirmation</string>
+
+    <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_read_message">ALL NOTES AND EXERCISES ON THIS DEVICE WILL BE REPLACED WITH NOTES AND EXERCISES STORED ON GOOGLE DRIVE.\nDo you confirm reading from Google Drive?</string>
+
+    <string name="dialog_confirm_write_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_write_message">ALL NOTES AND EXERCISES ON GOOGLE DRIVE WILL BE REPLACED WITH NOTES AND EXERCISES STORED ON THIS DEVICE.\nDo you confirm writing to Google Drive?</string>
+
+    <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_sign_out_message">Do you confirm signing out of your account?</string>
+
     <string name="dialog_confirm_note_exercise_creating_title">Confirmation</string>
     <string name="dialog_confirm_note_exercise_creating_message">There is no \"%s\" exercise.\nDo you confirm its creation?</string>
 
@@ -41,6 +55,10 @@
     <string name="dialog_confirm_note_deletion_title">Confirmation</string>
     <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>
 
+    <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
+    <string name="message_shred_notes_has_not_been_updated">Shred notes has not been updated, because they are not on Google Drive</string>
+    <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
+
     <string name="message_exercise_has_been_added">Exercise has been added</string>
     <string name="message_exercise_has_been_updated">Exercise has been updated</string>
     <string name="message_deleted_exercises">Deleted exercises: %d</string>
@@ -48,6 +66,9 @@
     <string name="message_note_has_been_added">Note has been added</string>
     <string name="message_note_has_been_updated">Note has been updated</string>
     <string name="message_deleted_notes">Deleted notes: %d</string>
+
+    <string name="error_unauthorized_user">Available only to authorized users</string>
+    <string name="error_wrong_json_syntax">Wrong syntax of the JSON file on Google Drive</string>
 
     <string name="error_missing_excercise_name">Exercise name is missing</string>
     <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>

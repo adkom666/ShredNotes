@@ -30,6 +30,7 @@ private const val SELECT_COUNT_BY_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME"
 
+private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_EXERCISES"
 private const val ORDER = "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
 private const val SELECT_ALL = "SELECT * FROM $TABLE_EXERCISES $ORDER"
 
@@ -50,6 +51,7 @@ private const val SELECT_PORTION_BY_SUBNAME =
             "WHERE $CONDITION_BY_SUBNAME " +
             OPTIONS_FOR_SELECT_PORTION
 
+private const val DELETE_ALL = "DELETE FROM $TABLE_EXERCISES"
 private const val CONDITION_BY_IDS = "$TABLE_EXERCISES_FIELD_ID IN (:ids)"
 
 private const val DELETE_BY_IDS =
@@ -146,44 +148,64 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      *
      * @return [List] of all exercise entities.
      */
+    @Query(SELECT_ALL_UNORDERED)
+    suspend fun listAllUnorderedSuspending(): List<ExerciseEntity>
+
+    /**
+     * Getting a [List] of all exercise entities sorted in ascending order by name.
+     *
+     * @return [List] of all exercise entities sorted in ascending order by name.
+     */
     @Query(SELECT_ALL)
     suspend fun listAllSuspending(): List<ExerciseEntity>
 
     /**
-     * Getting a [List] of exercise entities whose name is equal to [name].
+     * Getting a [List] of exercise entities whose name is equal to [name] sorted in ascending order
+     * by name.
      *
      * @param name name of target exercise entities.
-     * @return [List] of exercise entities whose name is equal to [name].
+     * @return [List] of exercise entities whose name is equal to [name] sorted in ascending order
+     * by name.
      */
     @Query(SELECT_BY_NAME)
     suspend fun listByNameSuspending(name: String): List<ExerciseEntity>
 
     /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of all exercise entities.
+     * the list of all exercise entities sorted in ascending order by name.
      *
      * @param size limit the count of exercise entities.
      * @param offset position of the first target exercise entity in the list of all exercise
      * entities.
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of all exercise entities.
+     * the list of all exercise entities sorted in ascending order by name.
      */
     @Query(SELECT_PORTION)
     fun listPortion(size: Int, offset: Int): List<ExerciseEntity>
 
     /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of exercise entities whose names contain [subname].
+     * the list of exercise entities whose names contain [subname]. The exercise entities are sorted
+     * in ascending order by name.
      *
      * @param size limit the count of exercise entities.
      * @param offset position of the first target exercise entity in the list of exercise entities
      * whose names contain [subname].
      * @param subname part of the names of the target exercises.
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of exercise entities whose names contain [subname].
+     * the list of exercise entities whose names contain [subname]. The exercise entities are sorted
+     * in ascending order by name.
      */
     @Query(SELECT_PORTION_BY_SUBNAME)
     fun listPortionBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
+
+    /**
+     * Deleting information about all exercises.
+     *
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_ALL)
+    fun deleteAll(): Int
 
     /**
      * Deleting information about exercises with the specified [ids].
@@ -229,7 +251,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * [requestedOffset] in the list of exercise entities whose names contain [subname], or in the
      * list of all exercise entities if [subname] is null or blank. If the [requestedOffset] exceeds
      * the count of required exercise entities, the entities from the end of the target list are
-     * returned as part of the [Page].
+     * returned as part of the [Page]. The exercise entities are sorted in ascending order by name.
      *
      * @param size limit the count of exercise entities.
      * @param requestedOffset desired position of the first target exercise entity in the list of
@@ -240,7 +262,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * [requestedOffset] in the list of exercise entities whose names contain [subname], or in the
      * list of all exercise entities if [subname] is null or blank; or [Page] of exercise entities
      * from the end of the target list if the [requestedOffset] exceeds the count of required
-     * exercise entities.
+     * exercise entities. The exercise entities are sorted in ascending order by name.
      */
     @Transaction
     fun page(
@@ -311,7 +333,8 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
     /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of exercise entities whose names contain [subname], or in the list of all exercise
-     * entities if [subname] is null or blank.
+     * entities if [subname] is null or blank. The exercise entities are sorted in ascending order
+     * by name.
      *
      * @param size limit the count of exercise entities.
      * @param offset position of the first target exercise entity in the list of exercise entities
@@ -320,7 +343,8 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * @param subname part of the names of the target exercises.
      * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
      * the list of exercise entities whose names contain [subname], or in the list of all exercise
-     * entities if [subname] is null or blank.
+     * entities if [subname] is null or blank. The exercise entities are sorted in ascending order
+     * by name.
      */
     fun list(
         size: Int,

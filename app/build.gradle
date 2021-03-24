@@ -104,6 +104,18 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
 
+    // Google
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    implementation('com.google.api-client:google-api-client-android:1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.8.6'
+
     // Log
     implementation 'com.jakewharton.timber:timber:4.7.1'
 

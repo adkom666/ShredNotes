@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.di.viewmodel.ViewModelFactory
 import com.adkom666.shrednotes.di.viewmodel.ViewModelKey
+import com.adkom666.shrednotes.ui.MainViewModel
 import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
 import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
@@ -15,11 +16,21 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
 @ExperimentalCoroutinesApi
-@Module(includes = [RepositoryModule::class])
+@Module(
+    includes = [
+        RepositoryModule::class,
+        DataManagerModule::class
+    ]
+)
 abstract class ViewModelModule {
 
     @Binds
     abstract fun viewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MainViewModel::class)
+    abstract fun mainViewModel(viewModel: MainViewModel): ViewModel
 
     @Binds
     @IntoMap

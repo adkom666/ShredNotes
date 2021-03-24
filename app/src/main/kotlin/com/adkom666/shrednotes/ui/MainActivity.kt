@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -10,17 +11,27 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityMainBinding
+import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
+import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
+import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Main screen.
@@ -30,11 +41,27 @@ class MainActivity :
     AppCompatActivity(),
     BottomNavigationView.OnNavigationItemSelectedListener {
 
+    companion object {
+        private const val REQUEST_CODE_SIGN_IN = 228
+
+        private const val REQUEST_CODE_AUTH_ON_READ = 229
+        private const val REQUEST_CODE_AUTH_ON_WRITE = 230
+
+        private const val TAG_CONFIRM_READ = "${BuildConfig.APPLICATION_ID}.tags.confirm_read"
+        private const val TAG_CONFIRM_WRITE = "${BuildConfig.APPLICATION_ID}.tags.confirm_write"
+
+        private const val TAG_CONFIRM_SIGN_OUT =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_sign_out"
+    }
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
     private val binding: ActivityMainBinding
-        get() = _binding ?: error("View binding is not initialized!")
+        get() = requireNotNull(_binding)
 
     private val model: MainViewModel
-        get() = _model ?: error("View model is not initialized!")
+        get() = requireNotNull(_model)
 
     private var _binding: ActivityMainBinding? = null
     private var _model: MainViewModel? = null
@@ -49,15 +76,27 @@ class MainActivity :
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        _model = ViewModelProvider(this).get(MainViewModel::class.java)
+        _model = viewModel(viewModelFactory)
 
+        invalidateSubtitle()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
-        initNavigation()
-
+        initBottomNavigation()
         supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
+        restoreFragmentListeners()
+
+        model.stateAsLiveData.observe(this, StateObserver())
+
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -67,9 +106,13 @@ class MainActivity :
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         menu?.let {
+            val state = model.state
+            val forceInvisible = state == null || state is MainViewModel.State.Waiting
             val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
-            prepareSearch(fragment, it)
-            prepareFilter(fragment, it)
+            prepareSearch(it, forceInvisible, fragment)
+            prepareFilter(it, forceInvisible, fragment)
+            val itemsVisibility = model.googleDriveItemsVisibility
+            prepareGoogleDrivePanel(it, forceInvisible, itemsVisibility)
         }
         return true
     }
@@ -79,6 +122,21 @@ class MainActivity :
             true
         } else {
             super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Timber.d(
+            """onActivityResult:
+                |requestCode=$requestCode,
+                |resultCode=$resultCode,
+                |data=$data""".trimMargin()
+        )
+        when (requestCode) {
+            REQUEST_CODE_SIGN_IN -> model.handleSignInGoogleResult(this, resultCode, data)
+            REQUEST_CODE_AUTH_ON_READ -> model.handleAuthOnReadResult(resultCode)
+            REQUEST_CODE_AUTH_ON_WRITE -> model.handleAuthOnWriteResult(resultCode)
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -107,53 +165,81 @@ class MainActivity :
         }
     }
 
-    private fun initNavigation() {
+    private fun invalidateSubtitle() {
+        supportActionBar?.subtitle = model.googleAccountDisplayName
+    }
+
+    private fun initBottomNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
     }
 
-    private fun prepareSearch(fragment: Fragment?, menu: Menu) {
-
-        fun MenuItem.ensureActionViewExpanded() {
-            if (!isActionViewExpanded) {
-                expandActionView()
-            }
+    private fun restoreFragmentListeners() {
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_READ) {
+            it.setReadingListener()
         }
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_WRITE) {
+            it.setWritingListener()
+        }
+        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SIGN_OUT) {
+            it.setSigningOutListener()
+        }
+    }
 
-        fun MenuItem.ensureActionViewCollapsed() {
-            if (isActionViewExpanded) {
-                collapseActionView()
+    private fun prepareSearch(
+        menu: Menu,
+        forceInvisible: Boolean,
+        fragment: Fragment?
+    ) {
+        fun prepare(itemSearch: MenuItem, fragment: Fragment?) {
+
+            fun MenuItem.ensureActionViewExpanded() {
+                if (!isActionViewExpanded) {
+                    expandActionView()
+                }
+            }
+
+            fun MenuItem.ensureActionViewCollapsed() {
+                if (isActionViewExpanded) {
+                    collapseActionView()
+                }
+            }
+
+            itemSearch.setOnActionExpandListener(null)
+            val searchView = itemSearch.actionView as? SearchView
+            searchView?.setOnQueryTextListener(null)
+            val isSearchVisible = if (forceInvisible.not() && fragment is Searchable) {
+                val isSearchActive = fragment.isSearchActive
+                val currentQuery = fragment.currentQuery
+                if (currentQuery.isNullOrEmpty() && isSearchActive.not()) {
+                    itemSearch.ensureActionViewCollapsed()
+                } else {
+                    itemSearch.ensureActionViewExpanded()
+                    searchView?.setQuery(currentQuery, false)
+                }
+                true
+            } else {
+                itemSearch.ensureActionViewCollapsed()
+                false
+            }
+            searchView?.isVisible = isSearchVisible
+            menu.setGroupVisible(R.id.group_search, isSearchVisible)
+            if (isSearchVisible) {
+                itemSearch.setOnActionExpandListener(onExpandSearchViewListener)
+                searchView?.setOnQueryTextListener(onQueryTextListener)
             }
         }
 
         val itemSearch = menu.findItem(R.id.action_search)
-        itemSearch.setOnActionExpandListener(null)
-        val searchView = itemSearch.actionView as? SearchView
-        searchView?.setOnQueryTextListener(null)
-        val isSearchVisible = if (fragment is Searchable) {
-            val isSearchActive = fragment.isSearchActive
-            val currentQuery = fragment.currentQuery
-            if (currentQuery.isNullOrEmpty() && isSearchActive.not()) {
-                itemSearch.ensureActionViewCollapsed()
-            } else {
-                itemSearch.ensureActionViewExpanded()
-                searchView?.setQuery(currentQuery, false)
-            }
-            true
-        } else {
-            itemSearch.ensureActionViewCollapsed()
-            false
-        }
-        searchView?.isVisible = isSearchVisible
-        menu.setGroupVisible(R.id.group_search, isSearchVisible)
-        if (isSearchVisible) {
-            itemSearch.setOnActionExpandListener(onExpandSearchViewListener)
-            searchView?.setOnQueryTextListener(onQueryTextListener)
-        }
+        itemSearch?.let { prepare(it, fragment) }
     }
 
-    private fun prepareFilter(fragment: Fragment?, menu: Menu) {
-        val isFilterVisible = if (fragment is Filterable) {
+    private fun prepareFilter(
+        menu: Menu,
+        forceInvisible: Boolean,
+        fragment: Fragment?
+    ) {
+        val isFilterVisible = if (forceInvisible.not() && fragment is Filterable) {
             val iconRes = if (fragment.isFilterEnabled) {
                 R.drawable.ic_filter_on
             } else {
@@ -168,13 +254,28 @@ class MainActivity :
         menu.setGroupVisible(R.id.group_filter, isFilterVisible)
     }
 
+    private fun prepareGoogleDrivePanel(
+        menu: Menu,
+        forceInvisible: Boolean,
+        itemsVisibility: MainViewModel.GoogleDriveItemsVisibility
+    ) {
+        val itemRead = menu.findItem(R.id.action_read)
+        val itemWrite = menu.findItem(R.id.action_write)
+        val itemSignOut = menu.findItem(R.id.action_sign_out)
+        val itemSignIn = menu.findItem(R.id.action_sign_in)
+        itemRead?.isVisible = forceInvisible.not() && itemsVisibility.isItemReadVisibile
+        itemWrite?.isVisible = forceInvisible.not() && itemsVisibility.isItemWriteVisibile
+        itemSignOut?.isVisible = forceInvisible.not() && itemsVisibility.isItemSignOutVisibile
+        itemSignIn?.isVisible = forceInvisible.not() && itemsVisibility.isItemSignInVisibile
+    }
+
     private fun handleToolSelection(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_filter -> filter()
-            R.id.action_read -> read()
-            R.id.action_write -> write()
-            R.id.action_sign_in -> signIn()
-            R.id.action_sign_out -> signOut()
+            R.id.action_filter -> onFilterItemSelected()
+            R.id.action_read -> onReadItemSelected()
+            R.id.action_write -> onWriteItemSelected()
+            R.id.action_sign_out -> onSignOutItemSelected()
+            R.id.action_sign_in -> onSignInItemSelected()
             else -> return false
         }
         return true
@@ -216,8 +317,8 @@ class MainActivity :
         }
     }
 
-    private fun filter() {
-        Timber.d("Button pressed: filter")
+    private fun onFilterItemSelected() {
+        Timber.d("Item selected: filter")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
             fragment.filter { filterEnabled ->
@@ -226,27 +327,46 @@ class MainActivity :
         }
     }
 
-    private fun read() {
-        Timber.d("Button pressed: read notes")
+    private fun onReadItemSelected() {
+        Timber.d("Item selected: read notes")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_read_title,
+            R.string.dialog_confirm_read_message
+        )
+        dialogFragment.setReadingListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_READ)
     }
 
-    private fun write() {
-        Timber.d("Button pressed: write notes")
+    private fun onWriteItemSelected() {
+        Timber.d("Item selected: write notes")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_write_title,
+            R.string.dialog_confirm_write_message
+        )
+        dialogFragment.setWritingListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_WRITE)
     }
 
-    private fun signIn() {
-        Timber.d("Button pressed: sign in")
+    private fun onSignOutItemSelected() {
+        Timber.d("Item selected: sign out")
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_sign_out_title,
+            R.string.dialog_confirm_sign_out_message
+        )
+        dialogFragment.setSigningOutListener()
+        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_SIGN_OUT)
     }
 
-    private fun signOut() {
-        Timber.d("Button pressed: sign out")
+    private fun onSignInItemSelected() {
+        Timber.d("Item selected: sign in")
+        model.signInGoogle(this)
     }
 
     private fun addFragment(fragment: Fragment) {
         Timber.d("Add fragment: $fragment")
         supportFragmentManager
             .beginTransaction()
-            .replace(binding.content.id, fragment)
+            .replace(binding.section.id, fragment)
             .commit()
     }
 
@@ -258,7 +378,7 @@ class MainActivity :
                 android.R.anim.fade_in, android.R.anim.fade_out,
                 android.R.anim.fade_in, android.R.anim.fade_out
             )
-            .replace(binding.content.id, fragment)
+            .replace(binding.section.id, fragment)
             .commit()
     }
 
@@ -268,6 +388,42 @@ class MainActivity :
         R.id.action_statistics -> Section.STATISTICS
         R.id.action_ask -> Section.ASK
         else -> null
+    }
+
+    private fun goToScreen(direction: MainViewModel.NavDirection) = when (direction) {
+        is MainViewModel.NavDirection.ToSignIn ->
+            startActivityForResult(direction.intent, REQUEST_CODE_SIGN_IN)
+        is MainViewModel.NavDirection.ToAuthOnRead ->
+            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_READ)
+        is MainViewModel.NavDirection.ToAuthOnWrite ->
+            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_WRITE)
+    }
+
+    private fun show(message: MainViewModel.Message) = when (message) {
+        MainViewModel.Message.ShredNotesUpdate ->
+            toast(R.string.message_shred_notes_has_been_updated)
+        MainViewModel.Message.NoShredNotesUpdate ->
+            toast(R.string.message_shred_notes_has_not_been_updated, isShort = false)
+        MainViewModel.Message.GoogleDriveUpdate ->
+            toast(R.string.message_google_drive_has_been_updated)
+        is MainViewModel.Message.Error ->
+            showError(message)
+    }
+
+    private fun showError(message: MainViewModel.Message.Error) = when (message) {
+        MainViewModel.Message.Error.UnauthorizedUser ->
+            toast(R.string.error_unauthorized_user)
+        MainViewModel.Message.Error.WrongJsonSyntax ->
+            toast(R.string.error_wrong_json_syntax)
+        is MainViewModel.Message.Error.Clarified -> {
+            val messageString = getString(
+                R.string.error_clarified,
+                message.details
+            )
+            toast(messageString)
+        }
+        MainViewModel.Message.Error.Unknown ->
+            toast(R.string.error_unknown)
     }
 
     @IdRes
@@ -285,9 +441,27 @@ class MainActivity :
         Section.ASK -> AskFragment.newInstance()
     }
 
+    private fun ConfirmationDialogFragment.setReadingListener() {
+        setOnConfirmListener {
+            model.read()
+        }
+    }
+
+    private fun ConfirmationDialogFragment.setWritingListener() {
+        setOnConfirmListener {
+            model.write()
+        }
+    }
+
+    private fun ConfirmationDialogFragment.setSigningOutListener() {
+        setOnConfirmListener {
+            model.signOutFromGoogle(this@MainActivity)
+        }
+    }
+
     private inner class OptionsMenuInvalidator : FragmentManager.FragmentLifecycleCallbacks() {
 
-        var isFirstFragmentActivityCreated: Boolean = false
+        private var isFirstFragmentActivityCreated: Boolean = false
 
         override fun onFragmentActivityCreated(
             fragmentManager: FragmentManager,
@@ -313,6 +487,53 @@ class MainActivity :
         override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
             reportSearchActiveness(false)
             return true
+        }
+    }
+
+    private inner class StateObserver : Observer<MainViewModel.State> {
+
+        override fun onChanged(state: MainViewModel.State?) {
+            Timber.d("State is $state")
+            when (state) {
+                is MainViewModel.State.Preparation -> {
+                    prepare(state)
+                    model.ok()
+                }
+                MainViewModel.State.Working ->
+                    setWorking()
+                is MainViewModel.State.Waiting -> {
+                    setWaiting(state.operation)
+                    invalidateOptionsMenu()
+                }
+            }
+        }
+
+        private fun prepare(state: MainViewModel.State.Preparation) = when (state) {
+            MainViewModel.State.Preparation.Initial ->
+                Unit
+            MainViewModel.State.Preparation.Continuing ->
+                invalidateOptionsMenu()
+            MainViewModel.State.Preparation.GoogleDriveStateChanged -> {
+                invalidateSubtitle()
+                invalidateOptionsMenu()
+            }
+        }
+
+        private fun setWaiting(operation: MainViewModel.State.Waiting.Operation) {
+            setProgressActive(true)
+            binding.operationTextView.setText(operation.stringResId())
+        }
+
+        private fun setWorking() = setProgressActive(false)
+
+        private fun setProgressActive(isActive: Boolean) {
+            binding.progress.isVisible = isActive
+            binding.content.isVisible = isActive.not()
+        }
+
+        private fun MainViewModel.State.Waiting.Operation.stringResId(): Int = when (this) {
+            MainViewModel.State.Waiting.Operation.READING -> R.string.progress_operation_reading
+            MainViewModel.State.Waiting.Operation.WRITING -> R.string.progress_operation_writing
         }
     }
 }
