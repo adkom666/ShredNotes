@@ -34,6 +34,7 @@ class MainViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 3
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+
         private const val KEY_JSON = "json"
     }
 
