@@ -129,21 +129,29 @@ class ExerciseActivity : AppCompatActivity() {
             when (state) {
                 ExerciseViewModel.State.Waiting ->
                     setWaiting(true)
-                is ExerciseViewModel.State.Init -> {
-                    initExercise(state.exerciseName)
+                is ExerciseViewModel.State.Preparation -> {
+                    prepare(state)
                     model.ok()
                 }
-                ExerciseViewModel.State.Normal ->
+                ExerciseViewModel.State.Working ->
                     setWaiting(false)
-                ExerciseViewModel.State.Declined -> {
-                    setResult(RESULT_CANCELED)
-                    finish()
-                }
-                ExerciseViewModel.State.Done -> {
-                    setResult(RESULT_OK)
+                is ExerciseViewModel.State.Finishing -> {
+                    beforeFinish(state)
                     finish()
                 }
             }
+        }
+
+        private fun prepare(state: ExerciseViewModel.State.Preparation) = when (state) {
+            is ExerciseViewModel.State.Preparation.Initial ->
+                initExercise(state.exerciseName)
+        }
+
+        private fun beforeFinish(state: ExerciseViewModel.State.Finishing) = when (state) {
+            ExerciseViewModel.State.Finishing.Declined ->
+                setResult(RESULT_CANCELED)
+            ExerciseViewModel.State.Finishing.Done ->
+                setResult(RESULT_OK)
         }
 
         private fun setWaiting(active: Boolean) {

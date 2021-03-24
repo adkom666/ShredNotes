@@ -59,7 +59,7 @@ class ExercisesViewModel @Inject constructor(
         /**
          * Interacting with the user.
          */
-        object Normal : State()
+        object Working : State()
     }
 
     /**
@@ -183,7 +183,7 @@ class ExercisesViewModel @Inject constructor(
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")
             _manageableSelection.init(exerciseInitialCount)
-            setState(State.Normal)
+            setState(State.Working)
             // Ignore initial value
             exerciseRepository.countFlow.drop(1).collect { exerciseCount ->
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
@@ -203,10 +203,10 @@ class ExercisesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val noteCount = requestAssociatedNoteCount(_manageableSelection.state)
-                setState(State.Normal)
+                setState(State.Working)
                 report(Message.AssociatedNoteCount(noteCount))
             } catch (e: Exception) {
-                setState(State.Normal)
+                setState(State.Working)
                 reportAbout(e)
             }
         }
@@ -222,10 +222,10 @@ class ExercisesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedExercises(_manageableSelection.state)
-                setState(State.Normal)
+                setState(State.Working)
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
-                setState(State.Normal)
+                setState(State.Working)
                 reportAbout(e)
             }
         }
@@ -262,7 +262,7 @@ class ExercisesViewModel @Inject constructor(
     private fun invalidateExercises() {
         setState(State.Waiting)
         exerciseSourceFactory.invalidate()
-        setState(State.Normal)
+        setState(State.Working)
     }
 
     private fun reportAbout(e: Exception) {

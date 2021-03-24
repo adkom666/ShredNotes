@@ -271,24 +271,33 @@ class NoteActivity : AppCompatActivity() {
             when (state) {
                 NoteViewModel.State.Waiting ->
                     setWaiting(true)
-                is NoteViewModel.State.Init -> {
-                    initExerciseList(state.exerciseList)
-                    initNote(state.noteDateTime, state.noteExerciseName, state.noteBpmString)
+                is NoteViewModel.State.Preparation -> {
+                    prepare(state)
                     model.ok()
                 }
-                NoteViewModel.State.Normal ->
+                NoteViewModel.State.Working ->
                     setWaiting(false)
-                is NoteViewModel.State.NoteDateTimeChanged ->
-                    setNoteDateTime(state.noteDateTime)
-                NoteViewModel.State.Declined -> {
-                    setResult(RESULT_CANCELED)
-                    finish()
-                }
-                NoteViewModel.State.Done -> {
-                    setResult(RESULT_OK)
+                is NoteViewModel.State.Finishing -> {
+                    beforeFinish(state)
                     finish()
                 }
             }
+        }
+
+        private fun prepare(state: NoteViewModel.State.Preparation) = when (state) {
+            is NoteViewModel.State.Preparation.Initial -> {
+                initExerciseList(state.exerciseList)
+                initNote(state.noteDateTime, state.noteExerciseName, state.noteBpmString)
+            }
+            is NoteViewModel.State.Preparation.NoteDateTimeChanged ->
+                setNoteDateTime(state.noteDateTime)
+        }
+
+        private fun beforeFinish(state: NoteViewModel.State.Finishing) = when (state) {
+            NoteViewModel.State.Finishing.Declined ->
+                setResult(RESULT_CANCELED)
+            NoteViewModel.State.Finishing.Done ->
+                setResult(RESULT_OK)
         }
 
         private fun setWaiting(active: Boolean) {

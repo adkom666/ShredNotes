@@ -45,41 +45,55 @@ class NoteViewModel @Inject constructor(
         object Waiting : State()
 
         /**
-         * Initiate the necessary objects before interacting with the user.
-         *
-         * @property exerciseList [List] of all exercises.
-         * @property noteDateTime date and time of training.
-         * @property noteExerciseName training exercise name.
-         * @property noteBpmString training BPM.
+         * Prepare for interacting with the user and tell me by [ok] call.
          */
-        data class Init(
-            val exerciseList: List<Exercise>,
-            val noteDateTime: TruncatedToMinutesDate,
-            val noteExerciseName: String?,
-            val noteBpmString: String?
-        ) : State()
+        sealed class Preparation : State() {
+
+            /**
+             * Initiate the necessary objects before interacting with the user.
+             *
+             * @property exerciseList [List] of all exercises.
+             * @property noteDateTime date and time of training.
+             * @property noteExerciseName training exercise name.
+             * @property noteBpmString training BPM.
+             */
+            data class Initial(
+                val exerciseList: List<Exercise>,
+                val noteDateTime: TruncatedToMinutesDate,
+                val noteExerciseName: String?,
+                val noteBpmString: String?
+            ) : Preparation()
+
+            /**
+             * The date and time of the training have been changed.
+             *
+             * @property noteDateTime new date and time of training.
+             */
+            data class NoteDateTimeChanged(
+                val noteDateTime: TruncatedToMinutesDate
+            ) : Preparation()
+        }
 
         /**
          * Interacting with the user.
          */
-        object Normal : State()
+        object Working : State()
 
         /**
-         * The date and time of the training have changed.
-         *
-         * @property noteDateTime new date and time of training.
+         * Finishing work with the note.
          */
-        data class NoteDateTimeChanged(val noteDateTime: TruncatedToMinutesDate) : State()
+        sealed class Finishing : State() {
 
-        /**
-         * Work with the note was declined.
-         */
-        object Declined : State()
+            /**
+             * Work with the note was declined.
+             */
+            object Declined : Finishing()
 
-        /**
-         * Work with the note is done.
-         */
-        object Done : State()
+            /**
+             * Work with the note is done.
+             */
+            object Done : Finishing()
+        }
     }
 
     /**
@@ -137,7 +151,7 @@ class NoteViewModel @Inject constructor(
             if (value != _noteDateTime) {
                 Timber.d("Set noteDateTime=$value")
                 _noteDateTime = value
-                setState(State.NoteDateTimeChanged(noteDateTime = value))
+                setState(State.Preparation.NoteDateTimeChanged(noteDateTime = value))
             }
         }
 
@@ -188,7 +202,7 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             val exerciseList = exerciseRepository.allExercisesSuspending()
             setState(
-                State.Init(
+                State.Preparation.Initial(
                     exerciseList,
                     noteDateTime,
                     if (isFirstStart) initialNote?.exerciseName else null,
@@ -203,7 +217,7 @@ class NoteViewModel @Inject constructor(
      */
     fun ok() {
         Timber.d("OK!")
-        setState(State.Normal)
+        setState(State.Working)
     }
 
     /**
@@ -258,7 +272,7 @@ class NoteViewModel @Inject constructor(
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun save(note: Note) = when (note) {
-        initialNote -> setState(State.Declined)
+        initialNote -> setState(State.Finishing.Declined)
         else -> {
             setState(State.Waiting)
             viewModelScope.launch {
@@ -271,7 +285,7 @@ class NoteViewModel @Inject constructor(
     private fun saveWithExercise(note: Note) = when {
         note.exerciseName.isBlank() -> report(Message.Error.MissingNoteExerciseName)
         isNoteBpmInvalid(note.bpm) -> report(Message.Error.WrongNoteBpm)
-        note == initialNote -> setState(State.Declined)
+        note == initialNote -> setState(State.Finishing.Declined)
         else -> {
             setState(State.Waiting)
             viewModelScope.launch {
@@ -284,14 +298,14 @@ class NoteViewModel @Inject constructor(
         @Suppress("TooGenericExceptionCaught")
         try {
             if (noteRepository.saveIfExerciseNamePresentSuspending(note, exerciseRepository)) {
-                setState(State.Done)
+                setState(State.Finishing.Done)
             } else {
                 noteToSaveWithExercise = note
-                setState(State.Normal)
+                setState(State.Working)
                 report(Message.SuggestSaveWithExercise(note.exerciseName))
             }
         } catch (e: Exception) {
-            setState(State.Normal)
+            setState(State.Working)
             reportAbout(e)
         }
     }
@@ -300,9 +314,9 @@ class NoteViewModel @Inject constructor(
         @Suppress("TooGenericExceptionCaught")
         try {
             noteRepository.saveWithExerciseSuspending(note, exerciseRepository)
-            setState(State.Done)
+            setState(State.Finishing.Done)
         } catch (e: Exception) {
-            setState(State.Normal)
+            setState(State.Working)
             reportAbout(e)
         }
     }

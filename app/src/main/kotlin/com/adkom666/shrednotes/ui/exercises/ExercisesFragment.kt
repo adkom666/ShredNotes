@@ -258,7 +258,7 @@ class ExercisesFragment :
             Timber.d("State is $state")
             when (state) {
                 ExercisesViewModel.State.Waiting -> setWaiting(true)
-                ExercisesViewModel.State.Normal -> setWaiting(false)
+                ExercisesViewModel.State.Working -> setWaiting(false)
             }
         }
 

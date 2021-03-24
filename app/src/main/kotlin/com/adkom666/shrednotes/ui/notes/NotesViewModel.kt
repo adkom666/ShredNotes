@@ -55,7 +55,7 @@ class NotesViewModel @Inject constructor(
         /**
          * Interacting with the user.
          */
-        object Normal : State()
+        object Working : State()
     }
 
     /**
@@ -173,7 +173,7 @@ class NotesViewModel @Inject constructor(
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
             Timber.d("noteInitialCount=$noteInitialCount")
             _manageableSelection.init(noteInitialCount)
-            setState(State.Normal)
+            setState(State.Working)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
@@ -193,10 +193,10 @@ class NotesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedNotes(_manageableSelection.state)
-                setState(State.Normal)
+                setState(State.Working)
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
-                setState(State.Normal)
+                setState(State.Working)
                 reportAbout(e)
             }
         }
@@ -205,7 +205,7 @@ class NotesViewModel @Inject constructor(
     private fun invalidateNotes() {
         setState(State.Waiting)
         noteSourceFactory.invalidate()
-        setState(State.Normal)
+        setState(State.Working)
     }
 
     private suspend fun deleteSelectedNotes(

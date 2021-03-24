@@ -39,26 +39,38 @@ class ExerciseViewModel @Inject constructor(
         object Waiting : State()
 
         /**
-         * Initiate the necessary objects before interacting with the user.
-         *
-         * @property exerciseName ready-made exercise name.
+         * Prepare for interacting with the user and tell me by [ok] call.
          */
-        data class Init(val exerciseName: String?) : State()
+        sealed class Preparation : State() {
+
+            /**
+             * Initiate the necessary objects before interacting with the user.
+             *
+             * @property exerciseName ready-made exercise name.
+             */
+            data class Initial(val exerciseName: String?) : Preparation()
+        }
 
         /**
          * Interacting with the user.
          */
-        object Normal : State()
+        object Working : State()
 
         /**
-         * Work with the exercise was declined.
+         * Finishing work with the exercise.
          */
-        object Declined : State()
+        sealed class Finishing : State() {
 
-        /**
-         * Work with the exercise is done.
-         */
-        object Done : State()
+            /**
+             * Work with the exercise was declined.
+             */
+            object Declined : Finishing()
+
+            /**
+             * Work with the exercise is done.
+             */
+            object Done : Finishing()
+        }
     }
 
     /**
@@ -126,7 +138,7 @@ class ExerciseViewModel @Inject constructor(
     fun prepare(exercise: Exercise?) {
         Timber.d("Prepare: exercise=$exercise")
         _initialExercise = exercise
-        setState(State.Init(initialExercise?.name))
+        setState(State.Preparation.Initial(initialExercise?.name))
     }
 
     /**
@@ -134,7 +146,7 @@ class ExerciseViewModel @Inject constructor(
      */
     fun ok() {
         Timber.d("OK!")
-        setState(State.Normal)
+        setState(State.Working)
     }
 
     /**
@@ -149,7 +161,7 @@ class ExerciseViewModel @Inject constructor(
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun save(exercise: Exercise) = when {
-        exercise == initialExercise -> setState(State.Declined)
+        exercise == initialExercise -> setState(State.Finishing.Declined)
         exercise.name.isBlank() -> report(Message.Error.MissingExerciseName)
         else -> {
             setState(State.Waiting)
@@ -163,13 +175,13 @@ class ExerciseViewModel @Inject constructor(
         @Suppress("TooGenericExceptionCaught")
         try {
             if (exerciseRepository.saveIfNoSuchNameSuspending(exercise)) {
-                setState(State.Done)
+                setState(State.Finishing.Done)
             } else {
-                setState(State.Normal)
+                setState(State.Working)
                 report(Message.Error.ExerciseAlreadyExists(exercise.name))
             }
         } catch (e: Exception) {
-            setState(State.Normal)
+            setState(State.Working)
             reportAbout(e)
         }
     }

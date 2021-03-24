@@ -265,7 +265,7 @@ class NotesFragment :
             Timber.d("State is $state")
             when (state) {
                 NotesViewModel.State.Waiting -> setWaiting(true)
-                NotesViewModel.State.Normal -> setWaiting(false)
+                NotesViewModel.State.Working -> setWaiting(false)
             }
         }
 
