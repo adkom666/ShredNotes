@@ -9,7 +9,6 @@ import timber.log.Timber
 /**
  * "Shred Notes" application.
  */
-@ExperimentalCoroutinesApi
 class App : DaggerApplication() {
 
     override fun onCreate() {
@@ -19,6 +18,7 @@ class App : DaggerApplication() {
         }
     }
 
+    @ExperimentalCoroutinesApi
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
         return DaggerAppComponent.builder()
             .app(this)

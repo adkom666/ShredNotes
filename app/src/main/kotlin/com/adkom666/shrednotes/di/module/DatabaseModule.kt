@@ -39,7 +39,10 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun shredNotesDatabase(context: Context): ShredNotesDatabase {
-        return Room.databaseBuilder(context, ShredNotesDatabase::class.java, DB_NAME)
-            .build()
+        return Room.databaseBuilder(
+            context,
+            ShredNotesDatabase::class.java,
+            DB_NAME
+        ).build()
     }
 }

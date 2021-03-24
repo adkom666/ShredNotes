@@ -11,7 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
 @ExperimentalCoroutinesApi
-@Module
+@Module(includes = [ViewModelModule::class])
 abstract class AppModule {
 
     @ContributesAndroidInjector

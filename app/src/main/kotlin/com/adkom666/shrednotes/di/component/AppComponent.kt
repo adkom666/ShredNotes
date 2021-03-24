@@ -2,7 +2,6 @@ package com.adkom666.shrednotes.di.component
 
 import com.adkom666.shrednotes.App
 import com.adkom666.shrednotes.di.module.AppModule
-import com.adkom666.shrednotes.di.module.ViewModelModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
@@ -18,8 +17,7 @@ import javax.inject.Singleton
     modules = [
         AndroidInjectionModule::class,
         AndroidSupportInjectionModule::class,
-        AppModule::class,
-        ViewModelModule::class
+        AppModule::class
     ]
 )
 interface AppComponent : AndroidInjector<App> {
