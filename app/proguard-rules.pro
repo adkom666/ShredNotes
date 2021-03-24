@@ -22,9 +22,6 @@
 
 -dontoptimize
 -dontusemixedcaseclassnames
--dontskipnonpubliclibraryclasses
--dontskipnonpubliclibraryclassmembers
--dontpreverify
 -verbose
 #-dump class_files.txt
 -printseeds seeds.txt
@@ -32,15 +29,11 @@
 -printmapping mapping.txt
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
--dontwarn com.amazon.**
-
 -allowaccessmodification
 -keepattributes *Annotation*
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
 -repackageclasses ''
-
--keep class com.amazon.** {*;}
 
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -49,8 +42,6 @@
 -keep public class * extends android.content.ContentProvider
 -keep public class * extends android.app.backup.BackupAgentHelper
 -keep public class * extends android.preference.Preference
--keep public class com.android.vending.licensing.ILicensingService
--dontnote com.android.vending.licensing.ILicensingService
 
 # Preserve all native method names and the names of their classes.
 -keepclasseswithmembernames class * {
@@ -98,41 +89,14 @@
     java.lang.Object readResolve();
 }
 
-
-
-## Retrofit
-
-# Platform calls Class.forName on types which do not exist on Android to determine platform.
--dontnote retrofit2.Platform
--dontwarn retrofit2.OkHttpCall
-# Platform used when running on Java 8 VMs. Will not be used at runtime.
--dontwarn retrofit2.Platform$Java8
 # Retain generic type information for use by reflection by converters and adapters.
 -keepattributes Signature
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
 
-
-
-## RxJava
-
--dontwarn sun.misc.**
-
--keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
-   long producerIndex;
-   long consumerIndex;
-}
-
--keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
-    rx.internal.util.atomic.LinkedQueueNode producerNode;
-}
-
--keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueConsumerNodeRef {
-    rx.internal.util.atomic.LinkedQueueNode consumerNode;
-}
-
 -dontnote rx.internal.util.PlatformDependent
 
+#noinspection ShrinkerUnresolvedReference
 -keep class com.adkom666.shrednotes.data.external.** {*;}
 
 -keep class com.google.** { *;}
