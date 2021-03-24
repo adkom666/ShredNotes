@@ -236,8 +236,10 @@ class NoteViewModel @Inject constructor(
                 |noteBpmString=$noteBpmString""".trimMargin()
         )
         when {
-            noteExerciseName.isBlank() -> report(Message.Error.MissingNoteExerciseName)
-            noteBpmString.isBlank() -> report(Message.Error.MissingNoteBpm)
+            noteExerciseName.isBlank() ->
+                report(Message.Error.MissingNoteExerciseName)
+            noteBpmString.isBlank() ->
+                report(Message.Error.MissingNoteBpm)
             else -> try {
                 val noteBpm = noteBpmString.toInt()
                 if (isNoteBpmInvalid(noteBpm)) {
@@ -272,7 +274,8 @@ class NoteViewModel @Inject constructor(
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun save(note: Note) = when (note) {
-        initialNote -> setState(State.Finishing.Declined)
+        initialNote ->
+            setState(State.Finishing.Declined)
         else -> {
             setState(State.Waiting)
             viewModelScope.launch {
@@ -283,9 +286,12 @@ class NoteViewModel @Inject constructor(
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun saveWithExercise(note: Note) = when {
-        note.exerciseName.isBlank() -> report(Message.Error.MissingNoteExerciseName)
-        isNoteBpmInvalid(note.bpm) -> report(Message.Error.WrongNoteBpm)
-        note == initialNote -> setState(State.Finishing.Declined)
+        note.exerciseName.isBlank() ->
+            report(Message.Error.MissingNoteExerciseName)
+        isNoteBpmInvalid(note.bpm) ->
+            report(Message.Error.WrongNoteBpm)
+        note == initialNote ->
+            setState(State.Finishing.Declined)
         else -> {
             setState(State.Waiting)
             viewModelScope.launch {

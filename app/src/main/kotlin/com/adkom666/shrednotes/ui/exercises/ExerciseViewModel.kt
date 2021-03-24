@@ -161,8 +161,10 @@ class ExerciseViewModel @Inject constructor(
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun save(exercise: Exercise) = when {
-        exercise == initialExercise -> setState(State.Finishing.Declined)
-        exercise.name.isBlank() -> report(Message.Error.MissingExerciseName)
+        exercise == initialExercise ->
+            setState(State.Finishing.Declined)
+        exercise.name.isBlank() ->
+            report(Message.Error.MissingExerciseName)
         else -> {
             setState(State.Waiting)
             viewModelScope.launch {
