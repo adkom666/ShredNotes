@@ -85,7 +85,7 @@ class MainActivity :
         invalidateSubtitle()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initBottomNavigation()
-        supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
+        invalidateOptionsMenuOnFragmentChange()
         restoreFragmentListeners()
 
         model.stateAsLiveData.observe(this, StateObserver())
@@ -172,6 +172,10 @@ class MainActivity :
     private fun initBottomNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
+    }
+
+    private fun invalidateOptionsMenuOnFragmentChange() {
+        supportFragmentManager.registerFragmentLifecycleCallbacks(OptionsMenuInvalidator(), false)
     }
 
     private fun restoreFragmentListeners() {
