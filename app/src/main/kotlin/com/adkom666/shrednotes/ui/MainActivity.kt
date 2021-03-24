@@ -500,9 +500,9 @@ class MainActivity :
                     model.ok()
                 }
                 MainViewModel.State.Working ->
-                    setWaiting(false)
-                MainViewModel.State.Waiting -> {
-                    setWaiting(true)
+                    setWorking()
+                is MainViewModel.State.Waiting -> {
+                    setWaiting(state.operation)
                     invalidateOptionsMenu()
                 }
             }
@@ -519,9 +519,21 @@ class MainActivity :
             }
         }
 
-        private fun setWaiting(active: Boolean) {
-            binding.progressBar.isVisible = active
-            binding.content.isVisible = active.not()
+        private fun setWaiting(operation: MainViewModel.State.Waiting.Operation) {
+            setProgressActive(true)
+            binding.operationTextView.setText(operation.stringResId())
+        }
+
+        private fun setWorking() = setProgressActive(false)
+
+        private fun setProgressActive(isActive: Boolean) {
+            binding.progress.isVisible = isActive
+            binding.content.isVisible = isActive.not()
+        }
+
+        private fun MainViewModel.State.Waiting.Operation.stringResId(): Int = when (this) {
+            MainViewModel.State.Waiting.Operation.READING -> R.string.progress_operation_reading
+            MainViewModel.State.Waiting.Operation.WRITING -> R.string.progress_operation_writing
         }
     }
 }

@@ -83,6 +83,10 @@
         <item name="android:textColor">@color/yellow</item>
     </style>
 
+    <style name="AppTheme.ProgressHeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/color_accent</item>
+    </style>
+
     <style name="AppTheme.EditText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/color_accent</item>
         <item name="android:textColorHint">@color/color_control</item>

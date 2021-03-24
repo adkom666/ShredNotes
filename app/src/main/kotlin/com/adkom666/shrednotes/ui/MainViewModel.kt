@@ -73,7 +73,16 @@ class MainViewModel @Inject constructor(
          * Waiting for the end of some operation, e.g. read or write. Hide options menu and content,
          * show progress bar.
          */
-        object Waiting : State()
+        data class Waiting(val operation: Operation) : State() {
+
+            /**
+             * Operation that is expected to be completed.
+             */
+            enum class Operation {
+                READING,
+                WRITING
+            }
+        }
     }
 
     /**
@@ -327,7 +336,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun launchRead() {
-        setState(State.Waiting)
+        setState(State.Waiting(State.Waiting.Operation.READING))
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {
@@ -361,7 +370,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun launchWrite() {
-        setState(State.Waiting)
+        setState(State.Waiting(State.Waiting.Operation.WRITING))
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {

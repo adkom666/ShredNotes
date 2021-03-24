@@ -11,6 +11,9 @@
     <string name="menu_item_title_sing_in">Войти</string>
     <string name="menu_item_title_sign_out">Выйти</string>
 
+    <string name="progress_operation_reading">Чтение</string>
+    <string name="progress_operation_writing">Запись</string>
+
     <string name="desc_add_del">Добавить или удалить</string>
     <string name="desc_select_all">Выделить все</string>
     <string name="desc_cancel">Отмена</string>
