@@ -40,7 +40,7 @@ class ExerciseActivity : AppCompatActivity() {
          * @return intent to open the edit screen for a given [exercise], or to create a new
          * exercise if [exercise] is null.
          */
-        fun newIntent(context: Context, exercise: Exercise?): Intent {
+        fun newIntent(context: Context, exercise: Exercise? = null): Intent {
             val intent = Intent(context, ExerciseActivity::class.java)
             exercise?.let {
                 intent.putExtra(EXTRA_EXERCISE, it)

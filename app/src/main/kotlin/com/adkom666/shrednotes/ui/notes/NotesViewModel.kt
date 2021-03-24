@@ -39,6 +39,7 @@ class NotesViewModel @Inject constructor(
         private const val PAGED_LIST_INITIAL_LOAD_HINT = 30
         private const val PAGED_LIST_PREFETCH_DISTANCE = 15
 
+        private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
     }
 
@@ -59,9 +60,37 @@ class NotesViewModel @Inject constructor(
     }
 
     /**
+     * Navigation direction.
+     */
+    sealed class NavDirection {
+
+        /**
+         * To the screen that allows you to add a new note.
+         */
+        object ToAddNoteScreen : NavDirection()
+
+        /**
+         * To the screen that allows you to update an existing note.
+         *
+         * @property note [Note] to update.
+         */
+        data class ToUpdateNoteScreen(val note: Note) : NavDirection()
+    }
+
+    /**
      * Information message.
      */
     sealed class Message {
+
+        /**
+         * Message about adding a note.
+         */
+        object Addition : Message()
+
+        /**
+         * Message about the note update.
+         */
+        object Update : Message()
 
         /**
          * Message about the count of deleted notes.
@@ -100,6 +129,12 @@ class NotesViewModel @Inject constructor(
      */
     val notePagedListAsLiveData: LiveData<PagedList<Note>>
         get() = noteSourceFactory.toLiveData(pagedListConfig)
+
+    /**
+     * Consume navigation directions from this channel in the UI thread.
+     */
+    val navigationChannel: ReceiveChannel<NavDirection>
+        get() = _navigationChannel.openSubscription()
 
     /**
      * Consume information messages from this channel in the UI thread.
@@ -164,6 +199,9 @@ class NotesViewModel @Inject constructor(
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
+    private val _navigationChannel: BroadcastChannel<NavDirection> =
+        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
+
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
@@ -184,6 +222,14 @@ class NotesViewModel @Inject constructor(
     }
 
     /**
+     * Start adding a new note.
+     */
+    fun addNote() {
+        Timber.d("Add note")
+        navigateTo(NavDirection.ToAddNoteScreen)
+    }
+
+    /**
      * Initiate the deletion of the selected notes.
      */
     fun deleteSelectedNotes() {
@@ -199,6 +245,40 @@ class NotesViewModel @Inject constructor(
                 setState(State.Working)
                 reportAbout(e)
             }
+        }
+    }
+
+    /**
+     * Handle the clicked note when the selection is inactive.
+     */
+    fun onNoteClick(note: Note) {
+        Timber.d("onNoteClick: note=$note")
+        navigateTo(NavDirection.ToUpdateNoteScreen(note))
+    }
+
+    /**
+     * Call this method when the results of adding the note are available.
+     *
+     * @param isResultOk true if the note was added, false otherwise.
+     */
+    fun onAddNoteResult(isResultOk: Boolean) {
+        Timber.d("onAddNoteResult: isResultOk=$isResultOk")
+        if (isResultOk) {
+            Timber.d("Note has been added")
+            report(Message.Addition)
+        }
+    }
+
+    /**
+     * Call this method when the results of the note update are available.
+     *
+     * @param isResultOk true if the note was updated, false otherwise.
+     */
+    fun onUpdateNoteResult(isResultOk: Boolean) {
+        Timber.d("onUpdateNoteResult: isResultOk=$isResultOk")
+        if (isResultOk) {
+            Timber.d("Note has been updated")
+            report(Message.Update)
         }
     }
 
@@ -231,6 +311,11 @@ class NotesViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun navigateTo(direction: NavDirection) {
+        Timber.d("Navigate to: direction=$direction")
+        _navigationChannel.offer(direction)
     }
 
     private fun report(message: Message) {

@@ -13,11 +13,11 @@ import com.adkom666.shrednotes.util.selection.SelectableItems
  * Adapter for interacting with the exercise list.
  *
  * @property selectableExercises exercises to interact.
- * @property onEditExercise callback for editing a clicked exercise.
+ * @property onExerciseClick callback to handle the clicked exercise when the selection is inactive.
  */
 class ExercisePagedListAdapter(
     private val selectableExercises: SelectableItems,
-    private val onEditExercise: (Exercise) -> Unit
+    private val onExerciseClick: (Exercise) -> Unit
 ) : PagedListAdapter<Exercise, ExercisePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
     private companion object {
@@ -64,14 +64,14 @@ class ExercisePagedListAdapter(
             binding.exerciseNameTextView.text = exercise.name
             binding.exerciseCard.isSelected = selectableExercises.isSelected(exercise.id)
 
-            val edit = { onEditExercise(exercise) }
+            val handleInactiveExerciseClick = { onExerciseClick(exercise) }
 
             val changeSelection = { isSelected: Boolean ->
                 binding.exerciseCard.isSelected = isSelected
             }
 
             binding.root.setOnClickListener {
-                selectableExercises.click(exercise.id, changeSelection, edit)
+                selectableExercises.click(exercise.id, changeSelection, handleInactiveExerciseClick)
             }
 
             binding.root.setOnLongClickListener {

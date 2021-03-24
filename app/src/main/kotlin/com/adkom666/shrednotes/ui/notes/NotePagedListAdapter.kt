@@ -15,11 +15,11 @@ import java.util.Locale
  * Adapter for interacting with the note list.
  *
  * @property selectableNotes notes to interact.
- * @property onEditNote callback for editing a clicked note.
+ * @property onNoteClick callback to handle the clicked note when the selection is inactive.
  */
 class NotePagedListAdapter(
     private val selectableNotes: SelectableItems,
-    private val onEditNote: (Note) -> Unit
+    private val onNoteClick: (Note) -> Unit
 ) : PagedListAdapter<Note, NotePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
     private companion object {
@@ -74,14 +74,14 @@ class NotePagedListAdapter(
             binding.bpmTextView.text = note.bpm.toString()
             binding.noteCard.isSelected = selectableNotes.isSelected(note.id)
 
-            val edit = { onEditNote(note) }
+            val handleInactiveNoteClick = { onNoteClick(note) }
 
             val changeSelection = { isSelected: Boolean ->
                 binding.noteCard.isSelected = isSelected
             }
 
             binding.root.setOnClickListener {
-                selectableNotes.click(note.id, changeSelection, edit)
+                selectableNotes.click(note.id, changeSelection, handleInactiveNoteClick)
             }
 
             binding.root.setOnLongClickListener {

@@ -114,6 +114,10 @@ class NotesFragment :
         val noteListObserver = NoteListObserver(adapter, binding.noteRecycler)
         model.notePagedListAsLiveData.observe(viewLifecycleOwner, noteListObserver)
 
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
         }
@@ -129,15 +133,9 @@ class NotesFragment :
         Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
         when (requestCode) {
             REQUEST_CODE_ADD_NOTE ->
-                if (resultCode == Activity.RESULT_OK) {
-                    Timber.d("Note has been added")
-                    toast(R.string.message_note_has_been_added)
-                }
+                model.onAddNoteResult(resultCode == Activity.RESULT_OK)
             REQUEST_CODE_UPDATE_NOTE ->
-                if (resultCode == Activity.RESULT_OK) {
-                    Timber.d("Note has been updated")
-                    toast(R.string.message_note_has_been_updated)
-                }
+                model.onUpdateNoteResult(resultCode == Activity.RESULT_OK)
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -162,17 +160,10 @@ class NotesFragment :
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.noteRecycler.layoutManager = llm
-
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         binding.noteRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
-
-        val adapter = NotePagedListAdapter(model.selectableNotes) { note ->
-            Timber.d("Edit note: note=$note")
-            goToNoteScreen(note)
-        }
-
+        val adapter = NotePagedListAdapter(model.selectableNotes, model::onNoteClick)
         binding.noteRecycler.adapter = adapter
-
         return adapter
     }
 
@@ -193,7 +184,7 @@ class NotesFragment :
             if (model.selection.isActive) {
                 deleteSelectedNotesIfConfirmed()
             } else {
-                goToNoteScreen()
+                model.addNote()
             }
         }
         binding.control.fabSelectAll.setOnClickListener {
@@ -222,17 +213,22 @@ class NotesFragment :
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_NOTES_DELETION)
     }
 
-    private fun goToNoteScreen(note: Note? = null) {
-        context?.let {
-            val intent = NoteActivity.newIntent(it, note)
-            val requestCode = note?.let {
-                REQUEST_CODE_UPDATE_NOTE
-            } ?: REQUEST_CODE_ADD_NOTE
-            startActivityForResult(intent, requestCode)
+    private fun goToScreen(direction: NotesViewModel.NavDirection) = when (direction) {
+        NotesViewModel.NavDirection.ToAddNoteScreen -> context?.let { safeContext ->
+            val intent = NoteActivity.newIntent(safeContext)
+            startActivityForResult(intent, REQUEST_CODE_ADD_NOTE)
+        }
+        is NotesViewModel.NavDirection.ToUpdateNoteScreen -> context?.let { safeContext ->
+            val intent = NoteActivity.newIntent(safeContext, direction.note)
+            startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE)
         }
     }
 
     private fun show(message: NotesViewModel.Message) = when (message) {
+        NotesViewModel.Message.Addition ->
+            toast(R.string.message_note_has_been_added)
+        NotesViewModel.Message.Update ->
+            toast(R.string.message_note_has_been_updated)
         is NotesViewModel.Message.Deletion -> {
             Timber.d("Deleted notes count is ${message.count}")
             val messageString = getString(R.string.message_deleted_notes, message.count)

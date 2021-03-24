@@ -109,6 +109,10 @@ class ExercisesFragment :
         val exerciseListObserver = ExerciseListObserver(adapter, binding.exercisesRecycler)
         model.exercisePagedListAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
 
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
         }
@@ -124,15 +128,9 @@ class ExercisesFragment :
         Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
         when (requestCode) {
             REQUEST_CODE_ADD_EXERCISE ->
-                if (resultCode == Activity.RESULT_OK) {
-                    Timber.d("Exercise has been added")
-                    toast(R.string.message_exercise_has_been_added)
-                }
+                model.onAddExerciseResult(resultCode == Activity.RESULT_OK)
             REQUEST_CODE_UPDATE_EXERCISE ->
-                if (resultCode == Activity.RESULT_OK) {
-                    Timber.d("Exercise has been updated")
-                    toast(R.string.message_exercise_has_been_updated)
-                }
+                model.onUpdateExerciseResult(resultCode == Activity.RESULT_OK)
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -152,17 +150,10 @@ class ExercisesFragment :
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.exercisesRecycler.layoutManager = llm
-
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         binding.exercisesRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
-
-        val adapter = ExercisePagedListAdapter(model.selectableExercises) { exercise ->
-            Timber.d("Edit exercise: exercise=$exercise")
-            goToExerciseScreen(exercise)
-        }
-
+        val adapter = ExercisePagedListAdapter(model.selectableExercises, model::onExerciseClick)
         binding.exercisesRecycler.adapter = adapter
-
         return adapter
     }
 
@@ -183,7 +174,7 @@ class ExercisesFragment :
             if (model.selection.isActive) {
                 model.requestAssociatedNoteCount()
             } else {
-                goToExerciseScreen()
+                model.addExercise()
             }
         }
         binding.control.fabSelectAll.setOnClickListener {
@@ -213,17 +204,22 @@ class ExercisesFragment :
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_EXERCISES_DELETION)
     }
 
-    private fun goToExerciseScreen(exercise: Exercise? = null) {
-        context?.let {
-            val intent = ExerciseActivity.newIntent(it, exercise)
-            val requestCode = exercise?.let {
-                REQUEST_CODE_UPDATE_EXERCISE
-            } ?: REQUEST_CODE_ADD_EXERCISE
-            startActivityForResult(intent, requestCode)
+    private fun goToScreen(direction: ExercisesViewModel.NavDirection) = when (direction) {
+        ExercisesViewModel.NavDirection.ToAddExerciseScreen -> context?.let { safeContext ->
+            val intent = ExerciseActivity.newIntent(safeContext)
+            startActivityForResult(intent, REQUEST_CODE_ADD_EXERCISE)
+        }
+        is ExercisesViewModel.NavDirection.ToUpdateExerciseScreen -> context?.let { safeContext ->
+            val intent = ExerciseActivity.newIntent(safeContext, direction.exercise)
+            startActivityForResult(intent, REQUEST_CODE_UPDATE_EXERCISE)
         }
     }
 
     private fun show(message: ExercisesViewModel.Message) = when (message) {
+        ExercisesViewModel.Message.Addition ->
+            toast(R.string.message_exercise_has_been_added)
+        ExercisesViewModel.Message.Update ->
+            toast(R.string.message_exercise_has_been_updated)
         is ExercisesViewModel.Message.AssociatedNoteCount ->
             deleteSelectedExercisesIfConfirmed(message.noteCount)
         is ExercisesViewModel.Message.Deletion -> {

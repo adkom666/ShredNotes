@@ -63,7 +63,7 @@ class NoteActivity : AppCompatActivity() {
          * @return intent to open the edit screen for a given [note], or to create a new note if
          * [note] is null.
          */
-        fun newIntent(context: Context, note: Note?): Intent {
+        fun newIntent(context: Context, note: Note? = null): Intent {
             val intent = Intent(context, NoteActivity::class.java)
             note?.let {
                 intent.putExtra(EXTRA_NOTE, it)

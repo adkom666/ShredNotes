@@ -43,6 +43,7 @@ class ExercisesViewModel @Inject constructor(
         private const val PAGED_LIST_INITIAL_LOAD_HINT = 30
         private const val PAGED_LIST_PREFETCH_DISTANCE = 15
 
+        private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
     }
 
@@ -63,9 +64,37 @@ class ExercisesViewModel @Inject constructor(
     }
 
     /**
+     * Navigation direction.
+     */
+    sealed class NavDirection {
+
+        /**
+         * To the screen that allows you to add a new exercise.
+         */
+        object ToAddExerciseScreen : NavDirection()
+
+        /**
+         * To the screen that allows you to update an existing exercise.
+         *
+         * @property exercise [Exercise] to update.
+         */
+        data class ToUpdateExerciseScreen(val exercise: Exercise) : NavDirection()
+    }
+
+    /**
      * Information message.
      */
     sealed class Message {
+
+        /**
+         * Message about adding an exercise.
+         */
+        object Addition : Message()
+
+        /**
+         * Message about the exercise update.
+         */
+        object Update : Message()
 
         /**
          * Message about the count of notes associated with the selected exercises.
@@ -111,6 +140,12 @@ class ExercisesViewModel @Inject constructor(
      */
     val exercisePagedListAsLiveData: LiveData<PagedList<Exercise>>
         get() = exerciseSourceFactory.toLiveData(pagedListConfig)
+
+    /**
+     * Consume navigation directions from this channel in the UI thread.
+     */
+    val navigationChannel: ReceiveChannel<NavDirection>
+        get() = _navigationChannel.openSubscription()
 
     /**
      * Consume information messages from this channel in the UI thread.
@@ -174,6 +209,9 @@ class ExercisesViewModel @Inject constructor(
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
+    private val _navigationChannel: BroadcastChannel<NavDirection> =
+        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
+
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
@@ -191,6 +229,14 @@ class ExercisesViewModel @Inject constructor(
                 invalidateExercises()
             }
         }
+    }
+
+    /**
+     * Start adding a new exercise.
+     */
+    fun addExercise() {
+        Timber.d("Add exercise")
+        navigateTo(NavDirection.ToAddExerciseScreen)
     }
 
     /**
@@ -228,6 +274,40 @@ class ExercisesViewModel @Inject constructor(
                 setState(State.Working)
                 reportAbout(e)
             }
+        }
+    }
+
+    /**
+     * Handle the clicked exercise when the selection is inactive.
+     */
+    fun onExerciseClick(exercise: Exercise) {
+        Timber.d("onExerciseClick: exercise=$exercise")
+        navigateTo(NavDirection.ToUpdateExerciseScreen(exercise))
+    }
+
+    /**
+     * Call this method when the results of adding the exercise are available.
+     *
+     * @param isResultOk true if the exercise was added, false otherwise.
+     */
+    fun onAddExerciseResult(isResultOk: Boolean) {
+        Timber.d("onAddExerciseResult: isResultOk=$isResultOk")
+        if (isResultOk) {
+            Timber.d("Exercise has been added")
+            report(Message.Addition)
+        }
+    }
+
+    /**
+     * Call this method when the results of the exercise update are available.
+     *
+     * @param isResultOk true if the exercise was updated, false otherwise.
+     */
+    fun onUpdateExerciseResult(isResultOk: Boolean) {
+        Timber.d("onUpdateExerciseResult: isResultOk=$isResultOk")
+        if (isResultOk) {
+            Timber.d("Exercise has been updated")
+            report(Message.Update)
         }
     }
 
@@ -274,6 +354,11 @@ class ExercisesViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun navigateTo(direction: NavDirection) {
+        Timber.d("Navigate to: direction=$direction")
+        _navigationChannel.offer(direction)
     }
 
     private fun report(message: Message) {
