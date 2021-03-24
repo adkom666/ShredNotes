@@ -108,11 +108,9 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-
         binding.pickNoteDateTimeImageButton.setOnClickListener {
             pickDateTime()
         }
-
         binding.okButton.setOnClickListener {
             val noteExerciseName = binding.noteExerciseAutoCompleteTextView.text.toString().trim()
             val noteBpmString = binding.noteBpmEditText.text.toString().trim()
@@ -123,7 +121,6 @@ class NoteActivity : AppCompatActivity() {
             )
             model.save(noteExerciseName, noteBpmString)
         }
-
         binding.cancelButton.setOnClickListener {
             setResult(RESULT_CANCELED)
             finish()
