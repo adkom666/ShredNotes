@@ -3,9 +3,9 @@ package com.adkom666.shrednotes.ui.notes
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -270,19 +270,22 @@ class NoteActivity : AppCompatActivity() {
             Timber.d("State is $state")
             when (state) {
                 NoteViewModel.State.Waiting ->
-                    setWaiting(true)
+                    setWaiting()
                 is NoteViewModel.State.Preparation -> {
                     prepare(state)
                     model.ok()
                 }
                 NoteViewModel.State.Working ->
-                    setWaiting(false)
+                    setWorking()
                 is NoteViewModel.State.Finishing -> {
                     beforeFinish(state)
                     finish()
                 }
             }
         }
+
+        private fun setWaiting() = setProgressActive(true)
+        private fun setWorking() = setProgressActive(false)
 
         private fun prepare(state: NoteViewModel.State.Preparation) = when (state) {
             is NoteViewModel.State.Preparation.Initial -> {
@@ -300,14 +303,9 @@ class NoteActivity : AppCompatActivity() {
                 setResult(RESULT_OK)
         }
 
-        private fun setWaiting(active: Boolean) {
-            return if (active) {
-                binding.noteCard.visibility = View.GONE
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.noteCard.visibility = View.VISIBLE
-                binding.progressBar.visibility = View.GONE
-            }
+        private fun setProgressActive(isActive: Boolean) {
+            binding.progressBar.isVisible = isActive
+            binding.noteCard.isVisible = isActive.not()
         }
 
         private fun initExerciseList(exerciseList: List<Exercise>) {

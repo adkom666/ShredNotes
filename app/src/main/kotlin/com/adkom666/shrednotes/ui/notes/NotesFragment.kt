@@ -8,6 +8,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -264,19 +265,17 @@ class NotesFragment :
         override fun onChanged(state: NotesViewModel.State?) {
             Timber.d("State is $state")
             when (state) {
-                NotesViewModel.State.Waiting -> setWaiting(true)
-                NotesViewModel.State.Working -> setWaiting(false)
+                NotesViewModel.State.Waiting -> setWaiting()
+                NotesViewModel.State.Working -> setWorking()
             }
         }
 
-        private fun setWaiting(active: Boolean) {
-            return if (active) {
-                binding.content.visibility = View.GONE
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.content.visibility = View.VISIBLE
-                binding.progressBar.visibility = View.GONE
-            }
+        private fun setWaiting() = setProgressActive(true)
+        private fun setWorking() = setProgressActive(false)
+
+        private fun setProgressActive(isActive: Boolean) {
+            binding.progressBar.isVisible = isActive
+            binding.content.isVisible = isActive.not()
         }
     }
 

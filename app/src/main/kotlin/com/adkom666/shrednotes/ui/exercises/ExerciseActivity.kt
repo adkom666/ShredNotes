@@ -3,8 +3,8 @@ package com.adkom666.shrednotes.ui.exercises
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -128,19 +128,22 @@ class ExerciseActivity : AppCompatActivity() {
             Timber.d("State is $state")
             when (state) {
                 ExerciseViewModel.State.Waiting ->
-                    setWaiting(true)
+                    setWaiting()
                 is ExerciseViewModel.State.Preparation -> {
                     prepare(state)
                     model.ok()
                 }
                 ExerciseViewModel.State.Working ->
-                    setWaiting(false)
+                    setWorking()
                 is ExerciseViewModel.State.Finishing -> {
                     beforeFinish(state)
                     finish()
                 }
             }
         }
+
+        private fun setWaiting() = setProgressActive(true)
+        private fun setWorking() = setProgressActive(false)
 
         private fun prepare(state: ExerciseViewModel.State.Preparation) = when (state) {
             is ExerciseViewModel.State.Preparation.Initial ->
@@ -154,14 +157,9 @@ class ExerciseActivity : AppCompatActivity() {
                 setResult(RESULT_OK)
         }
 
-        private fun setWaiting(active: Boolean) {
-            return if (active) {
-                binding.exerciseCard.visibility = View.GONE
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.exerciseCard.visibility = View.VISIBLE
-                binding.progressBar.visibility = View.GONE
-            }
+        private fun setProgressActive(isActive: Boolean) {
+            binding.progressBar.isVisible = isActive
+            binding.exerciseCard.isVisible = isActive.not()
         }
 
         private fun initExercise(name: String?) {
