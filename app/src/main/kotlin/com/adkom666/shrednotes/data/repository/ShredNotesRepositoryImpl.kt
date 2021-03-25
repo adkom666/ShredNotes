@@ -12,6 +12,7 @@ import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.data.external.ExternalExercise
 import com.adkom666.shrednotes.data.external.ExternalNote
 import com.adkom666.shrednotes.data.external.ExternalShredNotes
+import timber.log.Timber
 
 /**
  * Implementation of [ShredNotesRepository].
@@ -27,16 +28,20 @@ class ShredNotesRepositoryImpl(
 ) : ShredNotesRepository {
 
     override suspend fun shredNotesSuspending(): ExternalShredNotes = transactor.transaction {
+        Timber.d("shredNotesSuspending")
         val exersiseEntityList = exerciseDao.listAllUnorderedSuspending()
         val noteEntityList = noteDao.listAllUnorderedSuspending()
         val exercises = exersiseEntityList.map(ExerciseEntity::toExternalExercise)
         val notes = noteEntityList.map(NoteEntity::toExternalNote)
-        return@transaction ExternalShredNotes(exercises, notes)
+        val shredNotes = ExternalShredNotes(exercises, notes)
+        Timber.d("shredNotes=$shredNotes")
+        return@transaction shredNotes
     }
 
     override suspend fun replaceShredNotesSuspendingBy(
         shredNotes: ExternalShredNotes
     ) = transactor.transaction {
+        Timber.d("replaceShredNotesSuspendingBy: shredNotes=$shredNotes")
         val exersiseEntityList = shredNotes.exercises.map(ExternalExercise::toExerciseEntity)
         exerciseDao.deleteAll()
         exerciseDao.insertAll(exersiseEntityList)
