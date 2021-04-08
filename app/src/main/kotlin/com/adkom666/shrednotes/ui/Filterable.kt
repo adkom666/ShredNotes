@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.ui
 
+typealias OnFilterEnablingChangedListener = () -> Unit
+
 /**
  * Filterable content.
  */
@@ -11,9 +13,12 @@ interface Filterable {
     val isFilterEnabled: Boolean
 
     /**
-     * Call filter for configuration.
-     *
-     * @param onFilter callback to notify whether the filter is enabled.
+     * Callback to notify whether the filter enabling is changed.
      */
-    fun filter(onFilter: (filterEnabled: Boolean) -> Unit)
+    var onFilterEnablingChangedListener: OnFilterEnablingChangedListener?
+
+    /**
+     * Call filter for configuration.
+     */
+    fun filter()
 }

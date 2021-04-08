@@ -10,6 +10,7 @@ import androidx.paging.PagedList
 import androidx.paging.PositionalDataSource
 import androidx.paging.toLiveData
 import com.adkom666.shrednotes.data.model.Note
+import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.selection.ManageableSelection
@@ -41,6 +42,9 @@ class NotesViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val SIGNAL_CHANNEL_CAPACITY = 3
+
+        private val INITIAL_FILTER = NoteFilter()
     }
 
     /**
@@ -75,6 +79,17 @@ class NotesViewModel @Inject constructor(
          * @property note [Note] to update.
          */
         data class ToUpdateNoteScreen(val note: Note) : NavDirection()
+
+        /**
+         * To the screen that allows you to configure the notes filter.
+         *
+         * @property filter current filter.
+         * @property isFilterEnabled whether the [filter] is currently applied.
+         */
+        data class ToConfigFilterScreen(
+            val filter: NoteFilter,
+            val isFilterEnabled: Boolean
+        ) : NavDirection()
     }
 
     /**
@@ -100,6 +115,12 @@ class NotesViewModel @Inject constructor(
         data class Deletion(val count: Int) : Message()
 
         /**
+         * Message stating that, as a result of filter configuration, none of its parameters have
+         * been defined.
+         */
+        object FilterUndefined : Message()
+
+        /**
          * Error message.
          */
         sealed class Error : Message() {
@@ -116,6 +137,26 @@ class NotesViewModel @Inject constructor(
              */
             object Unknown : Error()
         }
+    }
+
+    /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Indicates that the filter is turned on or turned off.
+         */
+        object FilterEnablingChanged : Signal()
+    }
+
+    /**
+     * How the filter configuration ended.
+     */
+    enum class ConfigFilterStatus {
+        APPLY,
+        DISABLE,
+        CANCEL
     }
 
     /**
@@ -141,6 +182,12 @@ class NotesViewModel @Inject constructor(
      */
     val messageChannel: ReceiveChannel<Message>
         get() = _messageChannel.openSubscription()
+
+    /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
 
     /**
      * Notes to select.
@@ -183,6 +230,21 @@ class NotesViewModel @Inject constructor(
         Timber.d("Change isSearchActive: old=$old, new=$new")
     }
 
+    /**
+     * Indicates whether the filter is enabled.
+     */
+    val isFilterEnabled: Boolean
+        get() = _isFilterEnabled
+
+    private var filter: NoteFilter by Delegates.observable(INITIAL_FILTER) { _, old, new ->
+        Timber.d("Change filter: old=$old, new=$new")
+    }
+
+    /**
+     * Property for storing a flag indicating whether the filter is enabled.
+     */
+    private var _isFilterEnabled: Boolean = false
+
     private val _manageableSelection: ManageableSelection = ManageableSelection()
 
     private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
@@ -204,6 +266,9 @@ class NotesViewModel @Inject constructor(
 
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
+
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
     init {
         Timber.d("Init")
@@ -283,6 +348,51 @@ class NotesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Request the configuration screen of the current notes filter.
+     */
+    fun requestFilter() {
+        Timber.d("Filter requested")
+        navigateTo(NavDirection.ToConfigFilterScreen(filter, _isFilterEnabled))
+    }
+
+    /**
+     * Call this method when the results of the filter configuration are available.
+     *
+     * @param status how the [filter] configuration ended.
+     * @param filter notes filter after configuration.
+     */
+    fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter) {
+        Timber.d("onConfigFilterResult: status=$status, filter=$filter")
+
+        fun ensureFilterEnabled(isEnabled: Boolean) {
+            if (_isFilterEnabled xor isEnabled) {
+                _isFilterEnabled = isEnabled
+                give(Signal.FilterEnablingChanged)
+            }
+        }
+
+        when (status) {
+            ConfigFilterStatus.APPLY -> {
+                this.filter = filter
+                val isFilterDefined = filter.isDefined
+                Timber.d("isFilterDefined=$isFilterDefined")
+                ensureFilterEnabled(isFilterDefined)
+                if (isFilterDefined.not()) {
+                    report(Message.FilterUndefined)
+                }
+            }
+            ConfigFilterStatus.DISABLE -> {
+                this.filter = filter
+                ensureFilterEnabled(false)
+            }
+            ConfigFilterStatus.CANCEL ->
+                if (_isFilterEnabled.not()) {
+                    this.filter = filter
+                }
+        }
+    }
+
     private fun invalidateNotes() {
         setState(State.Waiting)
         noteSourceFactory.invalidate()
@@ -322,6 +432,11 @@ class NotesViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
     }
 
     private class NoteSourceFactory(

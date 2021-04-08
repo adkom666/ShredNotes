@@ -18,10 +18,22 @@
     <string name="desc_select_all">Выделить все</string>
     <string name="desc_cancel">Отмена</string>
     <string name="desc_pick_note_date_time">Установить дату и время заметки</string>
+    <string name="desc_pick_note_date_range">Установить диапазон дат заметок</string>
+    <string name="desc_clear_note_date_range">Очистить диапазон дат заметок</string>
+    <string name="desc_clear_note_bpm_range">Очистить диапазон BPM</string>
 
     <string name="button_title_cancel">Отмена</string>
     <string name="button_title_yes">Да</string>
     <string name="button_title_no">Нет</string>
+    <string name="button_title_apply">Применить</string>
+    <string name="button_title_disable">Выключить</string>
+    <string name="button_title_clear_all">Очистить все</string>
+
+    <string name="title_date_range">Диапазон дат:</string>
+    <string name="title_bpm_range">Диапазон BPM:</string>
+
+    <string name="hint_min">Мин.</string>
+    <string name="hint_max">Макс.</string>
 
     <string name="title_exercise_name">Название:</string>
     <string name="hint_exercise_name">Название упражнения</string>
@@ -49,6 +61,8 @@
     <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_deletion_message">Выбрано заметок: %d\nВы подтверждаете удаление?</string>
 
+    <string name="dialog_filter_notes_title">Фильтр заметок</string>
+
     <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
     <string name="message_shred_notes_has_not_been_updated">Информация не обновлена, потому что ее нет на Google Диске</string>
     <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
@@ -60,6 +74,8 @@
     <string name="message_note_has_been_added">Заметка добавлена</string>
     <string name="message_note_has_been_updated">Заметка обновлена</string>
     <string name="message_deleted_notes">Удалено заметок: %d</string>
+
+    <string name="message_filter_undefined">Фильтр не определен</string>
 
     <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
     <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>

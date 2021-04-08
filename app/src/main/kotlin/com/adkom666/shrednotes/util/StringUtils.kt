@@ -1,5 +1,8 @@
 package com.adkom666.shrednotes.util
 
+import timber.log.Timber
+import java.lang.NumberFormatException
+
 /**
  * Case-insensitive trimmed string comparison.
  *
@@ -15,4 +18,17 @@ infix fun String?.containsDifferentTrimmedTextIgnoreCaseThan(other: String?): Bo
     } else {
         other.isNullOrBlank().not()
     }
+}
+
+/**
+ * Parsing of the string as a signed decimal integer.
+ *
+ * @return the integer value represented by the argument in decimal or null if if the string does
+ * not contain a parsable integer.
+ */
+fun String.numberOrNull(): Int? = try {
+    Integer.parseInt(this)
+} catch (e: NumberFormatException) {
+    Timber.d(e)
+    null
 }

@@ -51,4 +51,14 @@ class StringUtilsTest : TestCase() {
         val otherQuery = null
         assertFalse(query containsDifferentTrimmedTextIgnoreCaseThan otherQuery)
     }
+
+    fun testNumberOrNullWhenNumberIsValid() {
+        val number = "666".numberOrNull()
+        assertEquals(666, number)
+    }
+
+    fun testNumberOrNullWhenNumberIsInvalid() {
+        val number = "666 is number of the beast".numberOrNull()
+        assertEquals(null, number)
+    }
 }

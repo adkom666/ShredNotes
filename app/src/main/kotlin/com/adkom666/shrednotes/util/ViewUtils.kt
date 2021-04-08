@@ -36,3 +36,14 @@ fun View.measureHeight(): Int {
 
     return measuredHeight
 }
+
+/**
+ * After calling this method, there are no consequences for the view of entering text, including the
+ * cursor and keyboard.
+ */
+fun View.ensureNoTextInput() {
+    if (hasFocus()) {
+        context?.hideKeyboard(windowToken)
+        clearFocus()
+    }
+}

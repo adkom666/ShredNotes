@@ -10,6 +10,9 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="child_fab_margin">8dp</dimen>
     <dimen name="bottom_child_fab_margin">12dp</dimen>
+    <dimen name="square_image_button_size">32dp</dimen>
+    <dimen name="square_image_button_size_and_padding">56dp</dimen>
+    <dimen name="square_image_button_size_x2_and_padding">96dp</dimen>
 
     <!-- Permanent on all configurations -->
     <dimen name="fab_elevation">6dp</dimen>
