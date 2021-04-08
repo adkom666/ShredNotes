@@ -11,14 +11,16 @@ import androidx.fragment.app.Fragment
  * Hide the soft keyboard from [Fragment].
  */
 fun Fragment.hideKeyboard() {
-    view?.windowToken?.let {
+    val targetView = activity?.currentFocus ?: view ?: context?.let { View(it) }
+    targetView?.let {
         context?.hideKeyboard(it)
-    } ?: activity?.hideKeyboard()
+    }
 }
 
 /**
  * Hide the soft keyboard from [Activity].
  */
+@Suppress("unused")
 fun Activity.hideKeyboard() {
     val view = currentFocus ?: View(this)
     hideKeyboard(view)
