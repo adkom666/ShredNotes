@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.util.dialog
 
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.DialogFragment
 import com.adkom666.shrednotes.util.hideKeyboard
 
@@ -8,9 +10,13 @@ import com.adkom666.shrednotes.util.hideKeyboard
  */
 open class KeyboardlessDialogFragment : DialogFragment() {
 
+    private val handler: Handler = Handler(Looper.getMainLooper())
+
     override fun onStart() {
         super.onStart()
-        hideKeyboard()
-        activity?.currentFocus?.clearFocus()
+        handler.post {
+            hideKeyboard()
+            activity?.currentFocus?.clearFocus()
+        }
     }
 }
