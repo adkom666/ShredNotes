@@ -179,9 +179,7 @@ class ExercisesViewModel @Inject constructor(
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
                 exerciseSourceFactory.subname = new?.trim()
-                val exerciseCount = exerciseRepository.countSuspending(new)
-                _manageableSelection.reset(exerciseCount)
-                invalidateExercises()
+                resetExercises()
             }
         }
     }
@@ -225,8 +223,7 @@ class ExercisesViewModel @Inject constructor(
             // Ignore initial value
             exerciseRepository.countFlow.drop(1).collect { exerciseCount ->
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
-                _manageableSelection.reset(exerciseCount)
-                invalidateExercises()
+                resetExercises()
             }
         }
     }
@@ -313,6 +310,16 @@ class ExercisesViewModel @Inject constructor(
         }
     }
 
+    private fun resetExercises() {
+        setState(State.Waiting)
+        viewModelScope.launch {
+            val exerciseCount = exerciseRepository.countSuspending(subname)
+            _manageableSelection.reset(exerciseCount)
+            exerciseSourceFactory.invalidate()
+            setState(State.Working)
+        }
+    }
+
     private suspend fun requestAssociatedNoteCount(
         selectionState: ManageableSelection.State
     ): Int = when (selectionState) {
@@ -339,12 +346,6 @@ class ExercisesViewModel @Inject constructor(
             exerciseRepository.deleteOtherSuspending(unselectedExerciseIdList, subname)
         }
         ManageableSelection.State.Inactive -> 0
-    }
-
-    private fun invalidateExercises() {
-        setState(State.Waiting)
-        exerciseSourceFactory.invalidate()
-        setState(State.Working)
     }
 
     private fun reportAbout(e: Exception) {
