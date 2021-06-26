@@ -18,7 +18,7 @@ class StoreNoteTest : TestCase() {
     private val noteDao: NoteDao
         get() = _dbKeeper.db.noteDao()
 
-    private val _dbKeeper = TestDbKeeper()
+    private val _dbKeeper: TestDbKeeper = TestDbKeeper()
 
     override fun setUp() {
         super.setUp()
@@ -99,12 +99,12 @@ class StoreNoteTest : TestCase() {
         assertEquals(0, deletedNoteCount)
         val countWithExerciseSubname = noteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
             ids,
-            StoreExerciseTestHelper.EXERCISE_SUBNAME
+            StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME
         )
         assertEquals(countWithExerciseSubname, deletedNoteCount)
     }
@@ -124,12 +124,12 @@ class StoreNoteTest : TestCase() {
         )
         val countWithExerciseSubname = otherNoteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
             ids,
-            StoreExerciseTestHelper.EXERCISE_SUBNAME
+            StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME
         )
         assertEquals(countWithExerciseSubname, deletedNoteCount)
     }

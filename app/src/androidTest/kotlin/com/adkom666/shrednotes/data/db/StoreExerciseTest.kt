@@ -4,14 +4,14 @@ import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.startsWith
-import org.junit.Assert.assertThat
+import org.hamcrest.MatcherAssert.assertThat
 
 class StoreExerciseTest : TestCase() {
 
     private val exerciseDao: ExerciseDao
         get() = _dbKeeper.db.exerciseDao()
 
-    private val _dbKeeper = TestDbKeeper()
+    private val _dbKeeper: TestDbKeeper = TestDbKeeper()
 
     override fun setUp() {
         super.setUp()
@@ -74,11 +74,11 @@ class StoreExerciseTest : TestCase() {
         )
         assertEquals(0, deletedExerciseCount)
         val countWithSubname = exerciseList.count {
-            it.name.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+            it.name.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
         }
         deletedExerciseCount = exerciseDao.deleteByIdsAndSubnameSuspending(
             ids,
-            StoreExerciseTestHelper.EXERCISE_SUBNAME
+            StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME
         )
         assertEquals(countWithSubname, deletedExerciseCount)
     }
@@ -100,11 +100,11 @@ class StoreExerciseTest : TestCase() {
             offset = groupSize
         )
         val countWithSubname = otherExerciseList.count {
-            it.name.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+            it.name.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
         }
         deletedExerciseCount = exerciseDao.deleteOtherByIdsAndSubnameSuspending(
             ids,
-            StoreExerciseTestHelper.EXERCISE_SUBNAME
+            StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME
         )
         assertEquals(countWithSubname, deletedExerciseCount)
     }

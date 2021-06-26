@@ -9,7 +9,7 @@ object StoreExerciseTestHelper {
 
     const val EXERCISE_NAME_PREFIX = "Test Exercise "
     const val EXERCISE_NAME_NOT_CONSISTS_IT = "xxx"
-    const val EXERCISE_SUBNAME = "1"
+    const val PROBABLE_EXERCISE_SUBNAME = "1"
     const val EXERCISE_COUNT = 666
 
     fun insertExercises(exerciseDao: ExerciseDao) {

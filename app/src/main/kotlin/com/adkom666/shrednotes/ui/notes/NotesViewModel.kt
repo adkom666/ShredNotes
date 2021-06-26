@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 /**
  * Notes section model.
@@ -211,7 +211,7 @@ class NotesViewModel @Inject constructor(
      * The text that must be contained in the names of the displayed notes' exercises
      * (case-insensitive).
      */
-    var exerciseSubname: String? by Delegates.observable(null) { _, old, new ->
+    var exerciseSubname: String? by observable(null) { _, old, new ->
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             noteSourceFactory.exerciseSubname = new?.trim()
@@ -222,7 +222,7 @@ class NotesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean by Delegates.observable(false) { _, old, new ->
+    var isSearchActive: Boolean by observable(false) { _, old, new ->
         Timber.d("Change isSearchActive: old=$old, new=$new")
     }
 
@@ -232,7 +232,7 @@ class NotesViewModel @Inject constructor(
     val isFilterEnabled: Boolean
         get() = _isFilterEnabled
 
-    private var filter: NoteFilter by Delegates.observable(INITIAL_FILTER) { _, old, new ->
+    private var filter: NoteFilter by observable(INITIAL_FILTER) { _, old, new ->
         Timber.d("Change filter: old=$old, new=$new")
         if (new != old) {
             noteSourceFactory.filter = new
@@ -240,7 +240,7 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    private var _isFilterEnabled: Boolean by Delegates.observable(false) { _, old, new ->
+    private var _isFilterEnabled: Boolean by observable(false) { _, old, new ->
         Timber.d("Change _isFilterEnabled: old=$old, new=$new")
         if (new != old) {
             noteSourceFactory.filter = if (new) filter else null
@@ -475,9 +475,7 @@ class NotesViewModel @Inject constructor(
             return exerciseSource
         }
 
-        fun invalidate() {
-            noteSource?.invalidate()
-        }
+        fun invalidate() = noteSource?.invalidate()
     }
 
     private class NoteSource(

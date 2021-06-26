@@ -4,23 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.databinding.FragmentAskBinding
+import dagger.android.support.DaggerFragment
 
 /**
  * Ask section sub screen.
  */
-class AskFragment : Fragment() {
+class AskFragment : DaggerFragment() {
 
     companion object {
 
         /**
          * Preferred way to create a fragment.
          *
-         * @return new instance as a [Fragment].
+         * @return new instance as [AskFragment].
          */
-        fun newInstance(): Fragment = AskFragment()
+        fun newInstance(): AskFragment = AskFragment()
     }
 
     private val binding: FragmentAskBinding

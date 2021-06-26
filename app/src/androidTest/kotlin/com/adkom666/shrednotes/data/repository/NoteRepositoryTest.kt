@@ -49,11 +49,11 @@ class NoteRepositoryTest : TestCase() {
         val noteList = noteDao.listPortion(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByExerciseSubname = noteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         val count = repository.countSuspending(
-            exerciseSubname = StoreExerciseTestHelper.EXERCISE_SUBNAME,
+            exerciseSubname = StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME,
             filter = null
         )
         assertEquals(countByExerciseSubname, count)
@@ -123,7 +123,7 @@ class NoteRepositoryTest : TestCase() {
             val startMillis = dateFromInclusive.epochMillis
             val endMillis = dateToExclusive.epochMillis
             (noteWithExercise.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false)
                     && noteWithExercise.noteTimestamp in startMillis until endMillis
                     && noteWithExercise.noteBpm in bpmFromInclusive..bpmToInclusive
@@ -135,7 +135,7 @@ class NoteRepositoryTest : TestCase() {
             bpmToInclusive = bpmToInclusive
         )
         val count = repository.countSuspending(
-            exerciseSubname = StoreExerciseTestHelper.EXERCISE_SUBNAME,
+            exerciseSubname = StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME,
             filter = filter
         )
         assertEquals(countByExerciseSubnameDateAndBpm, count)
@@ -156,13 +156,13 @@ class NoteRepositoryTest : TestCase() {
         val noteList = noteDao.listPortion(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByExerciseSubname = noteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         val list = repository.list(
             size = StoreNoteTestHelper.NOTE_COUNT,
             startPosition = 0,
-            exerciseSubname = StoreExerciseTestHelper.EXERCISE_SUBNAME,
+            exerciseSubname = StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME,
             filter = null
         )
         assertEquals(countByExerciseSubname, list.size)
@@ -206,12 +206,12 @@ class NoteRepositoryTest : TestCase() {
 
         val countWithExerciseSubname = noteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = repository.deleteSuspending(
             ids = ids,
-            exerciseSubname = StoreExerciseTestHelper.EXERCISE_SUBNAME,
+            exerciseSubname = StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME,
             filter = null
         )
         assertEquals(countWithExerciseSubname, deletedNoteCount)
@@ -323,12 +323,12 @@ class NoteRepositoryTest : TestCase() {
         )
         val countWithExerciseSubname = otherNoteList.count {
             it.exerciseName
-                ?.contains(StoreExerciseTestHelper.EXERCISE_SUBNAME, true)
+                ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false
         }
         deletedNoteCount = repository.deleteOtherSuspending(
             ids = ids,
-            exerciseSubname = StoreExerciseTestHelper.EXERCISE_SUBNAME,
+            exerciseSubname = StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME,
             filter = null
         )
         assertEquals(countWithExerciseSubname, deletedNoteCount)

@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 /**
  * Exercises section model.
@@ -174,7 +174,7 @@ class ExercisesViewModel @Inject constructor(
     /**
      * The text that must be contained in the names of the displayed exercises (case-insensitive).
      */
-    var subname: String? by Delegates.observable(null) { _, old, new ->
+    var subname: String? by observable(null) { _, old, new ->
         Timber.d("Change subname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
@@ -189,7 +189,7 @@ class ExercisesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean by Delegates.observable(false) { _, old, new ->
+    var isSearchActive: Boolean by observable(false) { _, old, new ->
         Timber.d("Change isSearchActive: old=$old, new=$new")
     }
 
@@ -381,9 +381,7 @@ class ExercisesViewModel @Inject constructor(
             return exerciseSource
         }
 
-        fun invalidate() {
-            exerciseSource?.invalidate()
-        }
+        fun invalidate() = exerciseSource?.invalidate()
     }
 
     private class ExerciseSource(

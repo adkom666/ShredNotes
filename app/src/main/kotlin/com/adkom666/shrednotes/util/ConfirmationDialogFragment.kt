@@ -30,7 +30,7 @@ class ConfirmationDialogFragment : DialogFragment() {
          * @param messageFormatArgs the format arguments that will be used for substitution if
          * [messageResId] refers to the format message; should all be of the same type: [Int] or
          * [String].
-         * @return new instance as a fragment.
+         * @return new instance as [ConfirmationDialogFragment].
          */
         fun newInstance(
             @StringRes titleResId: Int,
@@ -75,33 +75,6 @@ class ConfirmationDialogFragment : DialogFragment() {
     private var _messageResId: Int? = null
     private var _formatArgsEnvelope: FormatArgsEnvelope? = null
 
-    /**
-     * Set [listener] to use on positive button click.
-     *
-     * @param listener the [OnConfirmListener] to use on positive button click.
-     */
-    fun setOnConfirmListener(listener: OnConfirmListener) {
-        onConfirmListener = listener
-    }
-
-    /**
-     * Set [listener] to use on negative button click.
-     *
-     * @param listener the [OnNotConfirmListener] to use on negative button click.
-     */
-    fun setOnNotConfirmListener(listener: OnNotConfirmListener) {
-        onNotConfirmListener = listener
-    }
-
-    /**
-     * Set [listener] to use when the dialog is cancelled.
-     *
-     * @param listener the [OnCancelConfirmListener] to use when the dialog is cancelled.
-     */
-    fun setOnCancelConfirmListener(listener: OnCancelConfirmListener) {
-        onCancelConfirmListener = listener
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val arguments = requireArguments()
@@ -129,10 +102,10 @@ class ConfirmationDialogFragment : DialogFragment() {
         return builder
             .setTitle(titleResId)
             .setPositiveButton(R.string.button_title_yes) { _, _ ->
-                onConfirmListener?.let { it() }
+                onConfirmListener?.invoke()
             }
             .setNegativeButton(R.string.button_title_no) { _, _ ->
-                onNotConfirmListener?.let { it() }
+                onNotConfirmListener?.invoke()
             }
             .create()
     }
@@ -140,6 +113,33 @@ class ConfirmationDialogFragment : DialogFragment() {
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         onCancelConfirmListener?.let { it(dialog) }
+    }
+
+    /**
+     * Set [listener] to use on positive button click.
+     *
+     * @param listener the [OnConfirmListener] to use on positive button click.
+     */
+    fun setOnConfirmListener(listener: OnConfirmListener) {
+        onConfirmListener = listener
+    }
+
+    /**
+     * Set [listener] to use on negative button click.
+     *
+     * @param listener the [OnNotConfirmListener] to use on negative button click.
+     */
+    fun setOnNotConfirmListener(listener: OnNotConfirmListener) {
+        onNotConfirmListener = listener
+    }
+
+    /**
+     * Set [listener] to use when the dialog is cancelled.
+     *
+     * @param listener the [OnCancelConfirmListener] to use when the dialog is cancelled.
+     */
+    fun setOnCancelConfirmListener(listener: OnCancelConfirmListener) {
+        onCancelConfirmListener = listener
     }
 
     @Parcelize

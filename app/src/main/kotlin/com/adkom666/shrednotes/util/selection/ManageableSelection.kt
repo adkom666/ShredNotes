@@ -1,7 +1,7 @@
 package com.adkom666.shrednotes.util.selection
 
 import com.adkom666.shrednotes.common.Id
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 /**
  * Selectable identifiable items along with tools for manipulating the selection and the selection
@@ -55,7 +55,7 @@ class ManageableSelection(private var itemCount: Int = 0) :
     val state: State
         get() = _state
 
-    private var _state: State by Delegates.observable(State.Inactive) { _, old: State, new: State ->
+    private var _state: State by observable(State.Inactive) { _, old: State, new: State ->
         if (old == State.Inactive && new != State.Inactive ||
             old != State.Inactive && new == State.Inactive
         ) {

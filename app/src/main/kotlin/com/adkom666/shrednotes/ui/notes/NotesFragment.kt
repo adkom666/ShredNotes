@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -61,9 +60,9 @@ class NotesFragment :
         /**
          * Preferred way to create a fragment.
          *
-         * @return new instance as a [Fragment].
+         * @return new instance as [NotesFragment].
          */
-        fun newInstance(): Fragment = NotesFragment()
+        fun newInstance(): NotesFragment = NotesFragment()
     }
 
     @Inject

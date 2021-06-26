@@ -4,23 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.databinding.FragmentStatisticsBinding
+import dagger.android.support.DaggerFragment
 
 /**
  * Statistics section sub screen.
  */
-class StatisticsFragment : Fragment() {
+class StatisticsFragment : DaggerFragment() {
 
     companion object {
 
         /**
          * Preferred way to create a fragment.
          *
-         * @return new instance as a [Fragment].
+         * @return new instance as [StatisticsFragment].
          */
-        fun newInstance(): Fragment = StatisticsFragment()
+        fun newInstance(): StatisticsFragment = StatisticsFragment()
     }
 
     private val binding: FragmentStatisticsBinding

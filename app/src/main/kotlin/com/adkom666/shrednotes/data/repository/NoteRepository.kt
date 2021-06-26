@@ -123,7 +123,7 @@ interface NoteRepository {
 
     /**
      * Deleting notes with the specified [ids] whose exercise names contain [exerciseSubname] if it
-     * is not null or blank.
+     * is not null or blank and match filter if it is defined.
      *
      * @param ids identifiers of notes to delete.
      * @param exerciseSubname part of the exercise names from the notes to delete.
@@ -138,7 +138,7 @@ interface NoteRepository {
 
     /**
      * Deleting notes whose identifiers are not in the [ids] and whose exercise names contain
-     * [exerciseSubname] if it is not null or blank.
+     * [exerciseSubname] if it is not null or blank and match filter if it is defined.
      *
      * @param ids identifiers of notes that should not be deleted.
      * @param exerciseSubname part of the exercise names from the notes to delete.

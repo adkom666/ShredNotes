@@ -32,7 +32,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
          *
          * @param initialFilter the filter whose parameters will initialize the fragment.
          * @param isFilterEnabled whether the [initialFilter] parameters are currently applied.
-         * @return new instance of a fragment.
+         * @return new instance as [NoteFilterDialogFragment].
          */
         fun newInstance(
             initialFilter: NoteFilter,
