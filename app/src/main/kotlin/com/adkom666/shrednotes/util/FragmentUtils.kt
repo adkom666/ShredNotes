@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.util
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 
 /**
  * Request for the currently displayed fragment.

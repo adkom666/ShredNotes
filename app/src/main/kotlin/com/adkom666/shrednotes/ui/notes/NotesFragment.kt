@@ -24,7 +24,7 @@ import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Filterable
 import com.adkom666.shrednotes.ui.OnFilterEnablingChangedListener
 import com.adkom666.shrednotes.ui.Searchable
-import com.adkom666.shrednotes.util.ConfirmationDialogFragment
+import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
@@ -156,7 +156,8 @@ class NotesFragment :
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.noteRecycler.layoutManager = llm
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
-        binding.noteRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
+        val decoration = FirstItemDecoration(marginTop.toInt())
+        binding.noteRecycler.addItemDecoration(decoration)
         val adapter = NotePagedListAdapter(model.selectableNotes, model::onNoteClick)
         binding.noteRecycler.adapter = adapter
         return adapter

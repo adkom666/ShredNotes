@@ -12,6 +12,7 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.TruncatedToMinutesDate
+import com.adkom666.shrednotes.util.numberOrNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -240,18 +241,14 @@ class NoteViewModel @Inject constructor(
                 report(Message.Error.MissingNoteExerciseName)
             noteBpmString.isBlank() ->
                 report(Message.Error.MissingNoteBpm)
-            else -> try {
-                val noteBpm = noteBpmString.toInt()
+            else -> noteBpmString.numberOrNull()?.let { noteBpm ->
                 if (isNoteBpmInvalid(noteBpm)) {
                     report(Message.Error.WrongNoteBpm)
                 } else {
                     val note = createNote(noteExerciseName, noteBpm)
                     save(note)
                 }
-            } catch (e: NumberFormatException) {
-                Timber.d(e)
-                report(Message.Error.WrongNoteBpm)
-            }
+            } ?: report(Message.Error.WrongNoteBpm)
         }
     }
 

@@ -69,12 +69,8 @@ class ExerciseActivity : AppCompatActivity() {
         _model = viewModel(viewModelFactory)
 
         setupButtonListeners()
-
-        model.stateAsLiveData.observe(this, StateObserver())
-
-        lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
-        }
+        observeLiveData()
+        listenChannels()
 
         if (savedInstanceState == null) {
             val exercise = intent?.extras?.getParcelable<Exercise>(EXTRA_EXERCISE)
@@ -84,16 +80,24 @@ class ExerciseActivity : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-
         binding.okButton.setOnClickListener {
             val exerciseName = binding.exerciseNameEditText.text.toString().trim()
             Timber.d("Save exercise under the exerciseName=$exerciseName")
             model.save(exerciseName)
         }
-
         binding.cancelButton.setOnClickListener {
             setResult(RESULT_CANCELED)
             finish()
+        }
+    }
+
+    private fun observeLiveData() {
+        model.stateAsLiveData.observe(this, StateObserver())
+    }
+
+    private fun listenChannels() {
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
         }
     }
 

@@ -17,7 +17,7 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ActivityNoteBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
-import com.adkom666.shrednotes.util.ConfirmationDialogFragment
+import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
@@ -46,10 +46,10 @@ class NoteActivity : AppCompatActivity() {
             "${BuildConfig.APPLICATION_ID}.extras.note"
 
         private const val TAG_DATE_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.date_picker"
+            "${BuildConfig.APPLICATION_ID}.tags.note_date_picker"
 
         private const val TAG_TIME_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.time_picker"
+            "${BuildConfig.APPLICATION_ID}.tags.note_time_picker"
 
         private const val TAG_CONFIRM_SAVE_WITH_EXERCISE =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_save_with_exercise"
@@ -93,12 +93,8 @@ class NoteActivity : AppCompatActivity() {
 
         setupButtonListeners()
         restoreFragmentListeners()
-
-        model.stateAsLiveData.observe(this, StateObserver())
-
-        lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
-        }
+        observeLiveData()
+        listenChannels()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
@@ -138,6 +134,16 @@ class NoteActivity : AppCompatActivity() {
         }
         supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SAVE_WITH_EXERCISE) {
             it.setSavingWithExerciseListeners()
+        }
+    }
+
+    private fun observeLiveData() {
+        model.stateAsLiveData.observe(this, StateObserver())
+    }
+
+    private fun listenChannels() {
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
         }
     }
 

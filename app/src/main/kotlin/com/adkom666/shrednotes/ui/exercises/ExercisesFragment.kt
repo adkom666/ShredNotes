@@ -21,7 +21,7 @@ import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.FragmentExercisesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Searchable
-import com.adkom666.shrednotes.util.ConfirmationDialogFragment
+import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
@@ -102,19 +102,8 @@ class ExercisesFragment :
 
         setupFabListeners()
         restoreFragmentListeners()
-
-        val stateObserver = StateObserver()
-        model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
-        val exerciseListObserver = ExerciseListObserver(adapter, binding.exercisesRecycler)
-        model.exercisePagedListAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
-
-        lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
-        }
-
-        lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
-        }
+        observeLiveData()
+        listenChannels()
     }
 
     override fun onDestroyView() {
@@ -150,7 +139,8 @@ class ExercisesFragment :
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.exercisesRecycler.layoutManager = llm
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
-        binding.exercisesRecycler.addItemDecoration(FirstItemDecoration(marginTop.toInt()))
+        val decoration = FirstItemDecoration(marginTop.toInt())
+        binding.exercisesRecycler.addItemDecoration(decoration)
         val adapter = ExercisePagedListAdapter(model.selectableExercises, model::onExerciseClick)
         binding.exercisesRecycler.adapter = adapter
         return adapter
@@ -189,6 +179,22 @@ class ExercisesFragment :
     private fun restoreFragmentListeners() {
         childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_EXERCISES_DELETION) {
             it.setDeletingListener()
+        }
+    }
+
+    private fun observeLiveData() {
+        val stateObserver = StateObserver()
+        model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
+        val exerciseListObserver = ExerciseListObserver(adapter, binding.exercisesRecycler)
+        model.exercisePagedListAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
+    }
+
+    private fun listenChannels() {
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
         }
     }
 

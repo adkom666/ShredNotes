@@ -22,7 +22,7 @@ import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
-import com.adkom666.shrednotes.util.ConfirmationDialogFragment
+import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.toast
@@ -87,16 +87,8 @@ class MainActivity :
         initBottomNavigation()
         invalidateOptionsMenuOnFragmentChange()
         restoreFragmentListeners()
-
-        model.stateAsLiveData.observe(this, StateObserver())
-
-        lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
-        }
-
-        lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
-        }
+        observeLiveData()
+        listenChannels()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -191,6 +183,19 @@ class MainActivity :
         }
         supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SIGN_OUT) {
             it.setSigningOutListener()
+        }
+    }
+
+    private fun observeLiveData() {
+        model.stateAsLiveData.observe(this, StateObserver())
+    }
+
+    private fun listenChannels() {
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
         }
     }
 

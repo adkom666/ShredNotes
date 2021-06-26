@@ -1,11 +1,10 @@
-package com.adkom666.shrednotes.util
+package com.adkom666.shrednotes.util.dialog
 
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.annotation.StringRes
-import androidx.fragment.app.DialogFragment
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -18,7 +17,7 @@ typealias OnCancelConfirmListener = (DialogInterface) -> Unit
 /**
  * Dialog fragment for a suggestion that the user can agree to or not.
  */
-class ConfirmationDialogFragment : DialogFragment() {
+class ConfirmationDialogFragment : KeyboardlessDialogFragment() {
 
     companion object {
 
@@ -81,12 +80,6 @@ class ConfirmationDialogFragment : DialogFragment() {
         _titleResId = arguments.getInt(ARG_TITLE_RES_ID)
         _messageResId = arguments.getInt(ARG_MESSAGE_RES_ID)
         _formatArgsEnvelope = arguments.getParcelable(ARG_FORMAT_ARGS_ENVELOPE)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        hideKeyboard()
-        activity?.currentFocus?.clearFocus()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
