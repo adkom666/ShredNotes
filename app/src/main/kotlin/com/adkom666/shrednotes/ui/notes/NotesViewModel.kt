@@ -214,12 +214,8 @@ class NotesViewModel @Inject constructor(
     var exerciseSubname: String? by Delegates.observable(null) { _, old, new ->
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            viewModelScope.launch {
-                noteSourceFactory.exerciseSubname = new?.trim()
-                val noteCount = noteRepository.countSuspending(new)
-                _manageableSelection.reset(noteCount)
-                invalidateNotes()
-            }
+            noteSourceFactory.exerciseSubname = new?.trim()
+            resetNotes()
         }
     }
 
@@ -238,12 +234,22 @@ class NotesViewModel @Inject constructor(
 
     private var filter: NoteFilter by Delegates.observable(INITIAL_FILTER) { _, old, new ->
         Timber.d("Change filter: old=$old, new=$new")
+        if (new != old) {
+            noteSourceFactory.filter = new
+            resetNotes()
+        }
     }
 
-    /**
-     * Property for storing a flag indicating whether the filter is enabled.
-     */
-    private var _isFilterEnabled: Boolean = false
+    private var _isFilterEnabled: Boolean by Delegates.observable(false) { _, old, new ->
+        Timber.d("Change _isFilterEnabled: old=$old, new=$new")
+        if (new != old) {
+            noteSourceFactory.filter = if (new) filter else null
+            resetNotes()
+        }
+    }
+
+    private val filterOrNull: NoteFilter?
+        get() = if (_isFilterEnabled) filter else null
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
 
@@ -256,7 +262,8 @@ class NotesViewModel @Inject constructor(
 
     private val noteSourceFactory: NoteSourceFactory = NoteSourceFactory(
         noteRepository,
-        exerciseSubname
+        exerciseSubname,
+        filterOrNull
     )
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
@@ -273,15 +280,14 @@ class NotesViewModel @Inject constructor(
     init {
         Timber.d("Init")
         viewModelScope.launch {
-            val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
+            val noteInitialCount = noteRepository.countSuspending(exerciseSubname, filterOrNull)
             Timber.d("noteInitialCount=$noteInitialCount")
             _manageableSelection.init(noteInitialCount)
             setState(State.Working)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
-                _manageableSelection.reset(noteCount)
-                invalidateNotes()
+                resetNotes()
             }
         }
     }
@@ -365,10 +371,11 @@ class NotesViewModel @Inject constructor(
     fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter) {
         Timber.d("onConfigFilterResult: status=$status, filter=$filter")
 
-        fun ensureFilterEnabled(isEnabled: Boolean) {
+        fun ensureFilterEnabling(isEnabled: Boolean) {
             if (_isFilterEnabled xor isEnabled) {
                 _isFilterEnabled = isEnabled
                 give(Signal.FilterEnablingChanged)
+                resetNotes()
             }
         }
 
@@ -377,14 +384,14 @@ class NotesViewModel @Inject constructor(
                 this.filter = filter
                 val isFilterDefined = filter.isDefined
                 Timber.d("isFilterDefined=$isFilterDefined")
-                ensureFilterEnabled(isFilterDefined)
+                ensureFilterEnabling(isFilterDefined)
                 if (isFilterDefined.not()) {
                     report(Message.FilterUndefined)
                 }
             }
             ConfigFilterStatus.DISABLE -> {
                 this.filter = filter
-                ensureFilterEnabled(false)
+                ensureFilterEnabling(false)
             }
             ConfigFilterStatus.CANCEL ->
                 if (_isFilterEnabled.not()) {
@@ -393,10 +400,17 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    private fun invalidateNotes() {
+    private fun resetNotes() {
         setState(State.Waiting)
-        noteSourceFactory.invalidate()
-        setState(State.Working)
+        viewModelScope.launch {
+            val noteCount = noteRepository.countSuspending(
+                exerciseSubname,
+                filterOrNull
+            )
+            _manageableSelection.reset(noteCount)
+            noteSourceFactory.invalidate()
+            setState(State.Working)
+        }
     }
 
     private suspend fun deleteSelectedNotes(
@@ -404,11 +418,19 @@ class NotesViewModel @Inject constructor(
     ): Int = when (selectionState) {
         is ManageableSelection.State.Active.Inclusive -> {
             val selectedNoteIdList = selectionState.selectedItemIdSet.toList()
-            noteRepository.deleteSuspending(selectedNoteIdList, exerciseSubname)
+            noteRepository.deleteSuspending(
+                selectedNoteIdList,
+                exerciseSubname,
+                filterOrNull
+            )
         }
         is ManageableSelection.State.Active.Exclusive -> {
             val unselectedNoteIdList = selectionState.unselectedItemIdSet.toList()
-            noteRepository.deleteOtherSuspending(unselectedNoteIdList, exerciseSubname)
+            noteRepository.deleteOtherSuspending(
+                unselectedNoteIdList,
+                exerciseSubname,
+                filterOrNull
+            )
         }
         ManageableSelection.State.Inactive -> 0
     }
@@ -441,13 +463,14 @@ class NotesViewModel @Inject constructor(
 
     private class NoteSourceFactory(
         private val noteRepository: NoteRepository,
-        var exerciseSubname: String?
+        var exerciseSubname: String?,
+        var filter: NoteFilter?
     ) : DataSource.Factory<Int, Note>() {
 
         private var noteSource: NoteSource? = null
 
         override fun create(): DataSource<Int, Note> {
-            val exerciseSource = NoteSource(noteRepository, exerciseSubname)
+            val exerciseSource = NoteSource(noteRepository, exerciseSubname, filter)
             this.noteSource = exerciseSource
             return exerciseSource
         }
@@ -459,7 +482,8 @@ class NotesViewModel @Inject constructor(
 
     private class NoteSource(
         private val noteRepository: NoteRepository,
-        private var exerciseSubname: String?
+        private var exerciseSubname: String?,
+        private var filter: NoteFilter?
     ) : PositionalDataSource<Note>() {
 
         override fun loadInitial(
@@ -469,7 +493,8 @@ class NotesViewModel @Inject constructor(
             val (noteList, startPosition) = noteRepository.page(
                 params.requestedLoadSize,
                 params.requestedStartPosition,
-                exerciseSubname
+                exerciseSubname,
+                filter
             )
             Timber.d("Load initial notes: noteList.size=${noteList.size}")
             Timber.d("Load initial notes: noteList=$noteList")
@@ -483,7 +508,8 @@ class NotesViewModel @Inject constructor(
             val noteList = noteRepository.list(
                 params.loadSize,
                 params.startPosition,
-                exerciseSubname
+                exerciseSubname,
+                filter
             )
             Timber.d("Load next notes: noteList.size=${noteList.size}")
             callback.onResult(noteList)

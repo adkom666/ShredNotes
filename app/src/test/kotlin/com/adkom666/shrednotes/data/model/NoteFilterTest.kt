@@ -15,6 +15,26 @@ class NoteFilterTest : TestCase() {
         assertTrue(filter.isDefined)
     }
 
+    fun testIsDateRangeNotDefined() {
+        val filter = NoteFilter(bpmFromInclusive = 666)
+        assertFalse(filter.isDateRangeDefined)
+    }
+
+    fun testIsDateRangeDefined() {
+        val filter = NoteFilter(dateFromInclusive = Days())
+        assertTrue(filter.isDateRangeDefined)
+    }
+
+    fun testIsBpmRangeNotDefined() {
+        val filter = NoteFilter(dateFromInclusive = Days())
+        assertFalse(filter.isBpmRangeDefined)
+    }
+
+    fun testIsBpmRangeDefined() {
+        val filter = NoteFilter(bpmFromInclusive = 666)
+        assertTrue(filter.isBpmRangeDefined)
+    }
+
     fun testEqualsWhenBothAreNotDefined() {
         val filter = NoteFilter()
         val otherFilter = NoteFilter()

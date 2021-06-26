@@ -25,12 +25,25 @@ data class NoteFilter(
 ) : Parcelable {
 
     /**
-     * The undefined filter does not filter anything.
+     * The undefined filter does not filter notes.
      */
     val isDefined: Boolean
+        get() = isDateRangeDefined || isBpmRangeDefined
+
+    /**
+     * Filter with the undefined date range does not filter notes by date.
+     */
+    val isDateRangeDefined: Boolean
         get() = arrayOf(
             dateFromInclusive,
-            dateToExclusive,
+            dateToExclusive
+        ).firstOrNull { it != null } != null
+
+    /**
+     * Filter with the undefined BPM range does not filter notes by BPM.
+     */
+    val isBpmRangeDefined: Boolean
+        get() = arrayOf(
             bpmFromInclusive,
             bpmToInclusive
         ).firstOrNull { it != null } != null

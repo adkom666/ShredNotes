@@ -32,8 +32,8 @@ class StoreNoteTest : TestCase() {
         _dbKeeper.destroyDb()
     }
 
-    fun testCount() {
-        val noteCount = noteDao.countAll()
+    fun testCountAll() = runBlocking {
+        val noteCount = noteDao.countAllSuspending()
         assertEquals(StoreNoteTestHelper.NOTE_COUNT, noteCount)
     }
 

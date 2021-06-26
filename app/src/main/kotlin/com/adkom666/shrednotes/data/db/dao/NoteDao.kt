@@ -18,19 +18,34 @@ import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_N
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM
-import com.adkom666.shrednotes.util.paging.Page
-import com.adkom666.shrednotes.util.paging.safeOffset
 import kotlinx.coroutines.flow.Flow
 
 private const val SELECT_COUNT_ALL = "SELECT COUNT(*) FROM $TABLE_NOTES"
 
 private const val SELECT_COUNT_BY_ID =
-    "SELECT COUNT(*) FROM $TABLE_NOTES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES " +
             "WHERE $TABLE_NOTES_FIELD_ID = :id"
 
 private const val CONDITION_BY_EXERCISE_SUBNAME =
     "UPPER($TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_NAME) " +
             "LIKE UPPER('%' || :exerciseSubname || '%')"
+
+private const val CONDITION_NOTES_BY_TIMESTAMP_RANGE =
+    ":timestampFromInclusive <= $TABLE_NOTES_FIELD_TIMESTAMP " +
+            "AND $TABLE_NOTES_FIELD_TIMESTAMP < :timestampToExclusive"
+
+private const val CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE =
+    ":timestampFromInclusive <= $TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP " +
+            "AND $TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP < :timestampToExclusive"
+
+private const val CONDITION_NOTES_BY_BPM_RANGE =
+    ":bpmFromInclusive <= $TABLE_NOTES_FIELD_BPM " +
+            "AND $TABLE_NOTES_FIELD_BPM <= :bpmToInclusive"
+
+private const val CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE =
+    ":bpmFromInclusive <= $TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
+            "AND $TABLE_NOTES.$TABLE_NOTES_FIELD_BPM <= :bpmToInclusive"
 
 private const val TABLE_NOTES_WITH_EXERCISES =
     "$TABLE_NOTES LEFT JOIN $TABLE_EXERCISES " +
@@ -43,15 +58,53 @@ private const val TABLE_NOTES_WITH_EXISTENT_EXERCISES =
             "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID"
 
 private const val SELECT_COUNT_BY_EXERCISE_SUBNAME =
-    "SELECT COUNT(*) FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME"
 
+private const val SELECT_COUNT_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
+
+private const val SELECT_COUNT_BY_EXERCISE_SUBNAME_AND_BPM_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE"
+
+private const val SELECT_COUNT_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE"
+
+private const val SELECT_COUNT_BY_TIMESTAMP_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES " +
+            "WHERE $CONDITION_NOTES_BY_TIMESTAMP_RANGE"
+
+private const val SELECT_COUNT_BY_BPM_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES " +
+            "WHERE $CONDITION_NOTES_BY_BPM_RANGE"
+
+private const val SELECT_COUNT_BY_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES " +
+            "WHERE $CONDITION_NOTES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_BY_BPM_RANGE"
+
 private const val SELECT_COUNT_BY_EXERCISE_IDS =
-    "SELECT COUNT(*) FROM $TABLE_NOTES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES " +
             "WHERE $TABLE_NOTES_FIELD_EXERCISE_ID IN (:exerciseIds)"
 
 private const val SELECT_COUNT_OTHER_BY_EXERCISE_IDS =
-    "SELECT COUNT(*) FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID NOT IN (:exerciseIds)"
 
 private const val NOTES_WITH_EXERCISES_FIELDS =
@@ -85,35 +138,189 @@ private const val SELECT_PORTION_BY_EXERCISE_SUBNAME =
             "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
             OPTIONS_FOR_SELECT_PORTION
 
-private const val DELETE_ALL = "DELETE FROM $TABLE_NOTES"
+private const val SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
 
-private const val DELETE_BY_IDS =
-    "DELETE FROM $TABLE_NOTES " +
-            "WHERE $TABLE_NOTES_FIELD_ID IN (:ids)"
+private const val SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_BPM_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val SELECT_PORTION_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val SELECT_PORTION_BY_TIMESTAMP_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val SELECT_PORTION_BY_BPM_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val SELECT_PORTION_BY_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE " +
+            OPTIONS_FOR_SELECT_PORTION
+
+private const val DELETE_ALL = "DELETE FROM $TABLE_NOTES"
+private const val CONDITION_NOTES_BY_IDS = "$TABLE_NOTES_FIELD_ID IN (:ids)"
+private const val DELETE_BY_IDS = "DELETE FROM $TABLE_NOTES WHERE $CONDITION_NOTES_BY_IDS"
+
+private const val CONDITION_NOTES_WITH_EXERCISES_BY_IDS =
+    "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID IN (:ids)"
 
 private const val DELETE_BY_IDS_AND_EXERCISE_SUBNAME =
     "DELETE FROM $TABLE_NOTES " +
             "WHERE $TABLE_NOTES_FIELD_ID IN " +
             "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
-            "WHERE $TABLE_NOTES.$TABLE_NOTES_FIELD_ID IN (:ids) " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
             "AND $CONDITION_BY_EXERCISE_SUBNAME)"
+
+private const val DELETE_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE)"
+
+private const val DELETE_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_BY_IDS_AND_TIMESTAMP_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE)"
+
+private const val DELETE_BY_IDS_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val CONDITION_OTHER_NOTES_BY_IDS = "$TABLE_NOTES_FIELD_ID NOT IN (:ids)"
 
 private const val DELETE_OTHER_BY_IDS =
     "DELETE FROM $TABLE_NOTES " +
-            "WHERE $TABLE_NOTES_FIELD_ID NOT IN (:ids)"
+            "WHERE $CONDITION_OTHER_NOTES_BY_IDS"
+
+private const val CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS =
+    "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID NOT IN (:ids)"
 
 private const val DELETE_OTHER_BY_IDS_AND_EXERCISE_SUBNAME =
     "DELETE FROM $TABLE_NOTES " +
             "WHERE $TABLE_NOTES_FIELD_ID IN " +
             "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
-            "WHERE $TABLE_NOTES.$TABLE_NOTES_FIELD_ID NOT IN (:ids) " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
             "AND $CONDITION_BY_EXERCISE_SUBNAME)"
+
+private const val DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE)"
+
+private const val DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_BY_EXERCISE_SUBNAME " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_OTHER_BY_IDS_AND_TIMESTAMP_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE)"
+
+private const val DELETE_OTHER_BY_IDS_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
+
+private const val DELETE_OTHER_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE =
+    "DELETE FROM $TABLE_NOTES " +
+            "WHERE $TABLE_NOTES_FIELD_ID IN " +
+            "(SELECT $TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
+            "WHERE $CONDITION_OTHER_NOTES_WITH_EXERCISES_BY_IDS " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_BPM_RANGE)"
 
 /**
  * Operations with notes in the database.
  */
+@Suppress("ComplexInterface")
 @Dao
 interface NoteDao : BaseDao<NoteEntity> {
 
@@ -170,6 +377,120 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun countByExerciseSubnameSuspending(exerciseSubname: String): Int
 
     /**
+     * Getting the count of notes whose exercise names contain [exerciseSubname] and the timestamp
+     * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of notes whose exercise names contain [exerciseSubname] and the timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     */
+    @Query(SELECT_COUNT_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
+    suspend fun countByExerciseSubnameAndTimestampRangeSuspending(
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Getting the count of notes whose exercise names contain [exerciseSubname] and the BPM is
+     * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     *
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of notes whose exercise names contain [exerciseSubname] and the BPM is greater
+     * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     */
+    @Query(SELECT_COUNT_BY_EXERCISE_SUBNAME_AND_BPM_RANGE)
+    suspend fun countByExerciseSubnameAndBpmRangeSuspending(
+        exerciseSubname: String,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Getting the count of notes whose exercise names contain [exerciseSubname], the timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
+     * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
+     * [bpmToInclusive].
+     *
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of notes whose exercise names contain [exerciseSubname], the timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
+     * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
+     * [bpmToInclusive].
+     */
+    @Query(SELECT_COUNT_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun countByExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Getting the count of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of notes whose timestamp is greater than or equal to [timestampFromInclusive]
+     * and less than [timestampToExclusive].
+     */
+    @Query(SELECT_COUNT_BY_TIMESTAMP_RANGE)
+    suspend fun countByTimestampRangeSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Getting the count of notes whose BPM is greater than or equal to [bpmFromInclusive] and less
+     * than or equal to [bpmToInclusive].
+     *
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of notes whose BPM is greater than or equal to [bpmFromInclusive] and less than
+     * or equal to [bpmToInclusive].
+     */
+    @Query(SELECT_COUNT_BY_BPM_RANGE)
+    suspend fun countByBpmRangeSuspending(
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Getting the count of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
+     * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     *
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of notes whose timestamp is greater than or equal to [timestampFromInclusive]
+     * and less than [timestampToExclusive] and the BPM is greater than or equal to
+     * [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     */
+    @Query(SELECT_COUNT_BY_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun countByTimestampRangeAndBpmRangeSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
      * Getting the count of notes with the specified [exerciseIds].
      *
      * @param exerciseIds identifiers of the target notes' exercises.
@@ -206,7 +527,6 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [offset] in the list of all notes. The notes are sorted in descending order by timestamp,
      * then ascending by exercise name, and then ascending by BPM.
      */
-    @Transaction
     @Query(SELECT_PORTION)
     fun listPortion(size: Int, offset: Int): List<NoteWithExerciseInfo>
 
@@ -225,12 +545,189 @@ interface NoteDao : BaseDao<NoteEntity> {
      * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
      * by BPM.
      */
-    @Transaction
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME)
     fun listPortionByExerciseSubname(
         size: Int,
         offset: Int,
         exerciseSubname: String
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose exercise names contain [exerciseSubname] and the
+     * timestamp is greater than or equal to [timestampFromInclusive] and less than
+     * [timestampToExclusive]. The notes are sorted in descending order by timestamp, then ascending
+     * by exercise name, and then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose exercise names
+     * contain [exerciseSubname] and the timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive].
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the
+     * timestamp is greater than or equal to [timestampFromInclusive] and less than
+     * [timestampToExclusive]. The notes are sorted in descending order by timestamp, then ascending
+     * by exercise name, and then ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
+    fun listPortionByExerciseSubnameAndTimestampRange(
+        size: Int,
+        offset: Int,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose exercise names contain [exerciseSubname] and the BPM
+     * is greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     * The notes are sorted in descending order by timestamp, then ascending by exercise name, and
+     * then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose exercise names
+     * contain [exerciseSubname] and the BPM is greater than or equal to [bpmFromInclusive] and less
+     * than or equal to [bpmToInclusive].
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the BPM is
+     * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The
+     * notes are sorted in descending order by timestamp, then ascending by exercise name, and then
+     * ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_BPM_RANGE)
+    fun listPortionByExerciseSubnameAndBpmRange(
+        size: Int,
+        offset: Int,
+        exerciseSubname: String,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose exercise names contain [exerciseSubname], the
+     * timestamp is greater than or equal to [timestampFromInclusive] and less than
+     * [timestampToExclusive] and the BPM is greater than or equal to [bpmFromInclusive] and less
+     * than or equal to [bpmToInclusive]. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose exercise names
+     * contain [exerciseSubname], the timestamp is greater than or equal to [timestampFromInclusive]
+     * and less than [timestampToExclusive] and the BPM is greater than or equal to
+     * [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose exercise names contain [exerciseSubname], the timestamp
+     * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
+     * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
+     * [bpmToInclusive]. The notes are sorted in descending order by timestamp, then ascending by
+     * exercise name, and then ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    fun listPortionByExerciseSubnameTimestampRangeAndBpmRange(
+        size: Int,
+        offset: Int,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive]. The notes are sorted in
+     * descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive]. The notes are sorted in
+     * descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE)
+    fun listPortionByTimestampRange(
+        size: Int,
+        offset: Int,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose BPM is greater than or equal to [bpmFromInclusive]
+     * and less than or equal to [bpmToInclusive]. The notes are sorted in descending order by
+     * timestamp, then ascending by exercise name, and then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose BPM is greater
+     * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose BPM is greater than or equal to [bpmFromInclusive] and
+     * less than or equal to [bpmToInclusive]. The notes are sorted in descending order by
+     * timestamp, then ascending by exercise name, and then ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_BPM_RANGE)
+    fun listPortionByBpmRange(
+        size: Int,
+        offset: Int,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
+     * the [offset] in the list of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
+     * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The notes are sorted
+     * in descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param offset position of the first target note in the list of notes whose timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
+     * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
+     * [bpmToInclusive].
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
+     * [offset] in the list of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
+     * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The notes are sorted
+     * in descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     */
+    @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    fun listPortionByTimestampRangeAndBpmRange(
+        size: Int,
+        offset: Int,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
     ): List<NoteWithExerciseInfo>
 
     /**
@@ -265,6 +762,125 @@ interface NoteDao : BaseDao<NoteEntity> {
     ): Int
 
     /**
+     * Deleting information about notes with the specified [ids] whose exercise names contain
+     * [exerciseSubname] and the timestamp is greater than or equal to [timestampFromInclusive]
+     * and less than [timestampToExclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
+    suspend fun deleteByIdsExerciseSubnameAndTimestampRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose exercise names contain
+     * [exerciseSubname] and the BPM is greater than or equal to [bpmFromInclusive] and less than or
+     * equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE)
+    suspend fun deleteByIdsExerciseSubnameAndBpmRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose exercise names contain
+     * [exerciseSubname], the timestamp is greater than or equal to [timestampFromInclusive] and
+     * less than [timestampToExclusive] and the BPM is greater than or equal to [bpmFromInclusive]
+     * and less than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun deleteByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose timestamp is greater than or
+     * equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_AND_TIMESTAMP_RANGE)
+    suspend fun deleteByIdsAndTimestampRangeSuspending(
+        ids: List<Id>,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose BPM is greater than or equal
+     * to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_AND_BPM_RANGE)
+    suspend fun deleteByIdsAndBpmRangeSuspending(
+        ids: List<Id>,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes with the specified [ids] whose timestamp is greater than or
+     * equal to [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater
+     * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes to delete.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun deleteByIdsTimestampRangeAndBpmRangeSuspending(
+        ids: List<Id>,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
      * Deleting information about notes whose identifiers are not in the [ids].
      *
      * @param ids identifiers of notes that should not be deleted.
@@ -288,52 +904,124 @@ interface NoteDao : BaseDao<NoteEntity> {
     ): Int
 
     /**
-     * Getting a [Page] of the [size] or fewer notes with their exercises' info in accordance with
-     * the [requestedOffset] in the list of notes whose exercise names contain [exerciseSubname], or
-     * in the list of all notes if [exerciseSubname] is null or blank. If the [requestedOffset]
-     * exceeds the count of required notes, the notes from the end of the target list are returned
-     * as part of the [Page]. The notes are sorted in descending order by timestamp, then ascending
-     * by exercise name, and then ascending by BPM.
+     * Deleting information about notes whose identifiers are not in the [ids] whose exercise names
+     * contain [exerciseSubname] and the timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive].
      *
-     * @param size limit the count of notes.
-     * @param requestedOffset desired position of the first target note in the list of notes whose
-     * exercise names contain [exerciseSubname], or in the list of all notes if [exerciseSubname] is
-     * null or blank.
+     * @param ids identifiers of notes that should not be deleted.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @return [Page] of the [size] or fewer notes with their exercises' info in accordance with the
-     * [requestedOffset] in the list of notes whose names contain [exerciseSubname], or in the list
-     * of all notes if [exerciseSubname] is null or blank; or [Page] of notes from the end of the
-     * target list if the [requestedOffset] exceeds the count of required notes. The notes are
-     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
-     * by BPM.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of deleted rows from the database table.
      */
-    @Transaction
-    fun page(
-        size: Int,
-        requestedOffset: Int,
-        exerciseSubname: String?
-    ): Page<NoteWithExerciseInfo> {
-        val count = if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
-            countByExerciseSubname(exerciseSubname)
-        } else {
-            countAll()
-        }
-        return if (count > 0 && size > 0) {
-            val offset = safeOffset(
-                requestedOffset,
-                size,
-                count
-            )
-            val entityList = list(
-                size = size,
-                offset = offset,
-                exerciseSubname = exerciseSubname
-            )
-            Page(entityList, offset)
-        } else {
-            Page(emptyList(), 0)
-        }
-    }
+    @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
+    suspend fun deleteOtherByIdsExerciseSubnameAndTimestampRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose exercise
+     * names contain [exerciseSubname] and the BPM is greater than or equal to [bpmFromInclusive]
+     * and less than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE)
+    suspend fun deleteOtherByIdsExerciseSubnameAndBpmRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes whose exercise names contain [exerciseSubname], the
+     * timestamp is greater than or equal to [timestampFromInclusive] and less than
+     * [timestampToExclusive] and the BPM is greater than or equal to [bpmFromInclusive] and less
+     * than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun deleteOtherByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+        ids: List<Id>,
+        exerciseSubname: String,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose timestamp
+     * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_AND_TIMESTAMP_RANGE)
+    suspend fun deleteOtherByIdsAndTimestampRangeSuspending(
+        ids: List<Id>,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose BPM is
+     * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_AND_BPM_RANGE)
+    suspend fun deleteOtherByIdsAndBpmRangeSuspending(
+        ids: List<Id>,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
+
+    /**
+     * Deleting information about notes whose identifiers are not in the [ids] and whose timestamp
+     * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
+     * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
+     * [bpmToInclusive].
+     *
+     * @param ids identifiers of notes that should not be deleted.
+     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
+     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @return count of deleted rows from the database table.
+     */
+    @Query(DELETE_OTHER_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE)
+    suspend fun deleteOtherByIdsTimestampRangeAndBpmRangeSuspending(
+        ids: List<Id>,
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        bpmFromInclusive: Int,
+        bpmToInclusive: Int
+    ): Int
 
     /**
      * Update or insert information about a note.
@@ -346,85 +1034,6 @@ interface NoteDao : BaseDao<NoteEntity> {
             insert(noteEntity)
         } else {
             update(noteEntity)
-        }
-    }
-
-    /**
-     * Getting the count of notes whose exercise names contain [exerciseSubname] or count of all
-     * notes if [exerciseSubname] is null or blank.
-     *
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @return count of notes whose exercise names contain [exerciseSubname] or count of all notes
-     * if [exerciseSubname] is null or blank.
-     */
-    suspend fun countSuspending(exerciseSubname: String?): Int {
-        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
-            countByExerciseSubnameSuspending(exerciseSubname)
-        } else {
-            countAllSuspending()
-        }
-    }
-
-    /**
-     * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
-     * the [offset] in the list of notes whose exercise names contain [exerciseSubname], or in the
-     * list of all notes if [exerciseSubname] is null or blank. The notes are sorted in descending
-     * order by timestamp, then ascending by exercise name, and then ascending by BPM.
-     *
-     * @param size limit the count of notes.
-     * @param offset position of the first target note in the list of notes whose exercise names
-     * contain [exerciseSubname], or in the list of all notes if [exerciseSubname] is null or blank.
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
-     * [offset] in the list of notes whose exercise names contain [exerciseSubname], or in the list
-     * of all notes if [exerciseSubname] is null or blank. The notes are sorted in descending order
-     * by timestamp, then ascending by exercise name, and then ascending by BPM.
-     */
-    fun list(
-        size: Int,
-        offset: Int,
-        exerciseSubname: String?
-    ): List<NoteWithExerciseInfo> {
-        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
-            listPortionByExerciseSubname(
-                size = size,
-                offset = offset,
-                exerciseSubname = exerciseSubname
-            )
-        } else {
-            listPortion(size = size, offset = offset)
-        }
-    }
-
-    /**
-     * Deleting information about notes with the specified [ids] whose exercise names contain
-     * [exerciseSubname] if it is not null or blank.
-     *
-     * @param ids identifiers of notes to delete.
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @return count of deleted rows from the database table.
-     */
-    suspend fun deleteSuspending(ids: List<Id>, exerciseSubname: String?): Int {
-        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
-            deleteByIdsAndExerciseSubnameSuspending(ids, exerciseSubname)
-        } else {
-            deleteByIdsSuspending(ids)
-        }
-    }
-
-    /**
-     * Deleting information about notes whose identifiers are not in the [ids] and whose exercise
-     * names contain [exerciseSubname] if it is not null or blank.
-     *
-     * @param ids identifiers of exercises that should not be deleted.
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @return count of deleted rows from the database table.
-     */
-    suspend fun deleteOtherSuspending(ids: List<Id>, exerciseSubname: String?): Int {
-        return if (exerciseSubname != null && exerciseSubname.isNotBlank()) {
-            deleteOtherByIdsAndExerciseSubnameSuspending(ids, exerciseSubname)
-        } else {
-            deleteOtherByIdsSuspending(ids)
         }
     }
 }
