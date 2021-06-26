@@ -10,6 +10,7 @@ import androidx.paging.PagedList
 import androidx.paging.PositionalDataSource
 import androidx.paging.toLiveData
 import com.adkom666.shrednotes.data.model.Note
+import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.selection.ManageableSelection
@@ -41,6 +42,9 @@ class NotesViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val SIGNAL_CHANNEL_CAPACITY = 3
+
+        private val INITIAL_FILTER = NoteFilter()
     }
 
     /**
@@ -75,6 +79,17 @@ class NotesViewModel @Inject constructor(
          * @property note [Note] to update.
          */
         data class ToUpdateNoteScreen(val note: Note) : NavDirection()
+
+        /**
+         * To the screen that allows you to configure the notes filter.
+         *
+         * @property filter current filter.
+         * @property isFilterEnabled whether the [filter] is currently applied.
+         */
+        data class ToConfigFilterScreen(
+            val filter: NoteFilter,
+            val isFilterEnabled: Boolean
+        ) : NavDirection()
     }
 
     /**
@@ -100,6 +115,12 @@ class NotesViewModel @Inject constructor(
         data class Deletion(val count: Int) : Message()
 
         /**
+         * Message stating that, as a result of filter configuration, none of its parameters have
+         * been defined.
+         */
+        object FilterUndefined : Message()
+
+        /**
          * Error message.
          */
         sealed class Error : Message() {
@@ -116,6 +137,26 @@ class NotesViewModel @Inject constructor(
              */
             object Unknown : Error()
         }
+    }
+
+    /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Indicates that the filter is turned on or turned off.
+         */
+        object FilterEnablingChanged : Signal()
+    }
+
+    /**
+     * How the filter configuration ended.
+     */
+    enum class ConfigFilterStatus {
+        APPLY,
+        DISABLE,
+        CANCEL
     }
 
     /**
@@ -143,6 +184,12 @@ class NotesViewModel @Inject constructor(
         get() = _messageChannel.openSubscription()
 
     /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
+
+    /**
      * Notes to select.
      */
     val selectableNotes: SelectableItems
@@ -167,12 +214,8 @@ class NotesViewModel @Inject constructor(
     var exerciseSubname: String? by Delegates.observable(null) { _, old, new ->
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            viewModelScope.launch {
-                noteSourceFactory.exerciseSubname = new?.trim()
-                val noteCount = noteRepository.countSuspending(new)
-                _manageableSelection.reset(noteCount)
-                invalidateNotes()
-            }
+            noteSourceFactory.exerciseSubname = new?.trim()
+            resetNotes()
         }
     }
 
@@ -182,6 +225,31 @@ class NotesViewModel @Inject constructor(
     var isSearchActive: Boolean by Delegates.observable(false) { _, old, new ->
         Timber.d("Change isSearchActive: old=$old, new=$new")
     }
+
+    /**
+     * Indicates whether the filter is enabled.
+     */
+    val isFilterEnabled: Boolean
+        get() = _isFilterEnabled
+
+    private var filter: NoteFilter by Delegates.observable(INITIAL_FILTER) { _, old, new ->
+        Timber.d("Change filter: old=$old, new=$new")
+        if (new != old) {
+            noteSourceFactory.filter = new
+            resetNotes()
+        }
+    }
+
+    private var _isFilterEnabled: Boolean by Delegates.observable(false) { _, old, new ->
+        Timber.d("Change _isFilterEnabled: old=$old, new=$new")
+        if (new != old) {
+            noteSourceFactory.filter = if (new) filter else null
+            resetNotes()
+        }
+    }
+
+    private val filterOrNull: NoteFilter?
+        get() = if (_isFilterEnabled) filter else null
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
 
@@ -194,7 +262,8 @@ class NotesViewModel @Inject constructor(
 
     private val noteSourceFactory: NoteSourceFactory = NoteSourceFactory(
         noteRepository,
-        exerciseSubname
+        exerciseSubname,
+        filterOrNull
     )
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
@@ -205,18 +274,20 @@ class NotesViewModel @Inject constructor(
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+
     init {
         Timber.d("Init")
         viewModelScope.launch {
-            val noteInitialCount = noteRepository.countSuspending(exerciseSubname)
+            val noteInitialCount = noteRepository.countSuspending(exerciseSubname, filterOrNull)
             Timber.d("noteInitialCount=$noteInitialCount")
             _manageableSelection.init(noteInitialCount)
             setState(State.Working)
             // Ignore initial value
             noteRepository.countFlow.drop(1).collect { noteCount ->
                 Timber.d("Note list changed: noteCount=$noteCount")
-                _manageableSelection.reset(noteCount)
-                invalidateNotes()
+                resetNotes()
             }
         }
     }
@@ -283,10 +354,63 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    private fun invalidateNotes() {
+    /**
+     * Request the configuration screen of the current notes filter.
+     */
+    fun requestFilter() {
+        Timber.d("Filter requested")
+        navigateTo(NavDirection.ToConfigFilterScreen(filter, _isFilterEnabled))
+    }
+
+    /**
+     * Call this method when the results of the filter configuration are available.
+     *
+     * @param status how the [filter] configuration ended.
+     * @param filter notes filter after configuration.
+     */
+    fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter) {
+        Timber.d("onConfigFilterResult: status=$status, filter=$filter")
+
+        fun ensureFilterEnabling(isEnabled: Boolean) {
+            if (_isFilterEnabled xor isEnabled) {
+                _isFilterEnabled = isEnabled
+                give(Signal.FilterEnablingChanged)
+                resetNotes()
+            }
+        }
+
+        when (status) {
+            ConfigFilterStatus.APPLY -> {
+                this.filter = filter
+                val isFilterDefined = filter.isDefined
+                Timber.d("isFilterDefined=$isFilterDefined")
+                ensureFilterEnabling(isFilterDefined)
+                if (isFilterDefined.not()) {
+                    report(Message.FilterUndefined)
+                }
+            }
+            ConfigFilterStatus.DISABLE -> {
+                this.filter = filter
+                ensureFilterEnabling(false)
+            }
+            ConfigFilterStatus.CANCEL ->
+                if (_isFilterEnabled.not()) {
+                    this.filter = filter
+                }
+        }
+    }
+
+    private fun resetNotes() {
         setState(State.Waiting)
-        noteSourceFactory.invalidate()
-        setState(State.Working)
+        viewModelScope.launch {
+            val noteCount = noteRepository.countSuspending(
+                exerciseSubname,
+                filterOrNull
+            )
+            _manageableSelection.reset(noteCount)
+            noteSourceFactory.invalidate()
+            setState(State.Working)
+        }
     }
 
     private suspend fun deleteSelectedNotes(
@@ -294,11 +418,19 @@ class NotesViewModel @Inject constructor(
     ): Int = when (selectionState) {
         is ManageableSelection.State.Active.Inclusive -> {
             val selectedNoteIdList = selectionState.selectedItemIdSet.toList()
-            noteRepository.deleteSuspending(selectedNoteIdList, exerciseSubname)
+            noteRepository.deleteSuspending(
+                selectedNoteIdList,
+                exerciseSubname,
+                filterOrNull
+            )
         }
         is ManageableSelection.State.Active.Exclusive -> {
             val unselectedNoteIdList = selectionState.unselectedItemIdSet.toList()
-            noteRepository.deleteOtherSuspending(unselectedNoteIdList, exerciseSubname)
+            noteRepository.deleteOtherSuspending(
+                unselectedNoteIdList,
+                exerciseSubname,
+                filterOrNull
+            )
         }
         ManageableSelection.State.Inactive -> 0
     }
@@ -324,15 +456,21 @@ class NotesViewModel @Inject constructor(
         _messageChannel.offer(message)
     }
 
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
+    }
+
     private class NoteSourceFactory(
         private val noteRepository: NoteRepository,
-        var exerciseSubname: String?
+        var exerciseSubname: String?,
+        var filter: NoteFilter?
     ) : DataSource.Factory<Int, Note>() {
 
         private var noteSource: NoteSource? = null
 
         override fun create(): DataSource<Int, Note> {
-            val exerciseSource = NoteSource(noteRepository, exerciseSubname)
+            val exerciseSource = NoteSource(noteRepository, exerciseSubname, filter)
             this.noteSource = exerciseSource
             return exerciseSource
         }
@@ -344,7 +482,8 @@ class NotesViewModel @Inject constructor(
 
     private class NoteSource(
         private val noteRepository: NoteRepository,
-        private var exerciseSubname: String?
+        private var exerciseSubname: String?,
+        private var filter: NoteFilter?
     ) : PositionalDataSource<Note>() {
 
         override fun loadInitial(
@@ -354,7 +493,8 @@ class NotesViewModel @Inject constructor(
             val (noteList, startPosition) = noteRepository.page(
                 params.requestedLoadSize,
                 params.requestedStartPosition,
-                exerciseSubname
+                exerciseSubname,
+                filter
             )
             Timber.d("Load initial notes: noteList.size=${noteList.size}")
             Timber.d("Load initial notes: noteList=$noteList")
@@ -368,7 +508,8 @@ class NotesViewModel @Inject constructor(
             val noteList = noteRepository.list(
                 params.loadSize,
                 params.startPosition,
-                exerciseSubname
+                exerciseSubname,
+                filter
             )
             Timber.d("Load next notes: noteList.size=${noteList.size}")
             callback.onResult(noteList)

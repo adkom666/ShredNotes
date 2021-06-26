@@ -19,14 +19,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Note
+import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.databinding.FragmentNotesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Filterable
+import com.adkom666.shrednotes.ui.OnFilterEnablingChangedListener
 import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
@@ -51,6 +54,9 @@ class NotesFragment :
 
         private const val TAG_CONFIRM_NOTES_DELETION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_notes_deletion"
+
+        private const val TAG_FILTER_NOTES =
+            "${BuildConfig.APPLICATION_ID}.tags.filter_notes"
 
         /**
          * Preferred way to create a fragment.
@@ -90,7 +96,9 @@ class NotesFragment :
         get() = model.exerciseSubname
 
     override val isFilterEnabled: Boolean
-        get() = false
+        get() = model.isFilterEnabled
+
+    override var onFilterEnablingChangedListener: OnFilterEnablingChangedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -108,19 +116,8 @@ class NotesFragment :
 
         setupFabListeners()
         restoreFragmentListeners()
-
-        val stateObserver = StateObserver()
-        model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
-        val noteListObserver = NoteListObserver(adapter, binding.noteRecycler)
-        model.notePagedListAsLiveData.observe(viewLifecycleOwner, noteListObserver)
-
-        lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
-        }
-
-        lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
-        }
+        observeLiveData()
+        listenChannels()
     }
 
     override fun onDestroyView() {
@@ -151,9 +148,8 @@ class NotesFragment :
         return true
     }
 
-    override fun filter(onFilter: (filterEnabled: Boolean) -> Unit) {
-        // Dummy
-        onFilter(true)
+    override fun filter() {
+        model.requestFilter()
     }
 
     private fun initNoteRecycler(): NotePagedListAdapter {
@@ -201,6 +197,28 @@ class NotesFragment :
         childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_NOTES_DELETION) {
             it.setDeletingListener()
         }
+        childFragmentManager.performIfFoundByTag<NoteFilterDialogFragment>(TAG_FILTER_NOTES) {
+            it.setListeners()
+        }
+    }
+
+    private fun observeLiveData() {
+        val stateObserver = StateObserver()
+        model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
+        val noteListObserver = NoteListObserver(adapter, binding.noteRecycler)
+        model.notePagedListAsLiveData.observe(viewLifecycleOwner, noteListObserver)
+    }
+
+    private fun listenChannels() {
+        lifecycleScope.launchWhenResumed {
+            model.navigationChannel.consumeEach(::goToScreen)
+        }
+        lifecycleScope.launchWhenStarted {
+            model.messageChannel.consumeEach(::show)
+        }
+        lifecycleScope.launchWhenStarted {
+            model.signalChannel.consumeEach(::process)
+        }
     }
 
     private fun deleteSelectedNotesIfConfirmed() {
@@ -222,6 +240,8 @@ class NotesFragment :
             val intent = NoteActivity.newIntent(safeContext, direction.note)
             startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE)
         }
+        is NotesViewModel.NavDirection.ToConfigFilterScreen ->
+            showFilterDialog(direction.filter, direction.isFilterEnabled)
     }
 
     private fun show(message: NotesViewModel.Message) = when (message) {
@@ -234,6 +254,8 @@ class NotesFragment :
             val messageString = getString(R.string.message_deleted_notes, message.count)
             toast(messageString)
         }
+        NotesViewModel.Message.FilterUndefined ->
+            toast(R.string.message_filter_undefined)
         is NotesViewModel.Message.Error ->
             showError(message)
     }
@@ -250,9 +272,38 @@ class NotesFragment :
             toast(R.string.error_unknown)
     }
 
+    private fun process(signal: NotesViewModel.Signal) = when (signal) {
+        NotesViewModel.Signal.FilterEnablingChanged ->
+            onFilterEnablingChangedListener?.invoke()
+    }
+
     private fun ConfirmationDialogFragment.setDeletingListener() {
         setOnConfirmListener {
             model.deleteSelectedNotes()
+        }
+    }
+
+    private fun showFilterDialog(filter: NoteFilter, isFilterEnabled: Boolean) {
+        val dialogFragment = NoteFilterDialogFragment.newInstance(
+            filter,
+            isFilterEnabled
+        )
+        dialogFragment.setListeners()
+        dialogFragment.show(childFragmentManager, TAG_FILTER_NOTES)
+    }
+
+    private fun NoteFilterDialogFragment.setListeners() {
+        setOnApplyFilterListener { filter ->
+            Timber.d("onApplyFilterListener: filter=$filter")
+            model.onConfigFilterResult(NotesViewModel.ConfigFilterStatus.APPLY, filter)
+        }
+        setOnDisableFilterListener { filter ->
+            Timber.d("onDisableFilterListener: filter=$filter")
+            model.onConfigFilterResult(NotesViewModel.ConfigFilterStatus.DISABLE, filter)
+        }
+        setOnCancelFilterListener { filter ->
+            Timber.d("onCancelFilterListener: filter=$filter")
+            model.onConfigFilterResult(NotesViewModel.ConfigFilterStatus.CANCEL, filter)
         }
     }
 

@@ -20,11 +20,23 @@
     <string name="desc_select_all">Select all</string>
     <string name="desc_cancel">Cancel</string>
     <string name="desc_pick_note_date_time">Pick note date and time</string>
+    <string name="desc_pick_note_date_range">Pick note date range</string>
+    <string name="desc_clear_note_date_range">Clear note date range</string>
+    <string name="desc_clear_note_bpm_range">Clear note BPM range</string>
 
     <string name="button_title_ok" translatable="false">OK</string>
     <string name="button_title_cancel">Cancel</string>
     <string name="button_title_yes">Yes</string>
     <string name="button_title_no">No</string>
+    <string name="button_title_apply">Apply</string>
+    <string name="button_title_disable">Disable</string>
+    <string name="button_title_clear_all">Clear All</string>
+
+    <string name="title_date_range">Date range:</string>
+    <string name="title_bpm_range">BPM range:</string>
+
+    <string name="hint_min">Min.</string>
+    <string name="hint_max">Max.</string>
 
     <string name="title_exercise_name">Name:</string>
     <string name="hint_exercise_name">Exercise name</string>
@@ -55,6 +67,8 @@
     <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>
 
+    <string name="dialog_filter_notes_title">Filter notes</string>
+
     <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
     <string name="message_shred_notes_has_not_been_updated">Shred notes has not been updated, because they are not on Google Drive</string>
     <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
@@ -66,6 +80,8 @@
     <string name="message_note_has_been_added">Note has been added</string>
     <string name="message_note_has_been_updated">Note has been updated</string>
     <string name="message_deleted_notes">Deleted notes: %d</string>
+
+    <string name="message_filter_undefined">Filter is not defined</string>
 
     <string name="error_unauthorized_user">Available only to authorized users</string>
     <string name="error_wrong_json_syntax">Wrong syntax of the JSON file on Google Drive</string>

@@ -10,8 +10,12 @@ import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.Note
+import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.util.paging.Page
+import com.adkom666.shrednotes.util.paging.safeOffset
+import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 /**
@@ -28,9 +32,9 @@ class NoteRepositoryImpl(
     override val countFlow: Flow<Int>
         get() = noteDao.countAllAsFlow()
 
-    override suspend fun countSuspending(exerciseSubname: String?): Int {
-        Timber.d("countSuspending: exerciseSubname=$exerciseSubname")
-        val count = noteDao.countSuspending(exerciseSubname)
+    override suspend fun countSuspending(exerciseSubname: String?, filter: NoteFilter?): Int {
+        Timber.d("countSuspending: exerciseSubname=$exerciseSubname, filter=$filter")
+        val count = entityCountSuspending(exerciseSubname, filter)
         Timber.d("count=$count")
         return count
     }
@@ -52,42 +56,58 @@ class NoteRepositoryImpl(
     override fun page(
         size: Int,
         requestedStartPosition: Int,
-        exerciseSubname: String?
-    ): Page<Note> {
-        Timber.d(
-            """page:
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Page<Note> = runBlocking {
+        transactor.transaction {
+            Timber.d(
+                """page:
                 |size=$size,
                 |requestedStartPosition=$requestedStartPosition,
-                |exerciseSubname=$exerciseSubname""".trimMargin()
-        )
-        val noteWithExerciseEntityPage = noteDao.page(
-            size,
-            requestedStartPosition,
-            exerciseSubname
-        )
-        val notePage = Page(
-            noteWithExerciseEntityPage.items.map(NoteWithExerciseInfo::toNote),
-            noteWithExerciseEntityPage.offset
-        )
-        Timber.d("notePage=$notePage")
-        return notePage
+                |exerciseSubname=$exerciseSubname,
+                |filter=$filter""".trimMargin()
+            )
+            val count = entityCountSuspending(exerciseSubname, filter)
+            val notePage = if (count > 0 && size > 0) {
+                val offset = safeOffset(
+                    requestedStartPosition,
+                    size,
+                    count
+                )
+                val noteWithExerciseEntityList = entityList(
+                    size = size,
+                    startPosition = offset,
+                    exerciseSubname = exerciseSubname,
+                    filter = filter
+                )
+                val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
+                Page(noteList, offset)
+            } else {
+                Page(emptyList(), 0)
+            }
+            Timber.d("notePage=$notePage")
+            return@transaction notePage
+        }
     }
 
     override fun list(
         size: Int,
         startPosition: Int,
-        exerciseSubname: String?
+        exerciseSubname: String?,
+        filter: NoteFilter?
     ): List<Note> {
         Timber.d(
             """list:
                 |size=$size,
                 |startPosition=$startPosition,
-                |exerciseSubname=$exerciseSubname""".trimMargin()
+                |exerciseSubname=$exerciseSubname,
+                |filter=$filter""".trimMargin()
         )
-        val noteWithExerciseEntityList = noteDao.list(
-            size,
-            startPosition,
-            exerciseSubname
+        val noteWithExerciseEntityList = entityList(
+            size = size,
+            startPosition = startPosition,
+            exerciseSubname = exerciseSubname,
+            filter = filter
         )
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
@@ -137,25 +157,394 @@ class NoteRepositoryImpl(
         noteDao.upsertSuspending(noteEntity)
     }
 
-    override suspend fun deleteSuspending(ids: List<Id>, exerciseSubname: String?): Int {
+    override suspend fun deleteSuspending(
+        ids: List<Id>,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Int {
         Timber.d(
             """deleteSuspending:
                 |ids=$ids,
-                |exerciseSubname=$exerciseSubname""".trimMargin()
+                |exerciseSubname=$exerciseSubname,
+                |filter=$filter""".trimMargin()
         )
-        val deletedNoteCount = noteDao.deleteSuspending(ids, exerciseSubname)
+        val deletedNoteCount = deleteEntitiesSuspending(ids, exerciseSubname, filter)
         Timber.d("deletedNoteCount=$deletedNoteCount")
         return deletedNoteCount
     }
 
-    override suspend fun deleteOtherSuspending(ids: List<Id>, exerciseSubname: String?): Int {
+    override suspend fun deleteOtherSuspending(
+        ids: List<Id>,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Int {
         Timber.d(
             """deleteOtherSuspending:
                 |ids=$ids,
-                |exerciseSubname=$exerciseSubname""".trimMargin()
+                |exerciseSubname=$exerciseSubname,
+                |filter=$filter""".trimMargin()
         )
-        val deletedNoteCount = noteDao.deleteOtherSuspending(ids, exerciseSubname)
+        val deletedNoteCount = deleteOtherEntitiesSuspending(ids, exerciseSubname, filter)
         Timber.d("deletedNoteCount=$deletedNoteCount")
         return deletedNoteCount
+    }
+
+    private suspend fun entityCountSuspending(
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ) = when {
+        // Using search query:
+        !exerciseSubname.isNullOrBlank()
+                && (filter == null || filter.isDefined.not()) ->
+            noteDao.countByExerciseSubnameSuspending(
+                exerciseSubname = exerciseSubname
+            )
+        // Using search query and filtering by date:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.countByExerciseSubnameAndTimestampRangeSuspending(
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Using search query and filtering by BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.countByExerciseSubnameAndBpmRangeSuspending(
+                exerciseSubname = exerciseSubname,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Using search query and filtering by date and BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.countByExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.countByTimestampRangeSuspending(
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Filtering by BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.countByBpmRangeSuspending(
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date and BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.countByTimestampRangeAndBpmRangeSuspending(
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // All:
+        else ->
+            noteDao.countAllSuspending()
+    }
+
+    private fun entityList(
+        size: Int,
+        startPosition: Int,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ) = when {
+        // Using search query:
+        !exerciseSubname.isNullOrBlank()
+                && (filter == null || filter.isDefined.not()) ->
+            noteDao.listPortionByExerciseSubname(
+                size = size,
+                offset = startPosition,
+                exerciseSubname = exerciseSubname
+            )
+        // Using search query and filtering by date:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.listPortionByExerciseSubnameAndTimestampRange(
+                size = size,
+                offset = startPosition,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Using search query and filtering by BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.listPortionByExerciseSubnameAndBpmRange(
+                size = size,
+                offset = startPosition,
+                exerciseSubname = exerciseSubname,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Using search query and filtering by date and BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.listPortionByExerciseSubnameTimestampRangeAndBpmRange(
+                size = size,
+                offset = startPosition,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.listPortionByTimestampRange(
+                size = size,
+                offset = startPosition,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Filtering by BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.listPortionByBpmRange(
+                size = size,
+                offset = startPosition,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date and BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.listPortionByTimestampRangeAndBpmRange(
+                size = size,
+                offset = startPosition,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Default:
+        else ->
+            noteDao.listPortion(
+                size = size,
+                offset = startPosition
+            )
+    }
+
+    private suspend fun deleteEntitiesSuspending(
+        ids: List<Id>,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Int = when {
+        // Using search query:
+        !exerciseSubname.isNullOrBlank()
+                && (filter == null || filter.isDefined.not()) ->
+            noteDao.deleteByIdsAndExerciseSubnameSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname
+            )
+        // Using search query and filtering by date:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.deleteByIdsExerciseSubnameAndTimestampRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Using search query and filtering by BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteByIdsExerciseSubnameAndBpmRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Using search query and filtering by date and BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.deleteByIdsAndTimestampRangeSuspending(
+                ids = ids,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Filtering by BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteByIdsAndBpmRangeSuspending(
+                ids = ids,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date and BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteByIdsTimestampRangeAndBpmRangeSuspending(
+                ids = ids,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Default:
+        else ->
+            noteDao.deleteByIdsSuspending(
+                ids = ids
+            )
+    }
+
+    private suspend fun deleteOtherEntitiesSuspending(
+        ids: List<Id>,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Int = when {
+        // Using search query:
+        !exerciseSubname.isNullOrBlank()
+                && (filter == null || filter.isDefined.not()) ->
+            noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname
+            )
+        // Using search query and filtering by date:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.deleteOtherByIdsExerciseSubnameAndTimestampRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Using search query and filtering by BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteOtherByIdsExerciseSubnameAndBpmRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Using search query and filtering by date and BPM:
+        !exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteOtherByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
+                ids = ids,
+                exerciseSubname = exerciseSubname,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined.not() ->
+            noteDao.deleteOtherByIdsAndTimestampRangeSuspending(
+                ids = ids,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
+            )
+        // Filtering by BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined.not()
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteOtherByIdsAndBpmRangeSuspending(
+                ids = ids,
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Filtering by date and BPM:
+        exerciseSubname.isNullOrBlank()
+                && filter != null
+                && filter.isDateRangeDefined
+                && filter.isBpmRangeDefined ->
+            noteDao.deleteOtherByIdsTimestampRangeAndBpmRangeSuspending(
+                ids = ids,
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
+                bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
+                bpmToInclusive = filter.bpmToInclusive.valueOrMax()
+            )
+        // Default:
+        else ->
+            noteDao.deleteOtherByIdsSuspending(
+                ids = ids
+            )
+    }
+
+    private fun Days?.timestampOrMin(): Long {
+        return this?.epochMillis ?: Long.MIN_VALUE
+    }
+
+    private fun Days?.timestampOrMax(): Long {
+        return this?.epochMillis ?: Long.MAX_VALUE
+    }
+
+    private fun Int?.valueOrMin(): Int {
+        return this ?: Int.MIN_VALUE
+    }
+
+    private fun Int?.valueOrMax(): Int {
+        return this ?: Int.MAX_VALUE
     }
 }

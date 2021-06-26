@@ -150,6 +150,7 @@ class MainActivity :
 
         model.sectionAsLiveData.observe(this) { section ->
             val fragment = section.getFragment()
+            fragment.setListenersInNeed()
             if (isScreenPresent) {
                 if (isScreenNotFirst) {
                     replaceFragment(fragment)
@@ -179,6 +180,9 @@ class MainActivity :
     }
 
     private fun restoreFragmentListeners() {
+        supportFragmentManager.fragments.forEach {
+            it?.setListenersInNeed()
+        }
         supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_READ) {
             it.setReadingListener()
         }
@@ -325,9 +329,11 @@ class MainActivity :
         Timber.d("Item selected: filter")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
-            fragment.filter { filterEnabled ->
-                Timber.d("filterEnabled=$filterEnabled")
+            fragment.onFilterEnablingChangedListener = {
+                Timber.d("Filter enabling changed")
+                invalidateOptionsMenu()
             }
+            fragment.filter()
         }
     }
 
@@ -443,6 +449,19 @@ class MainActivity :
         Section.EXERCISES -> ExercisesFragment.newInstance()
         Section.STATISTICS -> StatisticsFragment.newInstance()
         Section.ASK -> AskFragment.newInstance()
+    }
+
+    private fun Fragment.setListenersInNeed() {
+        setFilterListenersInNeed()
+    }
+
+    private fun Fragment.setFilterListenersInNeed() {
+        if (this is Filterable) {
+            onFilterEnablingChangedListener = {
+                Timber.d("Filter enabling changed")
+                invalidateOptionsMenu()
+            }
+        }
     }
 
     private fun ConfirmationDialogFragment.setReadingListener() {
