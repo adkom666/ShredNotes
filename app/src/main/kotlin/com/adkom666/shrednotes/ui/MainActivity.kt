@@ -2,8 +2,10 @@ package com.adkom666.shrednotes.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.view.inputmethod.EditorInfo
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -23,6 +25,7 @@ import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
+import com.adkom666.shrednotes.util.ensureNoTextInput
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.toast
@@ -31,6 +34,7 @@ import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 /**
@@ -66,6 +70,8 @@ class MainActivity :
     private var _binding: ActivityMainBinding? = null
     private var _model: MainViewModel? = null
 
+    private var menuReference: WeakReference<Menu>? = null
+
     private val onExpandSearchViewListener: MenuItem.OnActionExpandListener =
         SearchActivenessListener()
 
@@ -91,21 +97,20 @@ class MainActivity :
         listenChannels()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        menuReference?.clear()
+        menuReference = null
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.tools, menu)
+        menuReference = WeakReference(menu)
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        menu?.let {
-            val state = model.state
-            val forceInvisible = state == null || state is MainViewModel.State.Waiting
-            val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
-            prepareSearch(it, forceInvisible, fragment)
-            prepareFilter(it, forceInvisible, fragment)
-            val itemsVisibility = model.googleDriveItemsVisibility
-            prepareGoogleDrivePanel(it, forceInvisible, itemsVisibility)
-        }
+        menu?.invalidate()
         return true
     }
 
@@ -220,7 +225,7 @@ class MainActivity :
 
             itemSearch.setOnActionExpandListener(null)
             val searchView = itemSearch.actionView as? SearchView
-            searchView?.setOnQueryTextListener(null)
+            searchView?.init()
             val isSearchVisible = if (forceInvisible.not() && fragment is Searchable) {
                 val isSearchActive = fragment.isSearchActive
                 val currentQuery = fragment.currentQuery
@@ -314,9 +319,18 @@ class MainActivity :
         Timber.d("Search: query=$query")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         return if (fragment is Searchable) {
+            ensureNoSearchInput()
             fragment.search(query)
         } else {
             false
+        }
+    }
+
+    private fun ensureNoSearchInput() {
+        menuReference?.get()?.let { menu ->
+            val itemSearch = menu.findItem(R.id.action_search)
+            val searchView = itemSearch.actionView as? SearchView
+            searchView?.ensureNoTextInput()
         }
     }
 
@@ -441,6 +455,22 @@ class MainActivity :
             toast(R.string.error_unknown)
     }
 
+    private fun Menu.invalidate(vararg groups: MenuGroup = MenuGroup.values()) {
+        val state = model.state
+        val forceInvisible = state == null || state is MainViewModel.State.Waiting
+        val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+        if (groups.contains(MenuGroup.SEARCH)) {
+            prepareSearch(this, forceInvisible, fragment)
+        }
+        if (groups.contains(MenuGroup.FILTER)) {
+            prepareFilter(this, forceInvisible, fragment)
+        }
+        if (groups.contains(MenuGroup.GOOGLE_DRIVE_PANEL)) {
+            val itemsVisibility = model.googleDriveItemsVisibility
+            prepareGoogleDrivePanel(this, forceInvisible, itemsVisibility)
+        }
+    }
+
     @IdRes
     private fun Section.getActionId(): Int = when (this) {
         Section.NOTES -> R.id.action_notes
@@ -464,7 +494,23 @@ class MainActivity :
         if (this is Filterable) {
             onFilterEnablingChangedListener = {
                 Timber.d("Filter enabling changed")
-                invalidateOptionsMenu()
+                menuReference?.get()?.invalidate(MenuGroup.FILTER)
+            }
+        }
+    }
+
+    private fun SearchView.init() {
+        setOnQueryTextListener(null)
+        ensureNoTextInput()
+        imeOptions = EditorInfo.IME_ACTION_DONE or
+                EditorInfo.IME_FLAG_NO_FULLSCREEN or
+                EditorInfo.IME_FLAG_NO_EXTRACT_UI
+        setOnKeyListener { view, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                view.ensureNoTextInput()
+                true
+            } else {
+                false
             }
         }
     }
@@ -498,7 +544,7 @@ class MainActivity :
         ) {
             Timber.d("onFragmentActivityCreated")
             if (isFirstFragmentActivityCreated) {
-                invalidateOptionsMenu()
+                menuReference?.get()?.invalidate()
             } else {
                 isFirstFragmentActivityCreated = true
             }
@@ -563,5 +609,11 @@ class MainActivity :
             MainViewModel.State.Waiting.Operation.READING -> R.string.progress_operation_reading
             MainViewModel.State.Waiting.Operation.WRITING -> R.string.progress_operation_writing
         }
+    }
+
+    private enum class MenuGroup {
+        SEARCH,
+        FILTER,
+        GOOGLE_DRIVE_PANEL
     }
 }
