@@ -39,7 +39,7 @@ class StoreNoteTest : TestCase() {
 
     fun testCountByExerciseIds() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseList = exerciseDao.listPortion(groupSize, 0)
+        val exerciseList = exerciseDao.list(groupSize, 0)
         val exerciseIds = exerciseList.map { it.id }
         val noteCount = noteDao.countByExerciseIdsSuspending(exerciseIds)
         val allNoteList = noteDao.listAllUnorderedSuspending()
@@ -51,7 +51,7 @@ class StoreNoteTest : TestCase() {
 
     fun testCountOtherByExerciseIds() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseList = exerciseDao.listPortion(groupSize, 0)
+        val exerciseList = exerciseDao.list(groupSize, 0)
         val exerciseIds = exerciseList.map { it.id }
         val noteCount = noteDao.countOtherByExerciseIdsSuspending(exerciseIds)
         val allNoteList = noteDao.listAllUnorderedSuspending()
@@ -90,7 +90,7 @@ class StoreNoteTest : TestCase() {
 
     fun testDeletionByIdsAndSubname() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteList = noteDao.listPortion(groupSize, 0)
+        val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
         var deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
             ids,
@@ -111,14 +111,14 @@ class StoreNoteTest : TestCase() {
 
     fun testDeletionOtherByIdsAndExerciseSubname() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteList = noteDao.listPortion(groupSize, 0)
+        val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
         var deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
             ids,
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
         assertEquals(0, deletedNoteCount)
-        val otherNoteList = noteDao.listPortion(
+        val otherNoteList = noteDao.list(
             size = StoreNoteTestHelper.NOTE_COUNT - groupSize,
             offset = groupSize
         )

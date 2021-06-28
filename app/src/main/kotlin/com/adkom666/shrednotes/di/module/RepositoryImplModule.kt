@@ -15,9 +15,10 @@ class RepositoryImplModule {
 
     @Provides
     fun exerciseRepositoryImpl(
-        exerciseDao: ExerciseDao
+        exerciseDao: ExerciseDao,
+        transactor: Transactor
     ): ExerciseRepositoryImpl {
-        return ExerciseRepositoryImpl(exerciseDao)
+        return ExerciseRepositoryImpl(exerciseDao, transactor)
     }
 
     @Provides

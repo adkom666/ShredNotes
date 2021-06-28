@@ -19,7 +19,7 @@ object StoreNoteTestHelper {
     private const val MILLIS_SCATTER = DAYS_SCATTER * MILLIS_PER_DAY
 
     fun insertNotes(noteDao: NoteDao, exerciseDao: ExerciseDao) {
-        val exerciseEntityList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseEntityList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         (1..NOTE_COUNT).forEach { _ ->
             val exerciseEntityIndex = Random.nextInt(StoreExerciseTestHelper.EXERCISE_COUNT)
             val exerciseEntity = exerciseEntityList[exerciseEntityIndex]
@@ -29,12 +29,12 @@ object StoreNoteTestHelper {
     }
 
     fun existentExerciseId(exerciseDao: ExerciseDao): Id {
-        val exerciseEntityList = exerciseDao.listPortion(1, 0)
+        val exerciseEntityList = exerciseDao.list(1, 0)
         return exerciseEntityList.first().id
     }
 
     fun nonExistentExerciseId(exerciseDao: ExerciseDao): Id {
-        val exerciseEntityList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseEntityList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         do {
             val id = Random.nextLong().toId()
             if (exerciseEntityList.map { it.id }.contains(id).not()) {

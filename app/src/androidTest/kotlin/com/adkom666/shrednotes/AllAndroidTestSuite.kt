@@ -2,6 +2,7 @@ package com.adkom666.shrednotes
 
 import com.adkom666.shrednotes.data.db.StoreExerciseTest
 import com.adkom666.shrednotes.data.db.StoreNoteTest
+import com.adkom666.shrednotes.data.repository.ExerciseRepositoryTest
 import com.adkom666.shrednotes.data.repository.NoteRepositoryTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
@@ -10,6 +11,7 @@ import org.junit.runners.Suite
 @Suite.SuiteClasses(
     StoreExerciseTest::class,
     StoreNoteTest::class,
+    ExerciseRepositoryTest::class,
     NoteRepositoryTest::class
 )
 class AllAndroidTestSuite

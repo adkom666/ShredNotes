@@ -70,9 +70,9 @@ class NoteRepositoryImpl(
             val count = entityCountSuspending(exerciseSubname, filter)
             val notePage = if (count > 0 && size > 0) {
                 val offset = safeOffset(
-                    requestedStartPosition,
-                    size,
-                    count
+                    requestedOffset = requestedStartPosition,
+                    pageSize = size,
+                    count = count
                 )
                 val noteWithExerciseEntityList = entityList(
                     size = size,
@@ -192,7 +192,7 @@ class NoteRepositoryImpl(
     private suspend fun entityCountSuspending(
         exerciseSubname: String?,
         filter: NoteFilter?
-    ) = when {
+    ): Int = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
                 && (filter == null || filter.isDefined.not()) ->
@@ -270,11 +270,11 @@ class NoteRepositoryImpl(
         startPosition: Int,
         exerciseSubname: String?,
         filter: NoteFilter?
-    ) = when {
+    ): List<NoteWithExerciseInfo> = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
                 && (filter == null || filter.isDefined.not()) ->
-            noteDao.listPortionByExerciseSubname(
+            noteDao.listByExerciseSubname(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname
@@ -284,7 +284,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined.not() ->
-            noteDao.listPortionByExerciseSubnameAndTimestampRange(
+            noteDao.listByExerciseSubnameAndTimestampRange(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname,
@@ -296,7 +296,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined.not()
                 && filter.isBpmRangeDefined ->
-            noteDao.listPortionByExerciseSubnameAndBpmRange(
+            noteDao.listByExerciseSubnameAndBpmRange(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname,
@@ -308,7 +308,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined ->
-            noteDao.listPortionByExerciseSubnameTimestampRangeAndBpmRange(
+            noteDao.listByExerciseSubnameTimestampRangeAndBpmRange(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname,
@@ -322,7 +322,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined.not() ->
-            noteDao.listPortionByTimestampRange(
+            noteDao.listByTimestampRange(
                 size = size,
                 offset = startPosition,
                 timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
@@ -333,7 +333,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined.not()
                 && filter.isBpmRangeDefined ->
-            noteDao.listPortionByBpmRange(
+            noteDao.listByBpmRange(
                 size = size,
                 offset = startPosition,
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
@@ -344,7 +344,7 @@ class NoteRepositoryImpl(
                 && filter != null
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined ->
-            noteDao.listPortionByTimestampRangeAndBpmRange(
+            noteDao.listByTimestampRangeAndBpmRange(
                 size = size,
                 offset = startPosition,
                 timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
@@ -354,7 +354,7 @@ class NoteRepositoryImpl(
             )
         // Default:
         else ->
-            noteDao.listPortion(
+            noteDao.list(
                 size = size,
                 offset = startPosition
             )

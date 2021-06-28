@@ -4,26 +4,33 @@ import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.common.toId
 import com.adkom666.shrednotes.data.converter.toExercise
 import com.adkom666.shrednotes.data.converter.toExerciseEntity
+import com.adkom666.shrednotes.data.db.Transactor
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.util.paging.Page
+import com.adkom666.shrednotes.util.paging.safeOffset
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 /**
  * Implementation of [ExerciseRepository].
  *
  * @property exerciseDao object for performing operations with exercises in the database.
+ * @property transactor see [Transactor].
  */
-class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRepository {
+class ExerciseRepositoryImpl(
+    private val exerciseDao: ExerciseDao,
+    private val transactor: Transactor
+) : ExerciseRepository {
 
     override val countFlow: Flow<Int>
         get() = exerciseDao.countAllAsFlow()
 
     override suspend fun countSuspending(subname: String?): Int {
         Timber.d("countSuspending: subname=$subname")
-        val count = exerciseDao.countSuspending(subname)
+        val count = entityCountSuspending(subname)
         Timber.d("count=$count")
         return count
     }
@@ -32,24 +39,37 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
         size: Int,
         requestedStartPosition: Int,
         subname: String?
-    ): Page<Exercise> {
-        Timber.d(
-            """page:
+    ): Page<Exercise> = runBlocking {
+        transactor.transaction {
+            Timber.d(
+                """page:
                 |size=$size,
                 |requestedStartPosition=$requestedStartPosition,
                 |subname=$subname""".trimMargin()
-        )
-        val exerciseEntityPage = exerciseDao.page(
-            size,
-            requestedStartPosition,
-            subname
-        )
-        val exercisePage = Page(
-            exerciseEntityPage.items.map(ExerciseEntity::toExercise),
-            exerciseEntityPage.offset
-        )
-        Timber.d("exercisePage=$exercisePage")
-        return exercisePage
+            )
+            val count = entityCountSuspending(subname)
+            val exerciseEntityPage = if (count > 0 && size > 0) {
+                val offset = safeOffset(
+                    requestedOffset = requestedStartPosition,
+                    pageSize = size,
+                    count = count
+                )
+                val exerciseEntityList = entityList(
+                    size = size,
+                    startPosition = offset,
+                    subname = subname
+                )
+                Page(exerciseEntityList, offset)
+            } else {
+                Page(emptyList(), 0)
+            }
+            val exercisePage = Page(
+                exerciseEntityPage.items.map(ExerciseEntity::toExercise),
+                exerciseEntityPage.offset
+            )
+            Timber.d("exercisePage=$exercisePage")
+            return@transaction exercisePage
+        }
     }
 
     override fun list(
@@ -63,10 +83,10 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
                 |startPosition=$startPosition,
                 |subname=$subname""".trimMargin()
         )
-        val exerciseEntityList = exerciseDao.list(
-            size,
-            startPosition,
-            subname
+        val exerciseEntityList = entityList(
+            size = size,
+            startPosition = startPosition,
+            subname = subname
         )
         val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
         Timber.d("exerciseList=$exerciseList")
@@ -111,7 +131,7 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
                 |ids=$ids,
                 |subname=$subname""".trimMargin()
         )
-        val deletedExerciseCount = exerciseDao.deleteSuspending(ids, subname)
+        val deletedExerciseCount = deleteEntitiesSuspending(ids, subname)
         Timber.d("deletedExerciseCount=$deletedExerciseCount")
         return deletedExerciseCount
     }
@@ -122,8 +142,51 @@ class ExerciseRepositoryImpl(private val exerciseDao: ExerciseDao) : ExerciseRep
                 |ids=$ids,
                 |subname=$subname""".trimMargin()
         )
-        val deletedExerciseCount = exerciseDao.deleteOtherSuspending(ids, subname)
+        val deletedExerciseCount = deleteOtherEntitiesSuspending(ids, subname)
         Timber.d("deletedExerciseCount=$deletedExerciseCount")
         return deletedExerciseCount
+    }
+
+    private suspend fun entityCountSuspending(
+        subname: String?
+    ): Int = if (subname.isNullOrBlank()) {
+        exerciseDao.countAllSuspending()
+    } else {
+        exerciseDao.countBySubnameSuspending(subname)
+    }
+
+    private fun entityList(
+        size: Int,
+        startPosition: Int,
+        subname: String?
+    ): List<ExerciseEntity> = if (subname.isNullOrBlank()) {
+        exerciseDao.list(
+            size = size,
+            offset = startPosition
+        )
+    } else {
+        exerciseDao.listBySubname(
+            size = size,
+            offset = startPosition,
+            subname = subname
+        )
+    }
+
+    private suspend fun deleteEntitiesSuspending(
+        ids: List<Id>,
+        subname: String?
+    ): Int = if (subname.isNullOrBlank()) {
+        exerciseDao.deleteByIdsSuspending(ids)
+    } else {
+        exerciseDao.deleteByIdsAndSubnameSuspending(ids, subname)
+    }
+
+    private suspend fun deleteOtherEntitiesSuspending(
+        ids: List<Id>,
+        subname: String?
+    ): Int = if (subname.isNullOrBlank()) {
+        exerciseDao.deleteOtherByIdsSuspending(ids)
+    } else {
+        exerciseDao.deleteOtherByIdsAndSubnameSuspending(ids, subname)
     }
 }

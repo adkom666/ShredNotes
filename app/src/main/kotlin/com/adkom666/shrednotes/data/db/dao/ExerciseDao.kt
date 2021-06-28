@@ -8,8 +8,6 @@ import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_NAME
-import com.adkom666.shrednotes.util.paging.Page
-import com.adkom666.shrednotes.util.paging.safeOffset
 import kotlinx.coroutines.flow.Flow
 
 private const val SELECT_COUNT_ALL = "SELECT COUNT(*) FROM $TABLE_EXERCISES"
@@ -175,7 +173,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * the list of all exercise entities sorted in ascending order by name.
      */
     @Query(SELECT_PORTION)
-    fun listPortion(size: Int, offset: Int): List<ExerciseEntity>
+    fun list(size: Int, offset: Int): List<ExerciseEntity>
 
     /**
      * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
@@ -191,7 +189,7 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      * in ascending order by name.
      */
     @Query(SELECT_PORTION_BY_SUBNAME)
-    fun listPortionBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
+    fun listBySubname(size: Int, offset: Int, subname: String): List<ExerciseEntity>
 
     /**
      * Deleting information about all exercises.
@@ -241,52 +239,6 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
     suspend fun deleteOtherByIdsAndSubnameSuspending(ids: List<Id>, subname: String): Int
 
     /**
-     * Getting a [Page] of the [size] or fewer exercise entities in accordance with the
-     * [requestedOffset] in the list of exercise entities whose names contain [subname], or in the
-     * list of all exercise entities if [subname] is null or blank. If the [requestedOffset] exceeds
-     * the count of required exercise entities, the entities from the end of the target list are
-     * returned as part of the [Page]. The exercise entities are sorted in ascending order by name.
-     *
-     * @param size limit the count of exercise entities.
-     * @param requestedOffset desired position of the first target exercise entity in the list of
-     * exercise entities whose names contain [subname], or in the list of all exercise entities if
-     * [subname] is null or blank.
-     * @param subname part of the names of the target exercises.
-     * @return [Page] of the [size] or fewer exercise entities in accordance with the
-     * [requestedOffset] in the list of exercise entities whose names contain [subname], or in the
-     * list of all exercise entities if [subname] is null or blank; or [Page] of exercise entities
-     * from the end of the target list if the [requestedOffset] exceeds the count of required
-     * exercise entities. The exercise entities are sorted in ascending order by name.
-     */
-    @Transaction
-    fun page(
-        size: Int,
-        requestedOffset: Int,
-        subname: String?
-    ): Page<ExerciseEntity> {
-        val count = if (subname != null && subname.isNotBlank()) {
-            countBySubname(subname)
-        } else {
-            countAll()
-        }
-        return if (count > 0 && size > 0) {
-            val offset = safeOffset(
-                requestedOffset,
-                size,
-                count
-            )
-            val entityList = list(
-                size = size,
-                offset = offset,
-                subname = subname
-            )
-            Page(entityList, offset)
-        } else {
-            Page(emptyList(), 0)
-        }
-    }
-
-    /**
      * Update or insert information about an exercise, if it does not duplicate the exercise names.
      *
      * @param exerciseEntity information about an exercise to update or insert.
@@ -305,82 +257,6 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
             true
         } else {
             false
-        }
-    }
-
-    /**
-     * Getting the count of exercises whose names contain [subname] or count of all exercises if
-     * [subname] is null or blank.
-     *
-     * @param subname part of the names of the target exercises.
-     * @return count of exercises whose names contain [subname] or count of all exercises if
-     * [subname] is null or blank.
-     */
-    suspend fun countSuspending(subname: String?): Int {
-        return if (subname != null && subname.isNotBlank()) {
-            countBySubnameSuspending(subname)
-        } else {
-            countAllSuspending()
-        }
-    }
-
-    /**
-     * Getting a [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of exercise entities whose names contain [subname], or in the list of all exercise
-     * entities if [subname] is null or blank. The exercise entities are sorted in ascending order
-     * by name.
-     *
-     * @param size limit the count of exercise entities.
-     * @param offset position of the first target exercise entity in the list of exercise entities
-     * whose names contain [subname], or in the list of all exercise entities if [subname] is null
-     * or blank.
-     * @param subname part of the names of the target exercises.
-     * @return [List] of the [size] or fewer exercise entities in accordance with the [offset] in
-     * the list of exercise entities whose names contain [subname], or in the list of all exercise
-     * entities if [subname] is null or blank. The exercise entities are sorted in ascending order
-     * by name.
-     */
-    fun list(
-        size: Int,
-        offset: Int,
-        subname: String?
-    ): List<ExerciseEntity> {
-        return if (subname != null && subname.isNotBlank()) {
-            listPortionBySubname(size = size, offset = offset, subname = subname)
-        } else {
-            listPortion(size = size, offset = offset)
-        }
-    }
-
-    /**
-     * Deleting information about exercises with the specified [ids] whose names contain [subname]
-     * if it is not null or blank.
-     *
-     * @param ids identifiers of exercises to delete.
-     * @param subname part of the names of the exercises to delete.
-     * @return count of deleted rows from the database table.
-     */
-    suspend fun deleteSuspending(ids: List<Id>, subname: String?): Int {
-        return if (subname != null && subname.isNotBlank()) {
-            deleteByIdsAndSubnameSuspending(ids, subname)
-        } else {
-            deleteByIdsSuspending(ids)
-        }
-    }
-
-    /**
-     * Deleting information about exercises whose identifiers are not in the [ids] and whose names
-     * contain [subname] if it is not null or blank.
-     *
-     * @param ids identifiers of exercises that should not be deleted.
-     * @param subname part of the names of the exercises to delete.
-     * @return count of deleted rows from the database table.
-     */
-    suspend fun deleteOtherSuspending(ids: List<Id>, subname: String?): Int {
-        return if (subname != null && subname.isNotBlank()) {
-            deleteOtherByIdsAndSubnameSuspending(ids, subname)
-        } else {
-            deleteOtherByIdsSuspending(ids)
         }
     }
 }

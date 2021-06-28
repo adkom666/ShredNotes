@@ -30,7 +30,7 @@ class StoreExerciseTest : TestCase() {
     }
 
     fun testNames() {
-        val exerciseList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         exerciseList.forEach { exerciseEntity ->
             assertThat(
                 exerciseEntity.name,
@@ -41,7 +41,7 @@ class StoreExerciseTest : TestCase() {
 
     fun testUpdate() {
         val updatedExerciseNamePrefix = "Updated Test Exercise "
-        val exerciseList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val exerciseList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         exerciseList.forEach { exerciseEntity ->
             val updatedExerciseName = exerciseEntity.name.replace(
                 StoreExerciseTestHelper.EXERCISE_NAME_PREFIX,
@@ -50,14 +50,14 @@ class StoreExerciseTest : TestCase() {
             val updatedExerciseEntity = exerciseEntity.copy(name = updatedExerciseName)
             exerciseDao.update(updatedExerciseEntity)
         }
-        val updatedExerciseList = exerciseDao.listPortion(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
+        val updatedExerciseList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         updatedExerciseList.forEach { exerciseEntity ->
             assertThat(exerciseEntity.name, startsWith(updatedExerciseNamePrefix))
         }
     }
 
     fun testDeletion() {
-        val exerciseList = exerciseDao.listPortion(1, 0)
+        val exerciseList = exerciseDao.list(1, 0)
         val exerciseEntity = exerciseList[0]
         exerciseDao.delete(exerciseEntity)
         val exerciseCount = exerciseDao.countAll()
@@ -66,7 +66,7 @@ class StoreExerciseTest : TestCase() {
 
     fun testDeletionByIdsAndSubname() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseList = exerciseDao.listPortion(groupSize, 0)
+        val exerciseList = exerciseDao.list(groupSize, 0)
         val ids = exerciseList.map { it.id }
         var deletedExerciseCount = exerciseDao.deleteByIdsAndSubnameSuspending(
             ids,
@@ -85,7 +85,7 @@ class StoreExerciseTest : TestCase() {
 
     fun testDeletionOtherByIdsAndSubname() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseList = exerciseDao.listPortion(
+        val exerciseList = exerciseDao.list(
             size = groupSize,
             offset = 0
         )
@@ -95,7 +95,7 @@ class StoreExerciseTest : TestCase() {
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
         assertEquals(0, deletedExerciseCount)
-        val otherExerciseList = exerciseDao.listPortion(
+        val otherExerciseList = exerciseDao.list(
             size = StoreExerciseTestHelper.EXERCISE_COUNT - groupSize,
             offset = groupSize
         )
@@ -107,21 +107,5 @@ class StoreExerciseTest : TestCase() {
             StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME
         )
         assertEquals(countWithSubname, deletedExerciseCount)
-    }
-
-    fun testPage() {
-        val size = StoreExerciseTestHelper.EXERCISE_COUNT / 4
-        val requestedOffset = StoreExerciseTestHelper.EXERCISE_COUNT / 2
-        val page = exerciseDao.page(size, requestedOffset, null)
-        assertEquals(size, page.items.size)
-        assertEquals(requestedOffset, page.offset)
-    }
-
-    fun testPageWithTranscendentalRequestedOffset() {
-        val size = StoreExerciseTestHelper.EXERCISE_COUNT / 4
-        val requestedOffset = StoreExerciseTestHelper.EXERCISE_COUNT * 2
-        val page = exerciseDao.page(size, requestedOffset, null)
-        assertEquals(size, page.items.size)
-        assertEquals(StoreExerciseTestHelper.EXERCISE_COUNT - size, page.offset)
     }
 }

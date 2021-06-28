@@ -528,7 +528,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * then ascending by exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION)
-    fun listPortion(size: Int, offset: Int): List<NoteWithExerciseInfo>
+    fun list(size: Int, offset: Int): List<NoteWithExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
@@ -546,7 +546,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME)
-    fun listPortionByExerciseSubname(
+    fun listByExerciseSubname(
         size: Int,
         offset: Int,
         exerciseSubname: String
@@ -574,7 +574,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * by exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
-    fun listPortionByExerciseSubnameAndTimestampRange(
+    fun listByExerciseSubnameAndTimestampRange(
         size: Int,
         offset: Int,
         exerciseSubname: String,
@@ -603,7 +603,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_BPM_RANGE)
-    fun listPortionByExerciseSubnameAndBpmRange(
+    fun listByExerciseSubnameAndBpmRange(
         size: Int,
         offset: Int,
         exerciseSubname: String,
@@ -638,7 +638,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
-    fun listPortionByExerciseSubnameTimestampRangeAndBpmRange(
+    fun listByExerciseSubnameTimestampRangeAndBpmRange(
         size: Int,
         offset: Int,
         exerciseSubname: String,
@@ -666,7 +666,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE)
-    fun listPortionByTimestampRange(
+    fun listByTimestampRange(
         size: Int,
         offset: Int,
         timestampFromInclusive: Long,
@@ -690,7 +690,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * timestamp, then ascending by exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_BPM_RANGE)
-    fun listPortionByBpmRange(
+    fun listByBpmRange(
         size: Int,
         offset: Int,
         bpmFromInclusive: Int,
@@ -721,7 +721,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * in descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
      */
     @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE_AND_BPM_RANGE)
-    fun listPortionByTimestampRangeAndBpmRange(
+    fun listByTimestampRangeAndBpmRange(
         size: Int,
         offset: Int,
         timestampFromInclusive: Long,
