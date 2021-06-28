@@ -82,6 +82,7 @@ class MainActivity :
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.d("savedInstanceState: savedInstanceState=$savedInstanceState")
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
@@ -98,23 +99,27 @@ class MainActivity :
     }
 
     override fun onDestroy() {
+        Timber.d("onDestroy")
         super.onDestroy()
         menuReference?.clear()
         menuReference = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        Timber.d("onCreateOptionsMenu: menu=$menu")
         menuInflater.inflate(R.menu.tools, menu)
         menuReference = WeakReference(menu)
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        Timber.d("onPrepareOptionsMenu: menu=$menu")
         menu?.invalidate()
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Timber.d("onOptionsItemSelected: item=$item")
         return if (handleToolSelection(item)) {
             true
         } else {
@@ -138,6 +143,7 @@ class MainActivity :
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        Timber.d("onNavigationItemSelected: item=$item")
         return handleNavSelection(item)
     }
 
