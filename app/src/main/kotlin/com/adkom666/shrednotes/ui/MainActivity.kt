@@ -507,7 +507,6 @@ class MainActivity :
 
     private fun SearchView.init() {
         setOnQueryTextListener(null)
-        ensureNoTextInput()
         imeOptions = EditorInfo.IME_ACTION_DONE or
                 EditorInfo.IME_FLAG_NO_FULLSCREEN or
                 EditorInfo.IME_FLAG_NO_EXTRACT_UI

@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.ui.exercises
 
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
@@ -35,7 +37,8 @@ import kotlin.properties.Delegates.observable
 @ExperimentalCoroutinesApi
 class ExercisesViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
-    private val noteRepository: NoteRepository
+    private val noteRepository: NoteRepository,
+    private val preferences: SharedPreferences
 ) : ViewModel() {
 
     private companion object {
@@ -45,6 +48,9 @@ class ExercisesViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+
+        private const val KEY_SUBNAME = "exercises.subname"
+        private const val KEY_IS_SEARCH_ACTIVE = "exercises.is_search_active"
     }
 
     /**
@@ -172,23 +178,34 @@ class ExercisesViewModel @Inject constructor(
         get() = _manageableSelection
 
     /**
-     * The text that must be contained in the names of the displayed exercises (case-insensitive).
+     * Property for storing a flag indicating whether the search is active.
      */
-    var subname: String? by observable(null) { _, old, new ->
-        Timber.d("Change subname: old=$old, new=$new")
-        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            viewModelScope.launch {
-                exerciseSourceFactory.subname = new?.trim()
-                resetExercises()
-            }
+    var isSearchActive: Boolean by observable(
+        preferences.getBoolean(KEY_IS_SEARCH_ACTIVE, false)
+    ) { _, old, new ->
+        Timber.d("Change isSearchActive: old=$old, new=$new")
+        preferences.edit {
+            putBoolean(KEY_IS_SEARCH_ACTIVE, new)
         }
     }
 
     /**
-     * Property for storing a flag indicating whether the search is active.
+     * The text that must be contained in the names of the displayed exercises (case-insensitive).
      */
-    var isSearchActive: Boolean by observable(false) { _, old, new ->
-        Timber.d("Change isSearchActive: old=$old, new=$new")
+    var subname: String? by observable(
+        preferences.getString(KEY_SUBNAME, null)
+    ) { _, old, new ->
+        Timber.d("Change subname: old=$old, new=$new")
+        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
+            viewModelScope.launch {
+                val finalSubname = new?.trim()
+                exerciseSourceFactory.subname = finalSubname
+                preferences.edit {
+                    putString(KEY_SUBNAME, finalSubname)
+                }
+                resetExercises()
+            }
+        }
     }
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()

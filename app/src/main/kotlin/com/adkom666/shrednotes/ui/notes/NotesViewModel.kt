@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.ui.notes
 
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
@@ -9,14 +11,21 @@ import androidx.paging.DataSource
 import androidx.paging.PagedList
 import androidx.paging.PositionalDataSource
 import androidx.paging.toLiveData
+import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
+import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
+import com.adkom666.shrednotes.util.getNullableDays
+import com.adkom666.shrednotes.util.getNullableInt
+import com.adkom666.shrednotes.util.putNullableDays
+import com.adkom666.shrednotes.util.putNullableInt
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.SelectableItems
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import com.adkom666.shrednotes.util.selection.Selection
+import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -32,7 +41,8 @@ import kotlin.properties.Delegates.observable
  */
 @ExperimentalCoroutinesApi
 class NotesViewModel @Inject constructor(
-    private val noteRepository: NoteRepository
+    private val noteRepository: NoteRepository,
+    private val preferences: SharedPreferences
 ) : ViewModel() {
 
     private companion object {
@@ -44,7 +54,18 @@ class NotesViewModel @Inject constructor(
         private const val MESSAGE_CHANNEL_CAPACITY = 3
         private const val SIGNAL_CHANNEL_CAPACITY = 3
 
-        private val INITIAL_FILTER = NoteFilter()
+        private const val KEY_IS_SEARCH_ACTIVE = "notes.is_search_active"
+        private const val KEY_EXERCISE_SUBNAME = "notes.exercise_subname"
+
+        private const val KEY_IS_FILTER_ENABLED = "notes.is_filter_enabled"
+        private const val KEY_DOES_FILTER_HAVE_DATE_FROM = "notes.does_filter_have_date_from"
+        private const val KEY_FILTER_DATE_FROM_INCLUSIVE = "notes.filter_date_from_inclusive"
+        private const val KEY_DOES_FILTER_HAVE_DATE_TO = "notes.does_filter_have_date_to"
+        private const val KEY_FILTER_DATE_TO_EXCLUSIVE = "notes.filter_date_to_exclusive"
+        private const val KEY_DOES_FILTER_HAVE_BPM_FROM = "notes.does_filter_have_bpm_from"
+        private const val KEY_FILTER_BPM_FROM_INCLUSIVE = "notes.filter_bpm_from_inclusive"
+        private const val KEY_DOES_FILTER_HAVE_BPM_TO = "notes.does_filter_have_bpm_to"
+        private const val KEY_FILTER_BPM_TO_INCLUSIVE = "notes.filter_bpm_to_inclusive"
     }
 
     /**
@@ -208,22 +229,33 @@ class NotesViewModel @Inject constructor(
         get() = _manageableSelection
 
     /**
-     * The text that must be contained in the names of the displayed notes' exercises
-     * (case-insensitive).
+     * Property for storing a flag indicating whether the search is active.
      */
-    var exerciseSubname: String? by observable(null) { _, old, new ->
-        Timber.d("Change exerciseSubname: old=$old, new=$new")
-        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            noteSourceFactory.exerciseSubname = new?.trim()
-            resetNotes()
+    var isSearchActive: Boolean by observable(
+        preferences.getBoolean(KEY_IS_SEARCH_ACTIVE, false)
+    ) { _, old, new ->
+        Timber.d("Change isSearchActive: old=$old, new=$new")
+        preferences.edit {
+            putBoolean(KEY_IS_SEARCH_ACTIVE, new)
         }
     }
 
     /**
-     * Property for storing a flag indicating whether the search is active.
+     * The text that must be contained in the names of the displayed notes' exercises
+     * (case-insensitive).
      */
-    var isSearchActive: Boolean by observable(false) { _, old, new ->
-        Timber.d("Change isSearchActive: old=$old, new=$new")
+    var exerciseSubname: String? by observable(
+        preferences.getString(KEY_EXERCISE_SUBNAME, null)
+    ) { _, old, new ->
+        Timber.d("Change exerciseSubname: old=$old, new=$new")
+        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
+            val finalExerciseSubname = new?.trim()
+            noteSourceFactory.exerciseSubname = finalExerciseSubname
+            preferences.edit {
+                putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
+            }
+            resetNotes()
+        }
     }
 
     /**
@@ -232,19 +264,31 @@ class NotesViewModel @Inject constructor(
     val isFilterEnabled: Boolean
         get() = _isFilterEnabled
 
-    private var filter: NoteFilter by observable(INITIAL_FILTER) { _, old, new ->
-        Timber.d("Change filter: old=$old, new=$new")
+    private var _isFilterEnabled: Boolean by observable(
+        preferences.getBoolean(KEY_IS_FILTER_ENABLED, false)
+    ) { _, old, new ->
+        Timber.d("Change _isFilterEnabled: old=$old, new=$new")
         if (new != old) {
-            noteSourceFactory.filter = new
+            noteSourceFactory.filter = if (new) filter else null
+            preferences.edit {
+                putBoolean(KEY_IS_FILTER_ENABLED, new)
+            }
             resetNotes()
         }
     }
 
-    private var _isFilterEnabled: Boolean by observable(false) { _, old, new ->
-        Timber.d("Change _isFilterEnabled: old=$old, new=$new")
+    private var filter: NoteFilter by observable(
+        preferences.getNoteFilter()
+    ) { _, old, new ->
+        Timber.d("Change filter: old=$old, new=$new")
         if (new != old) {
-            noteSourceFactory.filter = if (new) filter else null
-            resetNotes()
+            noteSourceFactory.filter = new
+            preferences.edit {
+                putNoteFilter(new)
+            }
+            if (_isFilterEnabled) {
+                resetNotes()
+            }
         }
     }
 
@@ -390,13 +434,10 @@ class NotesViewModel @Inject constructor(
                 }
             }
             ConfigFilterStatus.DISABLE -> {
-                this.filter = filter
                 ensureFilterEnabling(false)
+                this.filter = filter
             }
-            ConfigFilterStatus.CANCEL ->
-                if (_isFilterEnabled.not()) {
-                    this.filter = filter
-                }
+            ConfigFilterStatus.CANCEL -> Unit
         }
     }
 
@@ -459,6 +500,59 @@ class NotesViewModel @Inject constructor(
     private fun give(signal: Signal) {
         Timber.d("Give: signal=$signal")
         _signalChannel.offer(signal)
+    }
+
+    private fun SharedPreferences.getNoteFilter(): NoteFilter {
+        val defaultDays = Days()
+        val dateFromInclusive = getNullableDays(
+            key = KEY_FILTER_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_DATE_FROM,
+            defaultValue = defaultDays
+        )
+        val dateToExclusive = getNullableDays(
+            key = KEY_FILTER_DATE_TO_EXCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_DATE_TO,
+            defaultValue = defaultDays
+        )
+        val bpmFromInclusive = getNullableInt(
+            key = KEY_FILTER_BPM_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_BPM_FROM,
+            defaultValue = NOTE_BPM_MIN
+        )
+        val bpmToInclusive = getNullableInt(
+            key = KEY_FILTER_BPM_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_BPM_TO,
+            defaultValue = NOTE_BPM_MAX
+        )
+        return NoteFilter(
+            dateFromInclusive = dateFromInclusive,
+            dateToExclusive = dateToExclusive,
+            bpmFromInclusive = bpmFromInclusive,
+            bpmToInclusive = bpmToInclusive
+        )
+    }
+
+    private fun SharedPreferences.Editor.putNoteFilter(filter: NoteFilter) {
+        putNullableDays(
+            key = KEY_FILTER_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_DATE_FROM,
+            value = filter.dateFromInclusive
+        )
+        putNullableDays(
+            key = KEY_FILTER_DATE_TO_EXCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_DATE_TO,
+            value = filter.dateToExclusive
+        )
+        putNullableInt(
+            key = KEY_FILTER_BPM_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_BPM_FROM,
+            value = filter.bpmFromInclusive
+        )
+        putNullableInt(
+            key = KEY_FILTER_BPM_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_FILTER_HAVE_BPM_TO,
+            value = filter.bpmToInclusive
+        )
     }
 
     private class NoteSourceFactory(
