@@ -49,7 +49,7 @@ interface NoteRepository {
      * the list of all notes if [exerciseSubname] is null or blank and [filter] is not defined. If
      * the [requestedStartPosition] exceeds the count of required notes, the notes from the end of
      * the target list are returned as part of the [Page]. The notes are sorted in descending order
-     * by timestamp, then ascending by exercise name, and then ascending by BPM.
+     * by timestamp, then ascending by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param requestedStartPosition desired position of the first target note in the list of notes
@@ -62,7 +62,7 @@ interface NoteRepository {
      * the list of all notes if [exerciseSubname] is null or blank and [filter] is not defined; or
      * [Page] of notes from the end of the target list if the [requestedStartPosition] exceeds the
      * count of required notes. The notes are sorted in descending order by timestamp, then
-     * ascending by exercise name, and then ascending by BPM.
+     * ascending by exercise name, and then descending by BPM.
      */
     fun page(
         size: Int,

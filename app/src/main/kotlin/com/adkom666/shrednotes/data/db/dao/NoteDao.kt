@@ -122,7 +122,7 @@ private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_NOTES"
 private const val ORDER_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
             "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC, " +
-            "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM ASC"
+            "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM DESC"
 
 private const val PORTION = "LIMIT :size OFFSET :offset"
 private const val OPTIONS_FOR_SELECT_PORTION = "$ORDER_NOTES_WITH_EXERCISES $PORTION"
@@ -509,9 +509,11 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
-     * Getting a [List] of all note entities.
+     * Getting a [List] of all note entities. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then descending by BPM.
      *
-     * @return [List] of all note entities.
+     * @return [List] of all note entities. The notes are sorted in descending order by timestamp,
+     * then ascending by exercise name, and then descending by BPM.
      */
     @Query(SELECT_ALL_UNORDERED)
     suspend fun listAllUnorderedSuspending(): List<NoteEntity>
@@ -519,13 +521,13 @@ interface NoteDao : BaseDao<NoteEntity> {
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
      * the [offset] in the list of all notes. The notes are sorted in descending order by timestamp,
-     * then ascending by exercise name, and then ascending by BPM.
+     * then ascending by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of all notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of all notes. The notes are sorted in descending order by timestamp,
-     * then ascending by exercise name, and then ascending by BPM.
+     * then ascending by exercise name, and then descending by BPM.
      */
     @Query(SELECT_PORTION)
     fun list(size: Int, offset: Int): List<NoteWithExerciseInfo>
@@ -534,7 +536,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
      * the [offset] in the list of notes whose exercise names contain [exerciseSubname]. The notes
      * are sorted in descending order by timestamp, then ascending by exercise name, and then
-     * ascending by BPM.
+     * descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
@@ -542,7 +544,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @param exerciseSubname part of the names of the target notes' exercises.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose exercise names contain [exerciseSubname]. The notes are
-     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * sorted in descending order by timestamp, then ascending by exercise name, and then descending
      * by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME)
@@ -557,7 +559,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * the [offset] in the list of notes whose exercise names contain [exerciseSubname] and the
      * timestamp is greater than or equal to [timestampFromInclusive] and less than
      * [timestampToExclusive]. The notes are sorted in descending order by timestamp, then ascending
-     * by exercise name, and then ascending by BPM.
+     * by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
@@ -571,7 +573,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the
      * timestamp is greater than or equal to [timestampFromInclusive] and less than
      * [timestampToExclusive]. The notes are sorted in descending order by timestamp, then ascending
-     * by exercise name, and then ascending by BPM.
+     * by exercise name, and then descending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
     fun listByExerciseSubnameAndTimestampRange(
@@ -587,7 +589,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * the [offset] in the list of notes whose exercise names contain [exerciseSubname] and the BPM
      * is greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      * The notes are sorted in descending order by timestamp, then ascending by exercise name, and
-     * then ascending by BPM.
+     * then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
@@ -600,7 +602,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the BPM is
      * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The
      * notes are sorted in descending order by timestamp, then ascending by exercise name, and then
-     * ascending by BPM.
+     * descending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_AND_BPM_RANGE)
     fun listByExerciseSubnameAndBpmRange(
@@ -617,7 +619,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * timestamp is greater than or equal to [timestampFromInclusive] and less than
      * [timestampToExclusive] and the BPM is greater than or equal to [bpmFromInclusive] and less
      * than or equal to [bpmToInclusive]. The notes are sorted in descending order by timestamp,
-     * then ascending by exercise name, and then ascending by BPM.
+     * then ascending by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose exercise names
@@ -635,7 +637,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
      * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
      * [bpmToInclusive]. The notes are sorted in descending order by timestamp, then ascending by
-     * exercise name, and then ascending by BPM.
+     * exercise name, and then descending by BPM.
      */
     @Query(SELECT_PORTION_BY_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
     fun listByExerciseSubnameTimestampRangeAndBpmRange(
@@ -652,7 +654,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
      * the [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive]. The notes are sorted in
-     * descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     * descending order by timestamp, then ascending by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose timestamp is
@@ -663,7 +665,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive]. The notes are sorted in
-     * descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     * descending order by timestamp, then ascending by exercise name, and then descending by BPM.
      */
     @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE)
     fun listByTimestampRange(
@@ -677,7 +679,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with
      * the [offset] in the list of notes whose BPM is greater than or equal to [bpmFromInclusive]
      * and less than or equal to [bpmToInclusive]. The notes are sorted in descending order by
-     * timestamp, then ascending by exercise name, and then ascending by BPM.
+     * timestamp, then ascending by exercise name, and then descending by BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose BPM is greater
@@ -687,7 +689,7 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose BPM is greater than or equal to [bpmFromInclusive] and
      * less than or equal to [bpmToInclusive]. The notes are sorted in descending order by
-     * timestamp, then ascending by exercise name, and then ascending by BPM.
+     * timestamp, then ascending by exercise name, and then descending by BPM.
      */
     @Query(SELECT_PORTION_BY_BPM_RANGE)
     fun listByBpmRange(
@@ -702,7 +704,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * the [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
      * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The notes are sorted
-     * in descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     * in descending order by timestamp, then ascending by exercise name, and then descending by
+     * BPM.
      *
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose timestamp is
@@ -718,7 +721,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
      * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The notes are sorted
-     * in descending order by timestamp, then ascending by exercise name, and then ascending by BPM.
+     * in descending order by timestamp, then ascending by exercise name, and then descending by
+     * BPM.
      */
     @Query(SELECT_PORTION_BY_TIMESTAMP_RANGE_AND_BPM_RANGE)
     fun listByTimestampRangeAndBpmRange(
