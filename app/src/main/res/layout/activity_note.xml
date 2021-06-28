@@ -38,25 +38,28 @@
                     style="@style/AppTheme.HeaderText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minHeight="@dimen/square_image_button_size"
+                    android:gravity="top"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="@dimen/square_image_button_size_x2_and_padding"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:text="27.07.1964 4:20" />
 
                 <ImageButton
                     android:id="@+id/pick_note_date_time_image_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.ImageButton"
+                    android:layout_width="@dimen/square_image_button_size"
+                    android:layout_height="@dimen/square_image_button_size"
                     android:src="@drawable/ic_edit"
-                    android:scaleType="fitCenter"
-                    android:tint="@color/yellow"
-                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/desc_pick_note_date_time"
-                    android:padding="@dimen/padding_s"
-                    android:layout_marginStart="@dimen/padding_l"
-                    app:layout_constraintStart_toEndOf="@+id/note_date_time_text_view"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintVertical_bias="0" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
