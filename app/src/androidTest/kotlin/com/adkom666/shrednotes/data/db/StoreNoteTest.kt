@@ -92,11 +92,13 @@ class StoreNoteTest : TestCase() {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
+
         var deletedNoteCount = noteDao.deleteByIdsAndExerciseSubnameSuspending(
             ids,
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
         assertEquals(0, deletedNoteCount)
+
         val countWithExerciseSubname = noteList.count {
             it.exerciseName
                 ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
@@ -113,11 +115,13 @@ class StoreNoteTest : TestCase() {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
+
         var deletedNoteCount = noteDao.deleteOtherByIdsAndExerciseSubnameSuspending(
             ids,
             StoreExerciseTestHelper.EXERCISE_NAME_NOT_CONSISTS_IT
         )
         assertEquals(0, deletedNoteCount)
+
         val otherNoteList = noteDao.list(
             size = StoreNoteTestHelper.NOTE_COUNT - groupSize,
             offset = groupSize
