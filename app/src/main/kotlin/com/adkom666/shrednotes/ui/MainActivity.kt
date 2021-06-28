@@ -6,6 +6,8 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -46,10 +48,6 @@ class MainActivity :
     BottomNavigationView.OnNavigationItemSelectedListener {
 
     private companion object {
-        private const val REQUEST_CODE_SIGN_IN = 228
-
-        private const val REQUEST_CODE_AUTH_ON_READ = 229
-        private const val REQUEST_CODE_AUTH_ON_WRITE = 230
 
         private const val TAG_CONFIRM_READ = "${BuildConfig.APPLICATION_ID}.tags.confirm_read"
         private const val TAG_CONFIRM_WRITE = "${BuildConfig.APPLICATION_ID}.tags.confirm_write"
@@ -67,8 +65,20 @@ class MainActivity :
     private val model: MainViewModel
         get() = requireNotNull(_model)
 
+    private val signInLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_signInLauncher)
+
+    private val authOnReadLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_authOnReadLauncher)
+
+    private val authOnWriteLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_authOnWriteLauncher)
+
     private var _binding: ActivityMainBinding? = null
     private var _model: MainViewModel? = null
+    private var _signInLauncher: ActivityResultLauncher<Intent>? = null
+    private var _authOnReadLauncher: ActivityResultLauncher<Intent>? = null
+    private var _authOnWriteLauncher: ActivityResultLauncher<Intent>? = null
 
     private var menuReference: WeakReference<Menu>? = null
 
@@ -89,6 +99,7 @@ class MainActivity :
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        acquireActivityLaunchers()
         invalidateSubtitle()
         observeSection(isInitialScreenPresent = savedInstanceState != null)
         initBottomNavigation()
@@ -101,6 +112,7 @@ class MainActivity :
     override fun onDestroy() {
         Timber.d("onDestroy")
         super.onDestroy()
+        skipActivityLaunchers()
         menuReference?.clear()
         menuReference = null
     }
@@ -127,24 +139,37 @@ class MainActivity :
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Timber.d(
-            """onActivityResult:
-                |requestCode=$requestCode,
-                |resultCode=$resultCode,
-                |data=$data""".trimMargin()
-        )
-        when (requestCode) {
-            REQUEST_CODE_SIGN_IN -> model.handleSignInGoogleResult(this, resultCode, data)
-            REQUEST_CODE_AUTH_ON_READ -> model.handleAuthOnReadResult(resultCode)
-            REQUEST_CODE_AUTH_ON_WRITE -> model.handleAuthOnWriteResult(resultCode)
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Timber.d("onNavigationItemSelected: item=$item")
         return handleNavSelection(item)
+    }
+
+    private fun acquireActivityLaunchers() {
+        _signInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On sign in: result=$result")
+            model.handleSignInGoogleResult(this, result.resultCode, result.data)
+        }
+        _authOnReadLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On auth on read: result=$result")
+            model.handleAuthOnReadResult(result.resultCode)
+        }
+        _authOnWriteLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On auth on write: result=$result")
+            model.handleAuthOnWriteResult(result.resultCode)
+        }
+
+    }
+
+    private fun skipActivityLaunchers() {
+        _signInLauncher = null
+        _authOnReadLauncher = null
+        _authOnWriteLauncher = null
     }
 
     private fun observeSection(isInitialScreenPresent: Boolean) {
@@ -427,11 +452,11 @@ class MainActivity :
 
     private fun goToScreen(direction: MainViewModel.NavDirection) = when (direction) {
         is MainViewModel.NavDirection.ToSignIn ->
-            startActivityForResult(direction.intent, REQUEST_CODE_SIGN_IN)
+            signInLauncher.launch(direction.intent)
         is MainViewModel.NavDirection.ToAuthOnRead ->
-            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_READ)
+            authOnReadLauncher.launch(direction.intent)
         is MainViewModel.NavDirection.ToAuthOnWrite ->
-            startActivityForResult(direction.intent, REQUEST_CODE_AUTH_ON_WRITE)
+            authOnWriteLauncher.launch(direction.intent)
     }
 
     private fun show(message: MainViewModel.Message) = when (message) {

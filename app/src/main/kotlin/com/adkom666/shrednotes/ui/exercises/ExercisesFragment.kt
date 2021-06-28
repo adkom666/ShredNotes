@@ -1,6 +1,7 @@
 package com.adkom666.shrednotes.ui.exercises
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +9,8 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -43,9 +46,6 @@ class ExercisesFragment :
 
     companion object {
 
-        private const val REQUEST_CODE_ADD_EXERCISE = 666
-        private const val REQUEST_CODE_UPDATE_EXERCISE = 667
-
         private const val TAG_CONFIRM_EXERCISES_DELETION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_exercises_deletion"
 
@@ -72,10 +72,18 @@ class ExercisesFragment :
     private val fabDashboard: FabDashboard
         get() = requireNotNull(_fabDashboard)
 
+    private val addExerciseLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_addExerciseLauncher)
+
+    private val updateExerciseLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_updateExerciseLauncher)
+
     private var _binding: FragmentExercisesBinding? = null
     private var _model: ExercisesViewModel? = null
     private var _adapter: ExercisePagedListAdapter? = null
     private var _fabDashboard: FabDashboard? = null
+    private var _addExerciseLauncher: ActivityResultLauncher<Intent>? = null
+    private var _updateExerciseLauncher: ActivityResultLauncher<Intent>? = null
 
     override var isSearchActive: Boolean
         get() = model.isSearchActive
@@ -86,6 +94,11 @@ class ExercisesFragment :
     override val currentQuery: String?
         get() = model.subname
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        acquireActivityLaunchers()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -94,8 +107,8 @@ class ExercisesFragment :
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         _model = viewModel(viewModelFactory)
         _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
@@ -112,15 +125,9 @@ class ExercisesFragment :
         _binding = null
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
-        when (requestCode) {
-            REQUEST_CODE_ADD_EXERCISE ->
-                model.onAddExerciseResult(resultCode == Activity.RESULT_OK)
-            REQUEST_CODE_UPDATE_EXERCISE ->
-                model.onUpdateExerciseResult(resultCode == Activity.RESULT_OK)
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
+    override fun onDetach() {
+        super.onDetach()
+        skipActivityLaunchers()
     }
 
     override fun search(query: String?): Boolean {
@@ -132,6 +139,26 @@ class ExercisesFragment :
         Timber.d("preview: newText=$newText")
         model.subname = newText
         return true
+    }
+
+    private fun acquireActivityLaunchers() {
+        _addExerciseLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On add exercise: result=$result")
+            model.onAddExerciseResult(result.resultCode == Activity.RESULT_OK)
+        }
+        _updateExerciseLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On update exercise: result=$result")
+            model.onUpdateExerciseResult(result.resultCode == Activity.RESULT_OK)
+        }
+    }
+
+    private fun skipActivityLaunchers() {
+        _addExerciseLauncher = null
+        _updateExerciseLauncher = null
     }
 
     private fun initExerciseRecycler(): ExercisePagedListAdapter {
@@ -212,11 +239,11 @@ class ExercisesFragment :
     private fun goToScreen(direction: ExercisesViewModel.NavDirection) = when (direction) {
         ExercisesViewModel.NavDirection.ToAddExerciseScreen -> context?.let { safeContext ->
             val intent = ExerciseActivity.newIntent(safeContext)
-            startActivityForResult(intent, REQUEST_CODE_ADD_EXERCISE)
+            addExerciseLauncher.launch(intent)
         }
         is ExercisesViewModel.NavDirection.ToUpdateExerciseScreen -> context?.let { safeContext ->
             val intent = ExerciseActivity.newIntent(safeContext, direction.exercise)
-            startActivityForResult(intent, REQUEST_CODE_UPDATE_EXERCISE)
+            updateExerciseLauncher.launch(intent)
         }
     }
 

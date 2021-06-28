@@ -1,6 +1,7 @@
 package com.adkom666.shrednotes.ui.notes
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +9,8 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -48,9 +51,6 @@ class NotesFragment :
 
     companion object {
 
-        private const val REQUEST_CODE_ADD_NOTE = 6_666
-        private const val REQUEST_CODE_UPDATE_NOTE = 6_667
-
         private const val TAG_CONFIRM_NOTES_DELETION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_notes_deletion"
 
@@ -80,10 +80,18 @@ class NotesFragment :
     private val fabDashboard: FabDashboard
         get() = requireNotNull(_fabDashboard)
 
+    private val addNoteLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_addNoteLauncher)
+
+    private val updateNoteLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_updateNoteLauncher)
+
     private var _binding: FragmentNotesBinding? = null
     private var _model: NotesViewModel? = null
     private var _adapter: NotePagedListAdapter? = null
     private var _fabDashboard: FabDashboard? = null
+    private var _addNoteLauncher: ActivityResultLauncher<Intent>? = null
+    private var _updateNoteLauncher: ActivityResultLauncher<Intent>? = null
 
     override var isSearchActive: Boolean
         get() = model.isSearchActive
@@ -99,6 +107,11 @@ class NotesFragment :
 
     override var onFilterEnablingChangedListener: OnFilterEnablingChangedListener? = null
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        acquireActivityLaunchers()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -107,8 +120,8 @@ class NotesFragment :
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         _model = viewModel(viewModelFactory)
         _adapter = initNoteRecycler()
         _fabDashboard = initFabDashboard(model.selection)
@@ -125,15 +138,9 @@ class NotesFragment :
         _binding = null
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
-        when (requestCode) {
-            REQUEST_CODE_ADD_NOTE ->
-                model.onAddNoteResult(resultCode == Activity.RESULT_OK)
-            REQUEST_CODE_UPDATE_NOTE ->
-                model.onUpdateNoteResult(resultCode == Activity.RESULT_OK)
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
+    override fun onDetach() {
+        super.onDetach()
+        skipActivityLaunchers()
     }
 
     override fun search(query: String?): Boolean {
@@ -149,6 +156,26 @@ class NotesFragment :
 
     override fun filter() {
         model.requestFilter()
+    }
+
+    private fun acquireActivityLaunchers() {
+        _addNoteLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On add note: result=$result")
+            model.onAddNoteResult(result.resultCode == Activity.RESULT_OK)
+        }
+        _updateNoteLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On update note: result=$result")
+            model.onUpdateNoteResult(result.resultCode == Activity.RESULT_OK)
+        }
+    }
+
+    private fun skipActivityLaunchers() {
+        _addNoteLauncher = null
+        _updateNoteLauncher = null
     }
 
     private fun initNoteRecycler(): NotePagedListAdapter {
@@ -234,11 +261,11 @@ class NotesFragment :
     private fun goToScreen(direction: NotesViewModel.NavDirection) = when (direction) {
         NotesViewModel.NavDirection.ToAddNoteScreen -> context?.let { safeContext ->
             val intent = NoteActivity.newIntent(safeContext)
-            startActivityForResult(intent, REQUEST_CODE_ADD_NOTE)
+            addNoteLauncher.launch(intent)
         }
         is NotesViewModel.NavDirection.ToUpdateNoteScreen -> context?.let { safeContext ->
             val intent = NoteActivity.newIntent(safeContext, direction.note)
-            startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE)
+            updateNoteLauncher.launch(intent)
         }
         is NotesViewModel.NavDirection.ToConfigFilterScreen ->
             showFilterDialog(direction.filter, direction.isFilterEnabled)
