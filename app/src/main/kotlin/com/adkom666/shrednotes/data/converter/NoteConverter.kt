@@ -5,14 +5,14 @@ import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.external.ExternalNote
 import com.adkom666.shrednotes.data.model.Note
-import com.adkom666.shrednotes.util.TruncatedToMinutesDate
+import com.adkom666.shrednotes.util.time.Minutes
 
 /**
  * Getting a note from a database entity.
  */
 fun NoteWithExerciseInfo.toNote(): Note = Note(
     id = noteId,
-    dateTime = TruncatedToMinutesDate(noteTimestamp),
+    dateTime = Minutes(noteTimestamp),
     exerciseName = exerciseName ?: "",
     bpm = noteBpm
 )

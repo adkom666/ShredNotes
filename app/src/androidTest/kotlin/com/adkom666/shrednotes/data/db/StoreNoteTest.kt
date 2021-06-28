@@ -6,7 +6,7 @@ import com.adkom666.shrednotes.common.toId
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
-import com.adkom666.shrednotes.util.TruncatedToMinutesDate
+import com.adkom666.shrednotes.util.time.Minutes
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 
@@ -64,7 +64,7 @@ class StoreNoteTest : TestCase() {
     fun testInsertNoteWithExercise() {
         val noteWithExerciseEntity = NoteEntity(
             id = NO_ID,
-            timestamp = TruncatedToMinutesDate().epochMillis,
+            timestamp = Minutes().epochMillis,
             exerciseId = StoreNoteTestHelper.existentExerciseId(exerciseDao),
             bpm = 666
         )
@@ -75,7 +75,7 @@ class StoreNoteTest : TestCase() {
     fun testInsertNoteWithoutExercise() {
         val noteWithoutExerciseEntity = NoteEntity(
             id = NO_ID,
-            timestamp = TruncatedToMinutesDate().epochMillis,
+            timestamp = Minutes().epochMillis,
             exerciseId = StoreNoteTestHelper.nonExistentExerciseId(exerciseDao),
             bpm = 666
         )

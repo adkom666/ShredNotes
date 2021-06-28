@@ -11,8 +11,8 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
-import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.numberOrNull
+import com.adkom666.shrednotes.util.time.Minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -60,7 +60,7 @@ class NoteViewModel @Inject constructor(
              */
             data class Initial(
                 val exerciseList: List<Exercise>,
-                val noteDateTime: TruncatedToMinutesDate,
+                val noteDateTime: Minutes,
                 val noteExerciseName: String?,
                 val noteBpmString: String?
             ) : Preparation()
@@ -71,7 +71,7 @@ class NoteViewModel @Inject constructor(
              * @property noteDateTime new date and time of training.
              */
             data class NoteDateTimeChanged(
-                val noteDateTime: TruncatedToMinutesDate
+                val noteDateTime: Minutes
             ) : Preparation()
         }
 
@@ -146,7 +146,7 @@ class NoteViewModel @Inject constructor(
     /**
      * Date and time of training.
      */
-    var noteDateTime: TruncatedToMinutesDate
+    var noteDateTime: Minutes
         get() = requireNotNull(_noteDateTime)
         set(value) {
             if (value != _noteDateTime) {
@@ -172,7 +172,7 @@ class NoteViewModel @Inject constructor(
         get() = _initialNote
 
     private var _initialNote: Note? = null
-    private var _noteDateTime: TruncatedToMinutesDate? = null
+    private var _noteDateTime: Minutes? = null
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -191,7 +191,7 @@ class NoteViewModel @Inject constructor(
     fun prepare(note: Note?) {
         Timber.d("Prepare: note=$note")
         _initialNote = note
-        _noteDateTime = note?.dateTime ?: TruncatedToMinutesDate()
+        _noteDateTime = note?.dateTime ?: Minutes()
     }
 
     /**

@@ -19,9 +19,9 @@ import com.adkom666.shrednotes.databinding.ActivityNoteBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.forwardCursor
-import com.adkom666.shrednotes.util.TruncatedToMinutesDate
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
+import com.adkom666.shrednotes.util.time.Minutes
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -222,7 +222,7 @@ class NoteActivity : AppCompatActivity() {
             val newCalendar = epochMillis.toCalendar()
             newCalendar.set(Calendar.HOUR_OF_DAY, hour)
             newCalendar.set(Calendar.MINUTE, minute)
-            model.noteDateTime = newCalendar.toTruncatedToMinutesDate()
+            model.noteDateTime = newCalendar.toMinutes()
             return newCalendar
         }
 
@@ -240,7 +240,7 @@ class NoteActivity : AppCompatActivity() {
             val calendar = model.noteDateTime.epochMillis.toCalendar()
             calendar.set(Calendar.HOUR_OF_DAY, hour)
             calendar.set(Calendar.MINUTE, minute)
-            model.noteDateTime = calendar.toTruncatedToMinutesDate()
+            model.noteDateTime = calendar.toMinutes()
         }
 
         addOnPositiveButtonClickListener {
@@ -260,8 +260,8 @@ class NoteActivity : AppCompatActivity() {
         return calendar
     }
 
-    private fun Calendar.toTruncatedToMinutesDate(): TruncatedToMinutesDate {
-        return TruncatedToMinutesDate(time)
+    private fun Calendar.toMinutes(): Minutes {
+        return Minutes(time)
     }
 
     private inner class StateObserver : Observer<NoteViewModel.State> {
@@ -325,7 +325,7 @@ class NoteActivity : AppCompatActivity() {
         }
 
         private fun initNote(
-            dateTime: TruncatedToMinutesDate,
+            dateTime: Minutes,
             exerciseName: String?,
             bpmString: String?
         ) {
@@ -342,7 +342,7 @@ class NoteActivity : AppCompatActivity() {
             binding.noteBpmEditText.clearFocus()
         }
 
-        private fun setNoteDateTime(dateTime: TruncatedToMinutesDate) {
+        private fun setNoteDateTime(dateTime: Minutes) {
             binding.noteDateTimeTextView.text = dateFormat.format(dateTime.date)
         }
     }
