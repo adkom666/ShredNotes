@@ -25,9 +25,10 @@ import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.putNullableDays
 import com.adkom666.shrednotes.util.putNullableInt
 import com.adkom666.shrednotes.util.selection.ManageableSelection
+import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
 import com.adkom666.shrednotes.util.selection.SelectableItems
-import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import com.adkom666.shrednotes.util.selection.Selection
+import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -172,6 +173,11 @@ class NotesViewModel @Inject constructor(
          * Indicates that the filter is turned on or turned off.
          */
         object FilterEnablingChanged : Signal()
+
+        /**
+         * Indicates that at least one selected note appears or no more selected notes.
+         */
+        object SelectionChanged : Signal()
     }
 
     /**
@@ -310,6 +316,13 @@ class NotesViewModel @Inject constructor(
         ).also { noteSource = it }
     }
 
+    private val onSelectionActivenessChangeListener: OnActivenessChangeListener =
+        object : OnActivenessChangeListener {
+            override fun onActivenessChange(isActive: Boolean) {
+                give(Signal.SelectionChanged)
+            }
+        }
+
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
@@ -324,6 +337,7 @@ class NotesViewModel @Inject constructor(
 
     init {
         Timber.d("Init")
+        _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
         viewModelScope.launch {
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname, filterOrNull)
             Timber.d("noteInitialCount=$noteInitialCount")

@@ -214,7 +214,6 @@ class NotesFragment :
         }
         binding.control.fabCancel.setOnClickListener {
             model.selectionDashboard.deselectAll()
-            adapter.notifyDataSetChanged()
         }
     }
 
@@ -300,6 +299,8 @@ class NotesFragment :
     private fun process(signal: NotesViewModel.Signal) = when (signal) {
         NotesViewModel.Signal.FilterEnablingChanged ->
             onFilterEnablingChangedListener?.invoke()
+        NotesViewModel.Signal.SelectionChanged ->
+            adapter.notifyDataSetChanged()
     }
 
     private fun ConfirmationDialogFragment.setDeletingListener() {

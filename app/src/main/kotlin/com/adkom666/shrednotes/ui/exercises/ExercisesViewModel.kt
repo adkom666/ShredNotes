@@ -19,6 +19,7 @@ import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.selection.ManageableSelection
+import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
 import com.adkom666.shrednotes.util.selection.SelectableItems
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
@@ -51,6 +52,7 @@ class ExercisesViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val SIGNAL_CHANNEL_CAPACITY = 3
 
         private const val KEY_SUBNAME = "exercises.subname"
         private const val KEY_IS_SEARCH_ACTIVE = "exercises.is_search_active"
@@ -139,6 +141,17 @@ class ExercisesViewModel @Inject constructor(
     }
 
     /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Indicates that at least one selected note appears or no more selected notes.
+         */
+        object SelectionChanged : Signal()
+    }
+
+    /**
      * Subscribe to the current state in the UI thread.
      */
     val stateAsLiveData: LiveData<State>
@@ -161,6 +174,12 @@ class ExercisesViewModel @Inject constructor(
      */
     val messageChannel: ReceiveChannel<Message>
         get() = _messageChannel.openSubscription()
+
+    /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
 
     /**
      * Exercises to select.
@@ -224,6 +243,13 @@ class ExercisesViewModel @Inject constructor(
         ).also { exerciseSource = it }
     }
 
+    private val onSelectionActivenessChangeListener: OnActivenessChangeListener =
+        object : OnActivenessChangeListener {
+            override fun onActivenessChange(isActive: Boolean) {
+                give(Signal.SelectionChanged)
+            }
+        }
+
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
@@ -233,8 +259,12 @@ class ExercisesViewModel @Inject constructor(
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+
     init {
         Timber.d("Init")
+        _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
         viewModelScope.launch {
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")
@@ -387,6 +417,11 @@ class ExercisesViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
     }
 
     private class ExerciseSource(

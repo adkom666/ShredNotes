@@ -197,7 +197,6 @@ class ExercisesFragment :
         }
         binding.control.fabCancel.setOnClickListener {
             model.selectionDashboard.deselectAll()
-            adapter.notifyDataSetChanged()
         }
     }
 
@@ -220,6 +219,9 @@ class ExercisesFragment :
         }
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
+        }
+        lifecycleScope.launchWhenStarted {
+            model.signalChannel.consumeEach(::process)
         }
     }
 
@@ -271,6 +273,11 @@ class ExercisesFragment :
         }
         ExercisesViewModel.Message.Error.Unknown ->
             toast(R.string.error_unknown)
+    }
+
+    private fun process(signal: ExercisesViewModel.Signal) = when (signal) {
+        ExercisesViewModel.Signal.SelectionChanged ->
+            adapter.notifyDataSetChanged()
     }
 
     private fun ConfirmationDialogFragment.setDeletingListener() {
