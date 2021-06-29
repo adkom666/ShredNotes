@@ -4,20 +4,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Exercise
@@ -66,7 +64,7 @@ class ExercisesFragment :
     private val model: ExercisesViewModel
         get() = requireNotNull(_model)
 
-    private val adapter: ExercisePagedListAdapter
+    private val adapter: ExercisePagingDataAdapter
         get() = requireNotNull(_adapter)
 
     private val fabDashboard: FabDashboard
@@ -80,7 +78,7 @@ class ExercisesFragment :
 
     private var _binding: FragmentExercisesBinding? = null
     private var _model: ExercisesViewModel? = null
-    private var _adapter: ExercisePagedListAdapter? = null
+    private var _adapter: ExercisePagingDataAdapter? = null
     private var _fabDashboard: FabDashboard? = null
     private var _addExerciseLauncher: ActivityResultLauncher<Intent>? = null
     private var _updateExerciseLauncher: ActivityResultLauncher<Intent>? = null
@@ -161,14 +159,14 @@ class ExercisesFragment :
         _updateExerciseLauncher = null
     }
 
-    private fun initExerciseRecycler(): ExercisePagedListAdapter {
+    private fun initExerciseRecycler(): ExercisePagingDataAdapter {
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.exercisesRecycler.layoutManager = llm
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         val decoration = FirstItemDecoration(marginTop.toInt())
         binding.exercisesRecycler.addItemDecoration(decoration)
-        val adapter = ExercisePagedListAdapter(model.selectableExercises, model::onExerciseClick)
+        val adapter = ExercisePagingDataAdapter(model.selectableExercises, model::onExerciseClick)
         binding.exercisesRecycler.adapter = adapter
         return adapter
     }
@@ -212,8 +210,8 @@ class ExercisesFragment :
     private fun observeLiveData() {
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
-        val exerciseListObserver = ExerciseListObserver(adapter, binding.exercisesRecycler)
-        model.exercisePagedListAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
+        val exerciseListObserver = ExercisePagingObserver(lifecycle, adapter)
+        model.exercisePagingAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
     }
 
     private fun listenChannels() {
@@ -300,20 +298,13 @@ class ExercisesFragment :
         }
     }
 
-    private class ExerciseListObserver(
-        private val adapter: ExercisePagedListAdapter,
-        private val recycler: RecyclerView
-    ) : Observer<PagedList<Exercise>> {
+    private class ExercisePagingObserver(
+        private val lifecycle: Lifecycle,
+        private val adapter: ExercisePagingDataAdapter
+    ) : Observer<PagingData<Exercise>> {
 
-        private val handler: Handler = Handler(Looper.getMainLooper())
-
-        override fun onChanged(exercisePagedList: PagedList<Exercise>?) {
-            adapter.submitList(exercisePagedList) {
-                adapter.notifyDataSetChanged()
-                handler.post {
-                    recycler.smoothScrollToPosition(0)
-                }
-            }
+        override fun onChanged(exercisePagingData: PagingData<Exercise>) {
+            adapter.submitData(lifecycle, exercisePagingData)
         }
     }
 }

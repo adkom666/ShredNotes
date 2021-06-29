@@ -2,7 +2,7 @@ package com.adkom666.shrednotes.ui.exercises
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.data.model.Exercise
@@ -15,10 +15,10 @@ import com.adkom666.shrednotes.util.selection.SelectableItems
  * @property selectableExercises exercises to interact.
  * @property onExerciseClick callback to handle the clicked exercise when the selection is inactive.
  */
-class ExercisePagedListAdapter(
+class ExercisePagingDataAdapter(
     private val selectableExercises: SelectableItems,
     private val onExerciseClick: (Exercise) -> Unit
-) : PagedListAdapter<Exercise, ExercisePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
+) : PagingDataAdapter<Exercise, ExercisePagingDataAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
     private companion object {
 

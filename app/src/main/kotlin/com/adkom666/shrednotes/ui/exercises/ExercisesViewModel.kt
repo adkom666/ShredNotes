@@ -7,24 +7,29 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.DataSource
-import androidx.paging.PagedList
-import androidx.paging.PositionalDataSource
-import androidx.paging.toLiveData
+import androidx.paging.liveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
+import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.SelectableItems
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.properties.Delegates.observable
@@ -42,9 +47,7 @@ class ExercisesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private companion object {
-        private const val PAGE_SIZE = 15
-        private const val PAGED_LIST_INITIAL_LOAD_HINT = 30
-        private const val PAGED_LIST_PREFETCH_DISTANCE = 15
+        private const val PAGE_SIZE = 20
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
@@ -144,8 +147,8 @@ class ExercisesViewModel @Inject constructor(
     /**
      * Subscribe to the current list of exercises in the UI thread.
      */
-    val exercisePagedListAsLiveData: LiveData<PagedList<Exercise>>
-        get() = exerciseSourceFactory.toLiveData(pagedListConfig)
+    val exercisePagingAsLiveData: LiveData<PagingData<Exercise>>
+        get() = pager.liveData
 
     /**
      * Consume navigation directions from this channel in the UI thread.
@@ -199,7 +202,6 @@ class ExercisesViewModel @Inject constructor(
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             viewModelScope.launch {
                 val finalSubname = new?.trim()
-                exerciseSourceFactory.subname = finalSubname
                 preferences.edit {
                     putString(KEY_SUBNAME, finalSubname)
                 }
@@ -208,20 +210,21 @@ class ExercisesViewModel @Inject constructor(
         }
     }
 
+    private var exerciseSource: ExerciseSource? = null
+
+    private val pager: Pager<Int, Exercise> = Pager(
+        config = PagingConfig(
+            pageSize = PAGE_SIZE,
+            enablePlaceholders = false
+        )
+    ) {
+        ExerciseSource(
+            exerciseRepository = exerciseRepository,
+            subname = subname
+        ).also { exerciseSource = it }
+    }
+
     private val _manageableSelection: ManageableSelection = ManageableSelection()
-
-    private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
-        .setEnablePlaceholders(false)
-        .setPageSize(PAGE_SIZE)
-        .setInitialLoadSizeHint(PAGED_LIST_INITIAL_LOAD_HINT)
-        .setPrefetchDistance(PAGED_LIST_PREFETCH_DISTANCE)
-        .build()
-
-    private val exerciseSourceFactory: ExerciseSourceFactory = ExerciseSourceFactory(
-        exerciseRepository,
-        subname
-    )
-
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _navigationChannel: BroadcastChannel<NavDirection> =
@@ -332,7 +335,7 @@ class ExercisesViewModel @Inject constructor(
         viewModelScope.launch {
             val exerciseCount = exerciseRepository.countSuspending(subname)
             _manageableSelection.reset(exerciseCount)
-            exerciseSourceFactory.invalidate()
+            exerciseSource?.invalidate()
             setState(State.Working)
         }
     }
@@ -386,51 +389,44 @@ class ExercisesViewModel @Inject constructor(
         _messageChannel.offer(message)
     }
 
-    private class ExerciseSourceFactory(
-        private val exerciseRepository: ExerciseRepository,
-        var subname: String?
-    ) : DataSource.Factory<Int, Exercise>() {
-
-        private var exerciseSource: ExerciseSource? = null
-
-        override fun create(): DataSource<Int, Exercise> {
-            val exerciseSource = ExerciseSource(exerciseRepository, subname)
-            this.exerciseSource = exerciseSource
-            return exerciseSource
-        }
-
-        fun invalidate() = exerciseSource?.invalidate()
-    }
-
     private class ExerciseSource(
         private val exerciseRepository: ExerciseRepository,
-        private var subname: String?
-    ) : PositionalDataSource<Exercise>() {
+        private val subname: String?
+    ) : PagingSource<Int, Exercise>() {
 
-        override fun loadInitial(
-            params: LoadInitialParams,
-            callback: LoadInitialCallback<Exercise>
-        ) {
-            val (exerciseList, startPosition) = exerciseRepository.page(
-                params.requestedLoadSize,
-                params.requestedStartPosition,
-                subname
+        override suspend fun load(
+            params: LoadParams<Int>
+        ): LoadResult<Int, Exercise> = withContext(Dispatchers.IO) {
+            val key = params.key ?: 0
+            val (exerciseList, startPosition) = if (params.loadSize != PAGE_SIZE) {
+                // Load initial
+                exerciseRepository.page(
+                    params.loadSize,
+                    requestedStartPosition = key,
+                    subname = subname
+                )
+            } else {
+                val exerciseList = exerciseRepository.list(
+                    size = params.loadSize,
+                    startPosition = key,
+                    subname = subname
+                )
+                Page(exerciseList, key)
+            }
+            val probableKey = if (exerciseList.size == params.loadSize) {
+                startPosition + exerciseList.size
+            } else {
+                null
+            }
+            return@withContext LoadResult.Page(
+                data = exerciseList,
+                prevKey = null,
+                nextKey = if (probableKey != key) probableKey else null
             )
-            Timber.d("Load initial exercises: exerciseList.size=${exerciseList.size}")
-            callback.onResult(exerciseList, startPosition)
         }
 
-        override fun loadRange(
-            params: LoadRangeParams,
-            callback: LoadRangeCallback<Exercise>
-        ) {
-            val exerciseList = exerciseRepository.list(
-                params.loadSize,
-                params.startPosition,
-                subname
-            )
-            Timber.d("Load next exercises: exerciseList.size=${exerciseList.size}")
-            callback.onResult(exerciseList)
+        override fun getRefreshKey(state: PagingState<Int, Exercise>): Int? {
+            return null
         }
     }
 }

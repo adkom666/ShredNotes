@@ -7,10 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.DataSource
-import androidx.paging.PagedList
-import androidx.paging.PositionalDataSource
-import androidx.paging.toLiveData
+import androidx.paging.liveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
@@ -19,6 +21,7 @@ import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
+import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.putNullableDays
 import com.adkom666.shrednotes.util.putNullableInt
 import com.adkom666.shrednotes.util.selection.ManageableSelection
@@ -26,12 +29,14 @@ import com.adkom666.shrednotes.util.selection.SelectableItems
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.time.Days
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.properties.Delegates.observable
@@ -46,9 +51,7 @@ class NotesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private companion object {
-        private const val PAGE_SIZE = 15
-        private const val PAGED_LIST_INITIAL_LOAD_HINT = 30
-        private const val PAGED_LIST_PREFETCH_DISTANCE = 15
+        private const val PAGE_SIZE = 20
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = 3
@@ -189,8 +192,8 @@ class NotesViewModel @Inject constructor(
     /**
      * Subscribe to the current list of notes in the UI thread.
      */
-    val notePagedListAsLiveData: LiveData<PagedList<Note>>
-        get() = noteSourceFactory.toLiveData(pagedListConfig)
+    val notePagingAsLiveData: LiveData<PagingData<Note>>
+        get() = pager.liveData
 
     /**
      * Consume navigation directions from this channel in the UI thread.
@@ -250,7 +253,6 @@ class NotesViewModel @Inject constructor(
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             val finalExerciseSubname = new?.trim()
-            noteSourceFactory.exerciseSubname = finalExerciseSubname
             preferences.edit {
                 putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
             }
@@ -269,7 +271,6 @@ class NotesViewModel @Inject constructor(
     ) { _, old, new ->
         Timber.d("Change _isFilterEnabled: old=$old, new=$new")
         if (new != old) {
-            noteSourceFactory.filter = if (new) filter else null
             preferences.edit {
                 putBoolean(KEY_IS_FILTER_ENABLED, new)
             }
@@ -282,7 +283,6 @@ class NotesViewModel @Inject constructor(
     ) { _, old, new ->
         Timber.d("Change filter: old=$old, new=$new")
         if (new != old) {
-            noteSourceFactory.filter = new
             preferences.edit {
                 putNoteFilter(new)
             }
@@ -295,21 +295,22 @@ class NotesViewModel @Inject constructor(
     private val filterOrNull: NoteFilter?
         get() = if (_isFilterEnabled) filter else null
 
+    private var noteSource: NoteSource? = null
+
+    private val pager: Pager<Int, Note> = Pager(
+        config = PagingConfig(
+            pageSize = PAGE_SIZE,
+            enablePlaceholders = false
+        )
+    ) {
+        NoteSource(
+            noteRepository = noteRepository,
+            exerciseSubname = exerciseSubname,
+            filter = if (isFilterEnabled) filter else null
+        ).also { noteSource = it }
+    }
+
     private val _manageableSelection: ManageableSelection = ManageableSelection()
-
-    private val pagedListConfig: PagedList.Config = PagedList.Config.Builder()
-        .setEnablePlaceholders(false)
-        .setPageSize(PAGE_SIZE)
-        .setInitialLoadSizeHint(PAGED_LIST_INITIAL_LOAD_HINT)
-        .setPrefetchDistance(PAGED_LIST_PREFETCH_DISTANCE)
-        .build()
-
-    private val noteSourceFactory: NoteSourceFactory = NoteSourceFactory(
-        noteRepository,
-        exerciseSubname,
-        filterOrNull
-    )
-
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _navigationChannel: BroadcastChannel<NavDirection> =
@@ -449,7 +450,7 @@ class NotesViewModel @Inject constructor(
                 filterOrNull
             )
             _manageableSelection.reset(noteCount)
-            noteSourceFactory.invalidate()
+            noteSource?.invalidate()
             setState(State.Working)
         }
     }
@@ -555,56 +556,47 @@ class NotesViewModel @Inject constructor(
         )
     }
 
-    private class NoteSourceFactory(
-        private val noteRepository: NoteRepository,
-        var exerciseSubname: String?,
-        var filter: NoteFilter?
-    ) : DataSource.Factory<Int, Note>() {
-
-        private var noteSource: NoteSource? = null
-
-        override fun create(): DataSource<Int, Note> {
-            val exerciseSource = NoteSource(noteRepository, exerciseSubname, filter)
-            this.noteSource = exerciseSource
-            return exerciseSource
-        }
-
-        fun invalidate() = noteSource?.invalidate()
-    }
-
     private class NoteSource(
         private val noteRepository: NoteRepository,
-        private var exerciseSubname: String?,
-        private var filter: NoteFilter?
-    ) : PositionalDataSource<Note>() {
+        private val exerciseSubname: String?,
+        private val filter: NoteFilter?
+    ) : PagingSource<Int, Note>() {
 
-        override fun loadInitial(
-            params: LoadInitialParams,
-            callback: LoadInitialCallback<Note>
-        ) {
-            val (noteList, startPosition) = noteRepository.page(
-                params.requestedLoadSize,
-                params.requestedStartPosition,
-                exerciseSubname,
-                filter
+        override suspend fun load(
+            params: LoadParams<Int>
+        ): LoadResult<Int, Note> = withContext(Dispatchers.IO) {
+            val key = params.key ?: 0
+            val (exerciseList, startPosition) = if (params.loadSize != PAGE_SIZE) {
+                // Load initial
+                noteRepository.page(
+                    params.loadSize,
+                    requestedStartPosition = key,
+                    exerciseSubname,
+                    filter
+                )
+            } else {
+                val exerciseList = noteRepository.list(
+                    size = params.loadSize,
+                    startPosition = key,
+                    exerciseSubname,
+                    filter
+                )
+                Page(exerciseList, key)
+            }
+            val probableKey = if (exerciseList.size == params.loadSize) {
+                startPosition + exerciseList.size
+            } else {
+                null
+            }
+            return@withContext LoadResult.Page(
+                data = exerciseList,
+                prevKey = null,
+                nextKey = if (probableKey != key) probableKey else null
             )
-            Timber.d("Load initial notes: noteList.size=${noteList.size}")
-            Timber.d("Load initial notes: noteList=$noteList")
-            callback.onResult(noteList, startPosition)
         }
 
-        override fun loadRange(
-            params: LoadRangeParams,
-            callback: LoadRangeCallback<Note>
-        ) {
-            val noteList = noteRepository.list(
-                params.loadSize,
-                params.startPosition,
-                exerciseSubname,
-                filter
-            )
-            Timber.d("Load next notes: noteList.size=${noteList.size}")
-            callback.onResult(noteList)
+        override fun getRefreshKey(state: PagingState<Int, Note>): Int? {
+            return null
         }
     }
 }

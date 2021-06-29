@@ -2,7 +2,7 @@ package com.adkom666.shrednotes.ui.notes
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.data.model.Note
@@ -17,10 +17,10 @@ import java.util.Locale
  * @property selectableNotes notes to interact.
  * @property onNoteClick callback to handle the clicked note when the selection is inactive.
  */
-class NotePagedListAdapter(
+class NotePagingDataAdapter(
     private val selectableNotes: SelectableItems,
     private val onNoteClick: (Note) -> Unit
-) : PagedListAdapter<Note, NotePagedListAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
+) : PagingDataAdapter<Note, NotePagingDataAdapter.ViewHolder>(DIFF_UTIL_CALLBACK) {
 
     private companion object {
 

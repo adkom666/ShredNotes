@@ -4,20 +4,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Note
@@ -74,7 +72,7 @@ class NotesFragment :
     private val model: NotesViewModel
         get() = requireNotNull(_model)
 
-    private val adapter: NotePagedListAdapter
+    private val adapter: NotePagingDataAdapter
         get() = requireNotNull(_adapter)
 
     private val fabDashboard: FabDashboard
@@ -88,7 +86,7 @@ class NotesFragment :
 
     private var _binding: FragmentNotesBinding? = null
     private var _model: NotesViewModel? = null
-    private var _adapter: NotePagedListAdapter? = null
+    private var _adapter: NotePagingDataAdapter? = null
     private var _fabDashboard: FabDashboard? = null
     private var _addNoteLauncher: ActivityResultLauncher<Intent>? = null
     private var _updateNoteLauncher: ActivityResultLauncher<Intent>? = null
@@ -178,14 +176,14 @@ class NotesFragment :
         _updateNoteLauncher = null
     }
 
-    private fun initNoteRecycler(): NotePagedListAdapter {
+    private fun initNoteRecycler(): NotePagingDataAdapter {
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.noteRecycler.layoutManager = llm
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         val decoration = FirstItemDecoration(marginTop.toInt())
         binding.noteRecycler.addItemDecoration(decoration)
-        val adapter = NotePagedListAdapter(model.selectableNotes, model::onNoteClick)
+        val adapter = NotePagingDataAdapter(model.selectableNotes, model::onNoteClick)
         binding.noteRecycler.adapter = adapter
         return adapter
     }
@@ -232,8 +230,8 @@ class NotesFragment :
     private fun observeLiveData() {
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
-        val noteListObserver = NoteListObserver(adapter, binding.noteRecycler)
-        model.notePagedListAsLiveData.observe(viewLifecycleOwner, noteListObserver)
+        val noteListObserver = NoteListObserver(lifecycle, adapter)
+        model.notePagingAsLiveData.observe(viewLifecycleOwner, noteListObserver)
     }
 
     private fun listenChannels() {
@@ -354,19 +352,12 @@ class NotesFragment :
     }
 
     private class NoteListObserver(
-        private val adapter: NotePagedListAdapter,
-        private val recycler: RecyclerView
-    ) : Observer<PagedList<Note>> {
+        private val lifecycle: Lifecycle,
+        private val adapter: NotePagingDataAdapter
+    ) : Observer<PagingData<Note>> {
 
-        private val handler: Handler = Handler(Looper.getMainLooper())
-
-        override fun onChanged(notePagedList: PagedList<Note>?) {
-            adapter.submitList(notePagedList) {
-                adapter.notifyDataSetChanged()
-                handler.post {
-                    recycler.smoothScrollToPosition(0)
-                }
-            }
+        override fun onChanged(notePagingData: PagingData<Note>) {
+            adapter.submitData(lifecycle, notePagingData)
         }
     }
 }
