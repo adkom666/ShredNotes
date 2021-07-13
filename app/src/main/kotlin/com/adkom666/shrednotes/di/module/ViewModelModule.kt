@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.di.viewmodel.ViewModelFactory
 import com.adkom666.shrednotes.di.viewmodel.ViewModelKey
 import com.adkom666.shrednotes.ui.MainViewModel
+import com.adkom666.shrednotes.ui.ask.AskViewModel
 import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
 import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
@@ -52,4 +53,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(NoteViewModel::class)
     abstract fun noteViewModel(viewModel: NoteViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(AskViewModel::class)
+    abstract fun askViewModel(viewModel: AskViewModel): ViewModel
 }
