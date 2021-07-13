@@ -21,6 +21,7 @@
     <string name="desc_pick_note_date_range">Установить диапазон дат заметок</string>
     <string name="desc_clear_note_date_range">Очистить диапазон дат заметок</string>
     <string name="desc_clear_note_bpm_range">Очистить диапазон BPM</string>
+    <string name="desc_coin">Монета</string>
 
     <string name="button_title_cancel">Отмена</string>
     <string name="button_title_yes">Да</string>
@@ -76,6 +77,8 @@
     <string name="message_deleted_notes">Удалено заметок: %d</string>
 
     <string name="message_filter_undefined">Фильтр не определен</string>
+
+    <string name="message_ask">На еду и на творчество</string>
 
     <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
     <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>
