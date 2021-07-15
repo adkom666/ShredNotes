@@ -13,43 +13,35 @@
         style="@style/AppTheme.HeaderText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="@dimen/padding_xl"
-        android:paddingEnd="@dimen/padding_xl"
-        android:layout_marginTop="@dimen/padding_l"
+        android:padding="@dimen/padding_xl"
+        android:layout_marginBottom="@dimen/padding_xl"
         android:gravity="center"
         android:text="@string/message_ask"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintVertical_bias="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/donate_image_button" />
 
     <ImageButton
         android:id="@+id/donate_image_button"
         android:layout_width="@dimen/coin_size"
         android:layout_height="@dimen/coin_size"
-        android:layout_marginTop="@dimen/padding_xl"
         android:background="@android:color/transparent"
         android:contentDescription="@string/desc_coin"
         android:src="@drawable/coin"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0.45"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ask_text_view"
-        app:layout_constraintBottom_toTopOf="@+id/donation_price_container" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/donation_price_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/padding_l"
-        android:layout_marginBottom="@dimen/padding_l"
-        app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/donate_image_button"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/donate_image_button">
 
         <TextView
             android:id="@+id/donation_price_text_view"
@@ -60,7 +52,6 @@
             android:paddingEnd="@dimen/padding_xl"
             android:gravity="center"
             android:textColor="@color/light_text_color_selector"
-            android:freezesText="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -72,6 +63,17 @@
             style="@android:style/Widget.ProgressBar.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/refresh_donation_price_button"
+            style="@style/AppTheme.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_title_refresh"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
