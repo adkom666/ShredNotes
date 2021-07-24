@@ -9,6 +9,7 @@ import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.model.Exercise
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -26,6 +27,7 @@ class ExerciseViewModel @Inject constructor(
 
     private companion object {
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
     }
 
     /**
@@ -37,19 +39,6 @@ class ExerciseViewModel @Inject constructor(
          * Waiting for the end of some operation.
          */
         object Waiting : State()
-
-        /**
-         * Prepare for interacting with the user and tell me by [ok] call.
-         */
-        sealed class Preparation : State() {
-
-            /**
-             * Initiate the necessary objects before interacting with the user.
-             *
-             * @property exerciseName ready-made exercise name.
-             */
-            data class Initial(val exerciseName: String?) : Preparation()
-        }
 
         /**
          * Interacting with the user.
@@ -110,6 +99,19 @@ class ExerciseViewModel @Inject constructor(
     }
 
     /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Show actual exercise name.
+         *
+         * @property value ready-made exercise name.
+         */
+        data class ExerciseName(val value: String) : Signal()
+    }
+
+    /**
      * Subscribe to the current state in the UI thread.
      */
     val stateAsLiveData: LiveData<State>
@@ -121,6 +123,12 @@ class ExerciseViewModel @Inject constructor(
     val messageChannel: ReceiveChannel<Message>
         get() = _messageChannel.openSubscription()
 
+    /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
+
     private val initialExercise: Exercise?
         get() = _initialExercise
 
@@ -130,6 +138,9 @@ class ExerciseViewModel @Inject constructor(
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
 
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+
     /**
      * Prepare for working with the [exercise].
      *
@@ -138,14 +149,16 @@ class ExerciseViewModel @Inject constructor(
     fun prepare(exercise: Exercise?) {
         Timber.d("Prepare: exercise=$exercise")
         _initialExercise = exercise
-        setState(State.Preparation.Initial(initialExercise?.name))
+        initialExercise?.let { existentExercise ->
+            give(Signal.ExerciseName(existentExercise.name))
+        }
     }
 
     /**
-     * Tell the model that all the information received from it has been used.
+     * Start working.
      */
-    fun ok() {
-        Timber.d("OK!")
+    fun start() {
+        Timber.d("Start")
         setState(State.Working)
     }
 
@@ -211,5 +224,10 @@ class ExerciseViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
     }
 }

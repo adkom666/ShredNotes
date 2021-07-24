@@ -18,6 +18,7 @@ import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -72,11 +73,13 @@ class ExerciseActivity : AppCompatActivity() {
         observeLiveData()
         listenChannels()
 
-        if (savedInstanceState == null) {
+        val isFirstStart = savedInstanceState == null
+        if (isFirstStart) {
             val exercise = intent?.extras?.getParcelable<Exercise>(EXTRA_EXERCISE)
             Timber.d("Initial exercise is $exercise")
             model.prepare(exercise)
         }
+        model.start()
     }
 
     private fun setupButtonListeners() {
@@ -98,6 +101,9 @@ class ExerciseActivity : AppCompatActivity() {
     private fun listenChannels() {
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
+        }
+        lifecycleScope.launch {
+            model.signalChannel.consumeEach(::process)
         }
     }
 
@@ -126,6 +132,20 @@ class ExerciseActivity : AppCompatActivity() {
             toast(R.string.error_unknown)
     }
 
+    private fun process(signal: ExerciseViewModel.Signal) {
+        Timber.d("Signal is $signal")
+        when (signal) {
+            is ExerciseViewModel.Signal.ExerciseName ->
+                setExerciseName(signal.value)
+        }
+    }
+
+    private fun setExerciseName(exerciseName: String) {
+        binding.exerciseNameEditText.setText(exerciseName)
+        binding.exerciseNameEditText.forwardCursor()
+        binding.exerciseNameEditText.clearFocus()
+    }
+
     private inner class StateObserver : Observer<ExerciseViewModel.State> {
 
         override fun onChanged(state: ExerciseViewModel.State?) {
@@ -133,10 +153,6 @@ class ExerciseActivity : AppCompatActivity() {
             when (state) {
                 ExerciseViewModel.State.Waiting ->
                     setWaiting()
-                is ExerciseViewModel.State.Preparation -> {
-                    prepare(state)
-                    model.ok()
-                }
                 ExerciseViewModel.State.Working ->
                     setWorking()
                 is ExerciseViewModel.State.Finishing -> {
@@ -149,11 +165,6 @@ class ExerciseActivity : AppCompatActivity() {
         private fun setWaiting() = setProgressActive(true)
         private fun setWorking() = setProgressActive(false)
 
-        private fun prepare(state: ExerciseViewModel.State.Preparation) = when (state) {
-            is ExerciseViewModel.State.Preparation.Initial ->
-                initExercise(state.exerciseName)
-        }
-
         private fun beforeFinish(state: ExerciseViewModel.State.Finishing) = when (state) {
             ExerciseViewModel.State.Finishing.Declined ->
                 setResult(RESULT_CANCELED)
@@ -164,14 +175,6 @@ class ExerciseActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.exerciseCard.isVisible = isActive.not()
-        }
-
-        private fun initExercise(name: String?) {
-            name?.let {
-                binding.exerciseNameEditText.setText(it)
-                binding.exerciseNameEditText.forwardCursor()
-            }
-            binding.exerciseNameEditText.clearFocus()
         }
     }
 }
