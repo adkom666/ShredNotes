@@ -583,17 +583,17 @@ class NotesViewModel @Inject constructor(
             val (exerciseList, startPosition) = if (params.loadSize != PAGE_SIZE) {
                 // Load initial
                 noteRepository.page(
-                    params.loadSize,
+                    size = params.loadSize,
                     requestedStartPosition = key,
-                    exerciseSubname,
-                    filter
+                    exerciseSubname = exerciseSubname,
+                    filter = filter
                 )
             } else {
                 val exerciseList = noteRepository.list(
                     size = params.loadSize,
                     startPosition = key,
-                    exerciseSubname,
-                    filter
+                    exerciseSubname = exerciseSubname,
+                    filter = filter
                 )
                 Page(exerciseList, key)
             }

@@ -436,7 +436,7 @@ class ExercisesViewModel @Inject constructor(
             val (exerciseList, startPosition) = if (params.loadSize != PAGE_SIZE) {
                 // Load initial
                 exerciseRepository.page(
-                    params.loadSize,
+                    size = params.loadSize,
                     requestedStartPosition = key,
                     subname = subname
                 )
