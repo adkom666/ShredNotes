@@ -35,8 +35,22 @@ android {
         }
     }
 
+    flavorDimensions 'venue'
+    productFlavors {
+        google {
+            dimension 'venue'
+            versionNameSuffix '-google'
+        }
+        catappult {
+            dimension 'venue'
+            versionNameSuffix '-catappult'
+        }
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        google.java.srcDirs += 'src/google/kotlin'
+        catappult.java.srcDirs += 'src/catappult/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
         androidTest.java.srcDirs += 'src/androidTest/kotlin'
     }
@@ -118,6 +132,10 @@ dependencies {
 
     // Log
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    // Billing
+    googleImplementation 'com.android.billingclient:billing-ktx:4.0.0'
+    catappultImplementation 'io.catappult:android-appcoins-billing:0.6.7.0'
 
     // Test
     testImplementation 'junit:junit:4.13.2'

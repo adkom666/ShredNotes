@@ -21,7 +21,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
     includes = [
         RepositoryModule::class,
         DataManagerModule::class,
-        PreferencesModule::class
+        PreferencesModule::class,
+        AskModule::class
     ]
 )
 abstract class ViewModelModule {
