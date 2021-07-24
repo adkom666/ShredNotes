@@ -42,6 +42,7 @@
                     android:gravity="top"
                     android:paddingStart="0dp"
                     android:paddingEnd="@dimen/square_image_button_size_x2_and_padding"
+                    android:freezesText="true"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"

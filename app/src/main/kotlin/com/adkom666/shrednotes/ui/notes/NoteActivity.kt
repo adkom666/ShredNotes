@@ -28,6 +28,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.DateFormat
 import java.util.Calendar
@@ -84,6 +85,12 @@ class NoteActivity : AppCompatActivity() {
     private var _binding: ActivityNoteBinding? = null
     private var _model: NoteViewModel? = null
 
+    private val dateFormat = DateFormat.getDateTimeInstance(
+        DateFormat.SHORT,
+        DateFormat.SHORT,
+        Locale.getDefault()
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -102,7 +109,9 @@ class NoteActivity : AppCompatActivity() {
             Timber.d("Initial note is $note")
             model.prepare(note)
         }
-        model.start(isFirstStart)
+        lifecycleScope.launchWhenCreated {
+            model.start()
+        }
     }
 
     private fun setupButtonListeners() {
@@ -144,6 +153,9 @@ class NoteActivity : AppCompatActivity() {
     private fun listenChannels() {
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
+        }
+        lifecycleScope.launch {
+            model.signalChannel.consumeEach(::process)
         }
     }
 
@@ -211,6 +223,46 @@ class NoteActivity : AppCompatActivity() {
             toast(R.string.error_unknown)
     }
 
+    private fun process(signal: NoteViewModel.Signal) {
+        Timber.d("Signal is $signal")
+        when (signal) {
+            is NoteViewModel.Signal.ExerciseList ->
+                setExerciseList(signal.value)
+            is NoteViewModel.Signal.NoteDateTime ->
+                setNoteDateTime(signal.value)
+            is NoteViewModel.Signal.NoteExerciseName ->
+                setExerciseName(signal.value)
+            is NoteViewModel.Signal.NoteBpmString ->
+                setBpm(signal.value)
+        }
+    }
+
+    private fun setExerciseList(exerciseList: List<Exercise>) {
+        Timber.d("exerciseList=$exerciseList")
+        val adapter = ArrayAdapter(
+            this@NoteActivity,
+            android.R.layout.simple_dropdown_item_1line,
+            exerciseList.map { it.name }
+        )
+        binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)
+    }
+
+    private fun setNoteDateTime(dateTime: Minutes) {
+        binding.noteDateTimeTextView.text = dateFormat.format(dateTime.date)
+    }
+
+    private fun setExerciseName(exerciseName: String) {
+        binding.noteExerciseAutoCompleteTextView.setText(exerciseName)
+        binding.noteExerciseAutoCompleteTextView.forwardCursor()
+        binding.noteExerciseAutoCompleteTextView.clearFocus()
+    }
+
+    private fun setBpm(bpmString: String) {
+        binding.noteBpmEditText.setText(bpmString)
+        binding.noteBpmEditText.forwardCursor()
+        binding.noteBpmEditText.clearFocus()
+    }
+
     private fun MaterialDatePicker<*>.addDateListeners() = addDateListeners(::afterPickDate)
 
     private fun MaterialDatePicker<*>.addDateListeners(afterPick: (Calendar) -> Unit) {
@@ -266,21 +318,11 @@ class NoteActivity : AppCompatActivity() {
 
     private inner class StateObserver : Observer<NoteViewModel.State> {
 
-        private val dateFormat = DateFormat.getDateTimeInstance(
-            DateFormat.SHORT,
-            DateFormat.SHORT,
-            Locale.getDefault()
-        )
-
         override fun onChanged(state: NoteViewModel.State?) {
             Timber.d("State is $state")
             when (state) {
                 NoteViewModel.State.Waiting ->
                     setWaiting()
-                is NoteViewModel.State.Preparation -> {
-                    prepare(state)
-                    model.ok()
-                }
                 NoteViewModel.State.Working ->
                     setWorking()
                 is NoteViewModel.State.Finishing -> {
@@ -293,15 +335,6 @@ class NoteActivity : AppCompatActivity() {
         private fun setWaiting() = setProgressActive(true)
         private fun setWorking() = setProgressActive(false)
 
-        private fun prepare(state: NoteViewModel.State.Preparation) = when (state) {
-            is NoteViewModel.State.Preparation.Initial -> {
-                initExerciseList(state.exerciseList)
-                initNote(state.noteDateTime, state.noteExerciseName, state.noteBpmString)
-            }
-            is NoteViewModel.State.Preparation.NoteDateTimeChanged ->
-                setNoteDateTime(state.noteDateTime)
-        }
-
         private fun beforeFinish(state: NoteViewModel.State.Finishing) = when (state) {
             NoteViewModel.State.Finishing.Declined ->
                 setResult(RESULT_CANCELED)
@@ -312,38 +345,6 @@ class NoteActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.noteCard.isVisible = isActive.not()
-        }
-
-        private fun initExerciseList(exerciseList: List<Exercise>) {
-            Timber.d("exerciseList=$exerciseList")
-            val adapter = ArrayAdapter(
-                this@NoteActivity,
-                android.R.layout.simple_dropdown_item_1line,
-                exerciseList.map { it.name }
-            )
-            binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)
-        }
-
-        private fun initNote(
-            dateTime: Minutes,
-            exerciseName: String?,
-            bpmString: String?
-        ) {
-            setNoteDateTime(dateTime)
-            exerciseName?.let {
-                binding.noteExerciseAutoCompleteTextView.setText(it)
-                binding.noteExerciseAutoCompleteTextView.forwardCursor()
-            }
-            binding.noteExerciseAutoCompleteTextView.clearFocus()
-            bpmString?.let {
-                binding.noteBpmEditText.setText(it)
-                binding.noteBpmEditText.forwardCursor()
-            }
-            binding.noteBpmEditText.clearFocus()
-        }
-
-        private fun setNoteDateTime(dateTime: Minutes) {
-            binding.noteDateTimeTextView.text = dateFormat.format(dateTime.date)
         }
     }
 }

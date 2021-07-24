@@ -15,6 +15,7 @@ import com.adkom666.shrednotes.util.numberOrNull
 import com.adkom666.shrednotes.util.time.Minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -33,6 +34,7 @@ class NoteViewModel @Inject constructor(
 
     private companion object {
         private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
     }
 
     /**
@@ -44,36 +46,6 @@ class NoteViewModel @Inject constructor(
          * Waiting for the end of some operation.
          */
         object Waiting : State()
-
-        /**
-         * Prepare for interacting with the user and tell me by [ok] call.
-         */
-        sealed class Preparation : State() {
-
-            /**
-             * Initiate the necessary objects before interacting with the user.
-             *
-             * @property exerciseList [List] of all exercises.
-             * @property noteDateTime date and time of training.
-             * @property noteExerciseName training exercise name.
-             * @property noteBpmString training BPM.
-             */
-            data class Initial(
-                val exerciseList: List<Exercise>,
-                val noteDateTime: Minutes,
-                val noteExerciseName: String?,
-                val noteBpmString: String?
-            ) : Preparation()
-
-            /**
-             * The date and time of the training have been changed.
-             *
-             * @property noteDateTime new date and time of training.
-             */
-            data class NoteDateTimeChanged(
-                val noteDateTime: Minutes
-            ) : Preparation()
-        }
 
         /**
          * Interacting with the user.
@@ -144,6 +116,40 @@ class NoteViewModel @Inject constructor(
     }
 
     /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Use actual exercises lists.
+         *
+         * @property value [List] of all exercises.
+         */
+        data class ExerciseList(val value: List<Exercise>) : Signal()
+
+        /**
+         * Show actual date and time of training.
+         *
+         * @property value date and time of training.
+         */
+        data class NoteDateTime(val value: Minutes) : Signal()
+
+        /**
+         * Show actual training exercise name.
+         *
+         * @property value training exercise name.
+         */
+        data class NoteExerciseName(val value: String) : Signal()
+
+        /**
+         * Show actual training BPM.
+         *
+         * @property value training BPM.
+         */
+        data class NoteBpmString(val value: String) : Signal()
+    }
+
+    /**
      * Date and time of training.
      */
     var noteDateTime: Minutes
@@ -152,7 +158,7 @@ class NoteViewModel @Inject constructor(
             if (value != _noteDateTime) {
                 Timber.d("Set noteDateTime=$value")
                 _noteDateTime = value
-                setState(State.Preparation.NoteDateTimeChanged(noteDateTime = value))
+                give(Signal.NoteDateTime(value))
             }
         }
 
@@ -168,6 +174,12 @@ class NoteViewModel @Inject constructor(
     val messageChannel: ReceiveChannel<Message>
         get() = _messageChannel.openSubscription()
 
+    /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
+
     private val initialNote: Note?
         get() = _initialNote
 
@@ -177,6 +189,9 @@ class NoteViewModel @Inject constructor(
 
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
+
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
     /**
      * All the necessary information to create a note along with the exercise.
@@ -192,32 +207,21 @@ class NoteViewModel @Inject constructor(
         Timber.d("Prepare: note=$note")
         _initialNote = note
         _noteDateTime = note?.dateTime ?: Minutes()
+        give(Signal.NoteDateTime(noteDateTime))
+        initialNote?.let { existentNote ->
+            give(Signal.NoteExerciseName(existentNote.exerciseName))
+            give(Signal.NoteBpmString(existentNote.bpm.toString()))
+        }
     }
 
     /**
      * Start working.
      */
-    fun start(isFirstStart: Boolean) {
+    suspend fun start() {
         Timber.d("Start")
         setState(State.Waiting)
-        viewModelScope.launch {
-            val exerciseList = exerciseRepository.allExercisesSuspending()
-            setState(
-                State.Preparation.Initial(
-                    exerciseList,
-                    noteDateTime,
-                    if (isFirstStart) initialNote?.exerciseName else null,
-                    if (isFirstStart) initialNote?.bpm?.toString() else null
-                )
-            )
-        }
-    }
-
-    /**
-     * Tell the model that all the information received from it has been used.
-     */
-    fun ok() {
-        Timber.d("OK!")
+        val exerciseList = exerciseRepository.allExercisesSuspending()
+        give(Signal.ExerciseList(exerciseList))
         setState(State.Working)
     }
 
@@ -358,5 +362,10 @@ class NoteViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
     }
 }
