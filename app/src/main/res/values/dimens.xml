@@ -19,4 +19,5 @@
     <dimen name="child_fab_elevation">4dp</dimen>
 
     <dimen name="card_vertical_margin">@dimen/padding_m</dimen>
+    <dimen name="coin_size">156dp</dimen>
 </resources>

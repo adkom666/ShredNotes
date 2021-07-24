@@ -106,3 +106,6 @@ Thumbs.db
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Secrets
+/app/src/catappult/kotlin/com/adkom666/shrednotes/ask/Const.kt
