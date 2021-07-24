@@ -33,6 +33,7 @@ import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
@@ -55,8 +56,8 @@ class NotesViewModel @Inject constructor(
         private const val PAGE_SIZE = 20
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = 3
-        private const val SIGNAL_CHANNEL_CAPACITY = 3
+        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
+        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_IS_SEARCH_ACTIVE = "notes.is_search_active"
         private const val KEY_EXERCISE_SUBNAME = "notes.exercise_subname"

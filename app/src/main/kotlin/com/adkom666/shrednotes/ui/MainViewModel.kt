@@ -15,6 +15,7 @@ import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -35,7 +36,7 @@ class MainViewModel @Inject constructor(
         private val DEFAULT_SECTION = Section.NOTES
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_JSON = "json"
     }

@@ -26,7 +26,7 @@ class ExerciseViewModel @Inject constructor(
 ) : ViewModel() {
 
     private companion object {
-        private const val MESSAGE_CHANNEL_CAPACITY = 3
+        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
         private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
     }
 

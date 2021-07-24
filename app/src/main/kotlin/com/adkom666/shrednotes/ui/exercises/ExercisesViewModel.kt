@@ -26,6 +26,7 @@ import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
@@ -51,8 +52,8 @@ class ExercisesViewModel @Inject constructor(
         private const val PAGE_SIZE = 20
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = 3
-        private const val SIGNAL_CHANNEL_CAPACITY = 3
+        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
+        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_SUBNAME = "exercises.subname"
         private const val KEY_IS_SEARCH_ACTIVE = "exercises.is_search_active"
