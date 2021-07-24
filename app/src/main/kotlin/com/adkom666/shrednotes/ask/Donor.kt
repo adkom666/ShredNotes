@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 
-typealias OnDonationFinishListener = (DonationResult) -> Unit
-
 /**
  * Here you can donate me money.
  */
@@ -34,11 +32,19 @@ interface Donor {
     suspend fun prepare(context: Context)
 
     /**
-     * Set [OnDonationFinishListener] for each donation, or skip to null if it no longer needed.
+     * Set [OnDonationFinishListener] for single donation, or skip to null if it no longer needed.
+     * It will be skipped automatically when the donation ends.
      *
      * @param listener callback to notify that the donation is complete.
      */
-    fun setOnDonationFinishListener(listener: OnDonationFinishListener?)
+    fun setDisposableOnDonationFinishListener(listener: OnDonationFinishListener?)
+
+    /**
+     * Set [OnDonationFinishListener] for all donations.
+     *
+     * @param listener callback to notify that the donation is complete.
+     */
+    fun setReusableOnDonationFinishListener(listener: OnDonationFinishListener)
 
     /**
      * Initiate donation. Thank you!

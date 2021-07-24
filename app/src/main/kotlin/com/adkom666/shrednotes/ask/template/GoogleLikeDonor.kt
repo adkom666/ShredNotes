@@ -28,7 +28,8 @@ class GoogleLikeDonor(
     private var skuDetails: GoogleLikeSkuDetails? = null
     private var isSkuDetailsQueried: Boolean = false
     private var isDonationInProgress: Boolean = false
-    private var onDonationFinishListener: OnDonationFinishListener? = null
+    private var disposableOnDonationFinishListener: OnDonationFinishListener? = null
+    private var reusableOnDonationFinishListener: OnDonationFinishListener? = null
 
     init {
         Timber.d("Init")
@@ -54,9 +55,14 @@ class GoogleLikeDonor(
         }
     }
 
-    override fun setOnDonationFinishListener(listener: OnDonationFinishListener?) {
-        Timber.d("Set on donation finish listener: listener=$listener")
-        onDonationFinishListener = listener
+    override fun setDisposableOnDonationFinishListener(listener: OnDonationFinishListener?) {
+        Timber.d("Set disposable on donation finish listener: listener=$listener")
+        disposableOnDonationFinishListener = listener
+    }
+
+    override fun setReusableOnDonationFinishListener(listener: OnDonationFinishListener) {
+        Timber.d("Set reusable on donation finish listener: listener=$listener")
+        reusableOnDonationFinishListener = listener
     }
 
     override suspend fun donate(activity: Activity) {
@@ -98,7 +104,7 @@ class GoogleLikeDonor(
         billingClient = null
         isSkuDetailsQueried = false
         skuDetails = null
-        onDonationFinishListener = null
+        disposableOnDonationFinishListener = null
     }
 
     private suspend fun requestReadyBillingClient(
@@ -125,9 +131,10 @@ class GoogleLikeDonor(
     private fun finishDonation(donationResult: DonationResult) {
         Timber.d("Finish donation: donationResult=$donationResult")
         isDonationInProgress = false
-        val listener = onDonationFinishListener
-        onDonationFinishListener = null
-        listener?.invoke(donationResult)
+        val listener = disposableOnDonationFinishListener
+        disposableOnDonationFinishListener = null
+        listener?.onDonationFinish(donationResult)
+        reusableOnDonationFinishListener?.onDonationFinish(donationResult)
     }
 
     private suspend fun GoogleLikeBillingClient.connect(): Boolean {

@@ -89,18 +89,22 @@ class AskViewModel @Inject constructor(
     private val _signalChannel: BroadcastChannel<Signal> =
         BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
-    private val onDonationFinishListener: OnDonationFinishListener = { donationResult ->
-        Timber.d("Donation finished: donationResult=$donationResult")
-        if (donationResult == DonationResult.DISPOSED) {
-            setState(State.UnknownDonationPrice)
-        } else {
-            setState(State.Asking)
+    private val onDonationFinishListener: OnDonationFinishListener =
+        object : OnDonationFinishListener {
+
+            override fun onDonationFinish(donationResult: DonationResult) {
+                Timber.d("Donation finished: donationResult=$donationResult")
+                if (donationResult == DonationResult.DISPOSED) {
+                    setState(State.UnknownDonationPrice)
+                } else {
+                    setState(State.Asking)
+                }
+            }
         }
-    }
 
     override fun onCleared() {
         super.onCleared()
-        donor.setOnDonationFinishListener(null)
+        donor.setDisposableOnDonationFinishListener(null)
     }
 
     /**
@@ -113,7 +117,7 @@ class AskViewModel @Inject constructor(
         if (donor.isPrepared) {
             invalidateStateAndPrice()
             if (donor.isActive) {
-                donor.setOnDonationFinishListener(onDonationFinishListener)
+                donor.setDisposableOnDonationFinishListener(onDonationFinishListener)
             }
         } else {
             forcePrepareDonor(context)
@@ -143,7 +147,7 @@ class AskViewModel @Inject constructor(
     fun donate(activity: Activity) {
         Timber.d("Donate")
         setState(State.NotAsking)
-        donor.setOnDonationFinishListener(onDonationFinishListener)
+        donor.setDisposableOnDonationFinishListener(onDonationFinishListener)
         viewModelScope.launch {
             donor.donate(activity)
         }
