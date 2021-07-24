@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
@@ -26,7 +27,8 @@ import javax.inject.Inject
  */
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
-    private val dataManager: DataManager
+    private val dataManager: DataManager,
+    private val donor: Donor
 ) : ViewModel() {
 
     private companion object {
@@ -250,6 +252,12 @@ class MainViewModel @Inject constructor(
 
     private var readyJson: String? = null
 
+    override fun onCleared() {
+        super.onCleared()
+        Timber.d("On cleared")
+        donor.dispose()
+    }
+
     /**
      * Tell the model that all the information received from it has been used.
      */
@@ -334,6 +342,27 @@ class MainViewModel @Inject constructor(
         if (resultCode == Activity.RESULT_OK) {
             launchWrite()
         }
+    }
+
+    /**
+     * Call this method from [Activity.onActivityResult] so the model can select the information it
+     * needs.
+     *
+     * @param requestCode the integer request code originally supplied to
+     * [Activity.startActivityForResult], allowing you to identify who this result came from.
+     * @param resultCode the integer result code returned by the child activity through its
+     * [Activity.setResult].
+     * @param data an [Intent], which can return result data to the caller (various data can be
+     * attached to [Intent] "extras").
+     */
+    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Timber.d(
+            """handleActivityResult:
+                |requestCode=$requestCode,
+                |resultCode=$resultCode,
+                |data=$data""".trimMargin()
+        )
+        donor.handleActivityResult(requestCode = requestCode, resultCode = resultCode, data = data)
     }
 
     private fun launchRead() {

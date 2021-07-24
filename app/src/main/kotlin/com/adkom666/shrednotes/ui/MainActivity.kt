@@ -144,6 +144,12 @@ class MainActivity :
         return handleNavSelection(item)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        model.handleActivityResult(requestCode = requestCode, resultCode = resultCode, data = data)
+    }
+
     private fun acquireActivityLaunchers() {
         _signInLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
