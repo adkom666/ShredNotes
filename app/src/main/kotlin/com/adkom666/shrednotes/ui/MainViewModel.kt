@@ -272,6 +272,7 @@ class MainViewModel @Inject constructor(
      * @param context [Context].
      */
     fun signInGoogle(context: Context) {
+        Timber.d("Sign in Google")
         val intent = dataManager.googleAuth.signInIntent(context)
         navigateTo(NavDirection.ToSignIn(intent))
     }
@@ -304,41 +305,44 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Call this method from [Activity.onActivityResult], making sure that the results of the Google
+     * Call this method when activity result is acquired, making sure that the results of the Google
      * authorization call for intent from [NavDirection.ToSignIn.intent] are returned.
      *
      * @param context [Context].
-     * @param resultCode there must be [Activity.RESULT_OK] if authorization goes well.
+     * @param resultCode the integer result code returned by the child activity through its
+     * [Activity.setResult].
      * @param data authorization data.
      */
     fun handleSignInGoogleResult(context: Context, resultCode: Int, data: Intent?) {
-        Timber.d("handleSignInGoogleResult: resultCode=$resultCode, data=$data")
+        Timber.d("Handle sign in Google result: resultCode=$resultCode, data=$data")
         dataManager.googleAuth.handleSignInResult(context, resultCode, data) {
             setState(State.Preparation.GoogleDriveStateChanged)
         }
     }
 
     /**
-     * Call this method from [Activity.onActivityResult], making sure that the results of the Google
+     * Call this method when activity result is acquired, making sure that the results of the Google
      * authorization call for intent from [NavDirection.ToAuthOnRead.intent] are returned.
      *
-     * @param resultCode there must be [Activity.RESULT_OK] if authorization goes well.
+     * @param resultCode the integer result code returned by the child activity through its
+     * [Activity.setResult].
      */
     fun handleAuthOnReadResult(resultCode: Int) {
-        Timber.d("handleAuthOnReadResult: resultCode=$resultCode")
+        Timber.d("Handle auth on read result: resultCode=$resultCode")
         if (resultCode == Activity.RESULT_OK) {
             launchRead()
         }
     }
 
     /**
-     * Call this method from [Activity.onActivityResult], making sure that the results of the Google
+     * Call this method when activity result is acquired, making sure that the results of the Google
      * authorization call for intent from [NavDirection.ToAuthOnWrite.intent] are returned.
      *
-     * @param resultCode there must be [Activity.RESULT_OK] if authorization goes well.
+     * @param resultCode the integer result code returned by the child activity through its
+     * [Activity.setResult].
      */
     fun handleAuthOnWriteResult(resultCode: Int) {
-        Timber.d("handleAuthOnWriteResult: resultCode=$resultCode")
+        Timber.d("Handle auth on write result: resultCode=$resultCode")
         if (resultCode == Activity.RESULT_OK) {
             launchWrite()
         }
@@ -357,7 +361,7 @@ class MainViewModel @Inject constructor(
      */
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Timber.d(
-            """handleActivityResult:
+            """Handle activity result:
                 |requestCode=$requestCode,
                 |resultCode=$resultCode,
                 |data=$data""".trimMargin()

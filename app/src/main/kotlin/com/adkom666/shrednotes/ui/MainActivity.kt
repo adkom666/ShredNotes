@@ -169,7 +169,6 @@ class MainActivity :
             Timber.d("On auth on write: result=$result")
             model.handleAuthOnWriteResult(result.resultCode)
         }
-
     }
 
     private fun skipActivityLaunchers() {
