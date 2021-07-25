@@ -217,8 +217,8 @@ class ExercisesFragment :
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
         val exerciseExpectationObserver = ExerciseExpectationObserver()
         model.exerciseExpectationAsLiveData.observe(viewLifecycleOwner, exerciseExpectationObserver)
-        val exerciseListObserver = ExercisePagingObserver(lifecycle, adapter)
-        model.exercisePagingAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
+        val exercisePagingDataObserver = ExercisePagingDataObserver(lifecycle, adapter)
+        model.exercisePagingAsLiveData.observe(viewLifecycleOwner, exercisePagingDataObserver)
     }
 
     private fun listenChannels() {
@@ -325,7 +325,7 @@ class ExercisesFragment :
         }
     }
 
-    private class ExercisePagingObserver(
+    private class ExercisePagingDataObserver(
         private val lifecycle: Lifecycle,
         private val adapter: ExercisePagingDataAdapter
     ) : Observer<PagingData<Exercise>> {

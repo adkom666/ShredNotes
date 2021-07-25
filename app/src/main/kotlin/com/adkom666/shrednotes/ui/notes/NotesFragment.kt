@@ -238,8 +238,8 @@ class NotesFragment :
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
         val noteExpectationObserver = NoteExpectationObserver()
         model.noteExpectationAsLiveData.observe(viewLifecycleOwner, noteExpectationObserver)
-        val noteListObserver = NoteListObserver(lifecycle, adapter)
-        model.notePagingAsLiveData.observe(viewLifecycleOwner, noteListObserver)
+        val notePagingDataObserver = NotePagingDataObserver(lifecycle, adapter)
+        model.notePagingAsLiveData.observe(viewLifecycleOwner, notePagingDataObserver)
     }
 
     private fun listenChannels() {
@@ -373,7 +373,7 @@ class NotesFragment :
         }
     }
 
-    private class NoteListObserver(
+    private class NotePagingDataObserver(
         private val lifecycle: Lifecycle,
         private val adapter: NotePagingDataAdapter
     ) : Observer<PagingData<Note>> {
