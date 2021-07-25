@@ -159,6 +159,12 @@ class ExercisesViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
+     * Subscribe to the current state of the waiting for the new exercise in the UI thread.
+     */
+    val exerciseExpectationAsLiveData: LiveData<Boolean>
+        get() = _exerciseExpectationAsLiveData
+
+    /**
      * Subscribe to the current list of exercises in the UI thread.
      */
     val exercisePagingAsLiveData: LiveData<PagingData<Exercise>>
@@ -253,6 +259,7 @@ class ExercisesViewModel @Inject constructor(
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
+    private val _exerciseExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
 
     private val _navigationChannel: BroadcastChannel<NavDirection> =
         BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
@@ -284,6 +291,7 @@ class ExercisesViewModel @Inject constructor(
      */
     fun addExercise() {
         Timber.d("Add exercise")
+        setExerciseExpectation(true)
         navigateTo(NavDirection.ToAddExerciseScreen)
     }
 
@@ -345,6 +353,8 @@ class ExercisesViewModel @Inject constructor(
         if (isResultOk) {
             Timber.d("Exercise has been added")
             report(Message.Addition)
+        } else {
+            setExerciseExpectation(false)
         }
     }
 
@@ -408,6 +418,11 @@ class ExercisesViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun setExerciseExpectation(isWait: Boolean) {
+        Timber.d("Set exercise expectation: isWait=$isWait")
+        _exerciseExpectationAsLiveData.postValue(isWait)
     }
 
     private fun navigateTo(direction: NavDirection) {

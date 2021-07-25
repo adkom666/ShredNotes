@@ -30,6 +30,7 @@ import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
+import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
@@ -84,12 +85,17 @@ class NotesFragment :
     private val updateNoteLauncher: ActivityResultLauncher<Intent>
         get() = requireNotNull(_updateNoteLauncher)
 
+    private val scroller: ScrollToNewItem
+        get() = requireNotNull(_scroller)
+
+
     private var _binding: FragmentNotesBinding? = null
     private var _model: NotesViewModel? = null
     private var _adapter: NotePagingDataAdapter? = null
     private var _fabDashboard: FabDashboard? = null
     private var _addNoteLauncher: ActivityResultLauncher<Intent>? = null
     private var _updateNoteLauncher: ActivityResultLauncher<Intent>? = null
+    private var _scroller: ScrollToNewItem? = null
 
     override var isSearchActive: Boolean
         get() = model.isSearchActive
@@ -123,6 +129,7 @@ class NotesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initNoteRecycler()
         _fabDashboard = initFabDashboard(model.selection)
+        _scroller = ScrollToNewItem(binding.noteRecycler)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -229,6 +236,8 @@ class NotesFragment :
     private fun observeLiveData() {
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
+        val noteExpectationObserver = NoteExpectationObserver()
+        model.noteExpectationAsLiveData.observe(viewLifecycleOwner, noteExpectationObserver)
         val noteListObserver = NoteListObserver(lifecycle, adapter)
         model.notePagingAsLiveData.observe(viewLifecycleOwner, noteListObserver)
     }
@@ -349,6 +358,18 @@ class NotesFragment :
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.content.isVisible = isActive.not()
+        }
+    }
+
+    private inner class NoteExpectationObserver : Observer<Boolean> {
+
+        override fun onChanged(isWait: Boolean?) {
+            Timber.d("Note expectation: isWait=$isWait")
+            when (isWait) {
+                true -> scroller.waitForNewItem()
+                false -> scroller.dontWaitForNewItem()
+                null -> Unit
+            }
         }
     }
 

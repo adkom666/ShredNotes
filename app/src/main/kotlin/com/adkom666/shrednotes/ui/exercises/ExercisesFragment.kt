@@ -26,6 +26,7 @@ import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
@@ -76,12 +77,16 @@ class ExercisesFragment :
     private val updateExerciseLauncher: ActivityResultLauncher<Intent>
         get() = requireNotNull(_updateExerciseLauncher)
 
+    private val scroller: ScrollToNewItem
+        get() = requireNotNull(_scroller)
+
     private var _binding: FragmentExercisesBinding? = null
     private var _model: ExercisesViewModel? = null
     private var _adapter: ExercisePagingDataAdapter? = null
     private var _fabDashboard: FabDashboard? = null
     private var _addExerciseLauncher: ActivityResultLauncher<Intent>? = null
     private var _updateExerciseLauncher: ActivityResultLauncher<Intent>? = null
+    private var _scroller: ScrollToNewItem? = null
 
     override var isSearchActive: Boolean
         get() = model.isSearchActive
@@ -110,6 +115,7 @@ class ExercisesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
+        _scroller = ScrollToNewItem(binding.exercisesRecycler)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -209,6 +215,8 @@ class ExercisesFragment :
     private fun observeLiveData() {
         val stateObserver = StateObserver()
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
+        val exerciseExpectationObserver = ExerciseExpectationObserver()
+        model.exerciseExpectationAsLiveData.observe(viewLifecycleOwner, exerciseExpectationObserver)
         val exerciseListObserver = ExercisePagingObserver(lifecycle, adapter)
         model.exercisePagingAsLiveData.observe(viewLifecycleOwner, exerciseListObserver)
     }
@@ -302,6 +310,18 @@ class ExercisesFragment :
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.content.isVisible = isActive.not()
+        }
+    }
+
+    private inner class ExerciseExpectationObserver : Observer<Boolean> {
+
+        override fun onChanged(isWait: Boolean?) {
+            Timber.d("Exercise expectation: isWait=$isWait")
+            when (isWait) {
+                true -> scroller.waitForNewItem()
+                false -> scroller.dontWaitForNewItem()
+                null -> Unit
+            }
         }
     }
 

@@ -197,6 +197,12 @@ class NotesViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
+     * Subscribe to the current state of the waiting for the new note in the UI thread.
+     */
+    val noteExpectationAsLiveData: LiveData<Boolean>
+        get() = _noteExpectationAsLiveData
+
+    /**
      * Subscribe to the current list of notes in the UI thread.
      */
     val notePagingAsLiveData: LiveData<PagingData<Note>>
@@ -326,6 +332,7 @@ class NotesViewModel @Inject constructor(
 
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
+    private val _noteExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
 
     private val _navigationChannel: BroadcastChannel<NavDirection> =
         BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
@@ -357,6 +364,7 @@ class NotesViewModel @Inject constructor(
      */
     fun addNote() {
         Timber.d("Add note")
+        setNoteExpectation(true)
         navigateTo(NavDirection.ToAddNoteScreen)
     }
 
@@ -398,6 +406,8 @@ class NotesViewModel @Inject constructor(
         if (isResultOk) {
             Timber.d("Note has been added")
             report(Message.Addition)
+        } else {
+            setNoteExpectation(false)
         }
     }
 
@@ -501,6 +511,11 @@ class NotesViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun setNoteExpectation(isWait: Boolean) {
+        Timber.d("Set note expectation: isWait=$isWait")
+        _noteExpectationAsLiveData.postValue(isWait)
     }
 
     private fun navigateTo(direction: NavDirection) {
