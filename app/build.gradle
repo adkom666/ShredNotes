@@ -7,18 +7,18 @@ plugins {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    buildToolsVersion '30.0.3'
 
     defaultConfig {
-        applicationId "com.adkom666.shrednotes"
+        applicationId 'com.adkom666.shrednotes'
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        versionName '1.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         kapt.arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
+            arg('room.schemaLocation', "$projectDir/schemas")
         }
     }
 
