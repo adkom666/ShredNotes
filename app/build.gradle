@@ -95,7 +95,7 @@ dependencies {
     def lifecycle_version = "2.3.1"
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
@@ -119,7 +119,7 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
 
     // Google
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation 'com.google.android.gms:play-services-auth:19.2.0'
     implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
         exclude group: 'org.apache.httpcomponents'
     }
