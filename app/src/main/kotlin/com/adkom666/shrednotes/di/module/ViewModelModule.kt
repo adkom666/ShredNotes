@@ -10,6 +10,7 @@ import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
 import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
 import com.adkom666.shrednotes.ui.notes.NotesViewModel
+import com.adkom666.shrednotes.ui.statistics.StatisticsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -59,4 +60,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(AskViewModel::class)
     abstract fun askViewModel(viewModel: AskViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(StatisticsViewModel::class)
+    abstract fun statisticsViewModel(viewModel: StatisticsViewModel): ViewModel
 }

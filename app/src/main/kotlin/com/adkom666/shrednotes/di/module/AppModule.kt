@@ -32,8 +32,8 @@ abstract class AppModule {
     abstract fun noteActivity(): NoteActivity
 
     @ContributesAndroidInjector
-    abstract fun statisticsFragment(): StatisticsFragment
+    abstract fun askFragment(): AskFragment
 
     @ContributesAndroidInjector
-    abstract fun askFragment(): AskFragment
+    abstract fun statisticsFragment(): StatisticsFragment
 }

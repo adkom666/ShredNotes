@@ -43,6 +43,9 @@
     <string name="title_note_exercise">Упражнение:</string>
     <string name="hint_note_exercise">Название упражнения</string>
 
+    <string name="title_statistics_common">Общая</string>
+    <string name="title_statistics_by_days_of_week">По дням недели</string>
+
     <string name="dialog_confirm_common_title">Подтверждение</string>
 
     <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
