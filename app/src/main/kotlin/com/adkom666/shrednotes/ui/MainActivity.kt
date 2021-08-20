@@ -31,7 +31,7 @@ import com.adkom666.shrednotes.util.ensureNoTextInput
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.toast
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -45,7 +45,7 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 class MainActivity :
     AppCompatActivity(),
-    BottomNavigationView.OnNavigationItemSelectedListener {
+    NavigationBarView.OnItemSelectedListener {
 
     private companion object {
 
@@ -205,7 +205,7 @@ class MainActivity :
 
     private fun initBottomNavigation() {
         binding.bottomNavigation.selectedItemId = model.section.getActionId()
-        binding.bottomNavigation.setOnNavigationItemSelectedListener(this)
+        binding.bottomNavigation.setOnItemSelectedListener(this)
     }
 
     private fun invalidateOptionsMenuOnFragmentChange() {
