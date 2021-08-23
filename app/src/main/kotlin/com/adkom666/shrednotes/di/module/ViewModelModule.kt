@@ -10,6 +10,7 @@ import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
 import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
 import com.adkom666.shrednotes.ui.notes.NotesViewModel
+import com.adkom666.shrednotes.ui.statistics.CommonStatisticsViewModel
 import com.adkom666.shrednotes.ui.statistics.StatisticsViewModel
 import dagger.Binds
 import dagger.Module
@@ -23,7 +24,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
         RepositoryModule::class,
         DataManagerModule::class,
         PreferencesModule::class,
-        AskModule::class
+        AskModule::class,
+        StatisticsModule::class
     ]
 )
 abstract class ViewModelModule {
@@ -65,4 +67,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(StatisticsViewModel::class)
     abstract fun statisticsViewModel(viewModel: StatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CommonStatisticsViewModel::class)
+    abstract fun commonStatisticsViewModel(viewModel: CommonStatisticsViewModel): ViewModel
 }

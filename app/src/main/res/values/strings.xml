@@ -49,8 +49,14 @@
     <string name="title_note_bpm" translatable="false">BPM:</string>
     <string name="hint_note_bpm" translatable="false">BPM</string>
 
-    <string name="title_statistics_common">Common</string>
-    <string name="title_statistics_by_days_of_week">By Days Of Week</string>
+    <string name="item_statistics_common">Common</string>
+    <string name="item_statistics_by_weekdays">By Days Of Week</string>
+
+    <string name="title_statistics_common">Common Statistics</string>
+    <string name="title_statistics_by_weekdays">Statistics By Days Of Week</string>
+
+    <string name="text_statistics_common_line_001">Total notes: %d</string>
+    <string name="text_statistics_common_line_002">Total exercises: %d</string>
 
     <string name="dialog_confirm_common_title">Confirmation</string>
 

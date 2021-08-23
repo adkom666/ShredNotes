@@ -5,5 +5,5 @@ package com.adkom666.shrednotes.ui.statistics
  */
 enum class StatisticsSection {
     COMMON,
-    BY_DAYS_OF_WEEK
+    BY_WEEKDAYS
 }

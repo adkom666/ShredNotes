@@ -32,6 +32,11 @@
             android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <activity
+            android:name=".ui.statistics.CommonStatisticsActivity"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/AppTheme.NoActionBar" />
+
     </application>
 
 </manifest>

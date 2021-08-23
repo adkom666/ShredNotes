@@ -37,11 +37,11 @@ class StatisticsViewModel @Inject constructor() : ViewModel() {
     val statisticsList: List<StatisticsItem> = listOf(
         StatisticsItem(
             StatisticsSection.COMMON,
-            R.string.title_statistics_common
+            R.string.item_statistics_common
         ),
         StatisticsItem(
-            StatisticsSection.BY_DAYS_OF_WEEK,
-            R.string.title_statistics_by_days_of_week
+            StatisticsSection.BY_WEEKDAYS,
+            R.string.item_statistics_by_weekdays
         )
     )
 

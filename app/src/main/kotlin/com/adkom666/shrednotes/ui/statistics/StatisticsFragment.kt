@@ -1,6 +1,8 @@
 package com.adkom666.shrednotes.ui.statistics
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +13,6 @@ import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.FragmentStatisticsBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.FirstItemDecoration
-import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -89,6 +90,16 @@ class StatisticsFragment : DaggerFragment() {
 
     private fun goToScreen(direction: StatisticsViewModel.NavDirection) = when (direction) {
         is StatisticsViewModel.NavDirection.ToStatisticsScreen ->
-            toast("direction=${direction}")
+            goToStatisticsScreen(direction.statisticsSection)
+    }
+
+    private fun goToStatisticsScreen(statisticsSection: StatisticsSection) {
+        context?.let { safeContext ->
+            val intent = when (statisticsSection) {
+                StatisticsSection.COMMON -> CommonStatisticsActivity.newIntent(safeContext)
+                StatisticsSection.BY_WEEKDAYS -> Intent(Settings.ACTION_SETTINGS)
+            }
+            startActivity(intent)
+        }
     }
 }

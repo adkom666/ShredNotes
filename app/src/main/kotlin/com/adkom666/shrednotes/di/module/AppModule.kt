@@ -6,6 +6,7 @@ import com.adkom666.shrednotes.ui.exercises.ExerciseActivity
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NoteActivity
 import com.adkom666.shrednotes.ui.notes.NotesFragment
+import com.adkom666.shrednotes.ui.statistics.CommonStatisticsActivity
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -36,4 +37,7 @@ abstract class AppModule {
 
     @ContributesAndroidInjector
     abstract fun statisticsFragment(): StatisticsFragment
+
+    @ContributesAndroidInjector
+    abstract fun commonStatisticsActivity(): CommonStatisticsActivity
 }
