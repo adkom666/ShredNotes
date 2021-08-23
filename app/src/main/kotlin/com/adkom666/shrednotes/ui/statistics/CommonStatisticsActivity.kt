@@ -113,11 +113,11 @@ class CommonStatisticsActivity : AppCompatActivity() {
         Timber.d("Signal is $signal")
         when (signal) {
             is CommonStatisticsViewModel.Signal.Statistics ->
-                setStatisticsText(signal.value)
+                setStatistics(signal.value)
         }
     }
 
-    private fun setStatisticsText(statistics: CommonStatistics) {
+    private fun setStatistics(statistics: CommonStatistics) {
         val line001 = getString(
             R.string.text_statistics_common_line_001,
             statistics.totalNotes
