@@ -50,13 +50,25 @@
     <string name="hint_note_bpm" translatable="false">BPM</string>
 
     <string name="item_statistics_common">Common</string>
-    <string name="item_statistics_by_weekdays">By Days Of Week</string>
+    <string name="item_statistics_weekdays_max_bpm">By Days Of Week (Max. BPM)</string>
+    <string name="item_statistics_weekdays_note_count">By Days Of Week (Note Count)</string>
 
     <string name="title_statistics_common">Common Statistics</string>
-    <string name="title_statistics_by_weekdays">Statistics By Days Of Week</string>
+    <string name="title_statistics_weekdays">Statistics By Days Of Week</string>
 
     <string name="text_statistics_common_line_001">Total notes: %d</string>
     <string name="text_statistics_common_line_002">Total exercises: %d</string>
+
+    <string name="subtitle_average_among_max_bpm">Average among maximum BPM</string>
+    <string name="subtitle_average_note_count">Average note count</string>
+
+    <string name="label_sunday">Sun</string>
+    <string name="label_monday">Mon</string>
+    <string name="label_tuesday">Tue</string>
+    <string name="label_wednesday">Wed</string>
+    <string name="label_thursday">Thu</string>
+    <string name="label_friday">Fri</string>
+    <string name="label_saturday">Sat</string>
 
     <string name="dialog_confirm_common_title">Confirmation</string>
 

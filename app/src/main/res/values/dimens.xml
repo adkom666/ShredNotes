@@ -13,6 +13,7 @@
     <dimen name="square_image_button_size">32dp</dimen>
     <dimen name="square_image_button_size_and_padding">56dp</dimen>
     <dimen name="square_image_button_size_x2_and_padding">96dp</dimen>
+    <dimen name="pie_chart_height">384dp</dimen>
 
     <!-- Permanent on all configurations -->
     <dimen name="fab_elevation">6dp</dimen>
@@ -20,4 +21,6 @@
 
     <dimen name="card_vertical_margin">@dimen/padding_m</dimen>
     <dimen name="coin_size">156dp</dimen>
+
+    <dimen name="pie_chart_value_text_size">18sp</dimen>
 </resources>

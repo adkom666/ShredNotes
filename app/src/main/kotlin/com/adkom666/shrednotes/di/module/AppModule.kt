@@ -8,6 +8,7 @@ import com.adkom666.shrednotes.ui.notes.NoteActivity
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.CommonStatisticsActivity
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
+import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,4 +41,7 @@ abstract class AppModule {
 
     @ContributesAndroidInjector
     abstract fun commonStatisticsActivity(): CommonStatisticsActivity
+
+    @ContributesAndroidInjector
+    abstract fun weekdaysStatisticsActivity(): WeekdaysStatisticsActivity
 }

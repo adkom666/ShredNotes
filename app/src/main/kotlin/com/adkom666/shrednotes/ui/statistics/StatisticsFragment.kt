@@ -1,8 +1,6 @@
 package com.adkom666.shrednotes.ui.statistics
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -96,8 +94,18 @@ class StatisticsFragment : DaggerFragment() {
     private fun goToStatisticsScreen(statisticsSection: StatisticsSection) {
         context?.let { safeContext ->
             val intent = when (statisticsSection) {
-                StatisticsSection.COMMON -> CommonStatisticsActivity.newIntent(safeContext)
-                StatisticsSection.BY_WEEKDAYS -> Intent(Settings.ACTION_SETTINGS)
+                StatisticsSection.COMMON ->
+                    CommonStatisticsActivity.newIntent(safeContext)
+                StatisticsSection.WEEKDAYS_MAX_BPM ->
+                    WeekdaysStatisticsActivity.newIntent(
+                        safeContext,
+                        WeekdaysStatisticsTargetParameter.MAX_BPM
+                    )
+                StatisticsSection.WEEKDAYS_NOTE_COUNT ->
+                    WeekdaysStatisticsActivity.newIntent(
+                        safeContext,
+                        WeekdaysStatisticsTargetParameter.NOTE_COUNT
+                    )
             }
             startActivity(intent)
         }

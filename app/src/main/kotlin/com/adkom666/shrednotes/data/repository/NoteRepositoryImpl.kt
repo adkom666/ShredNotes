@@ -53,6 +53,14 @@ class NoteRepositoryImpl(
         return count
     }
 
+    override suspend fun listAllUnorderedSuspending(): List<Note> {
+        Timber.d("allSuspending")
+        val noteWithExerciseEntityList = noteDao.listAllWithExercisesUnorderedSuspending()
+        val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
+        Timber.d("noteList=$noteList")
+        return noteList
+    }
+
     override fun page(
         size: Int,
         requestedStartPosition: Int,

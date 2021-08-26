@@ -5,5 +5,6 @@ package com.adkom666.shrednotes.ui.statistics
  */
 enum class StatisticsSection {
     COMMON,
-    BY_WEEKDAYS
+    WEEKDAYS_MAX_BPM,
+    WEEKDAYS_NOTE_COUNT
 }

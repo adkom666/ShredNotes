@@ -119,6 +119,10 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
 
 private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_NOTES"
 
+private const val SELECT_ALL_WITH_EXERCISES_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES"
+
 private const val ORDER_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
             "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC, " +
@@ -517,6 +521,14 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_ALL_UNORDERED)
     suspend fun listAllUnorderedSuspending(): List<NoteEntity>
+
+    /**
+     * Getting a [List] of all notes with their exercises' info.
+     *
+     * @return [List] of all notes with their exercises' info.
+     */
+    @Query(SELECT_ALL_WITH_EXERCISES_UNORDERED)
+    suspend fun listAllWithExercisesUnorderedSuspending(): List<NoteWithExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with

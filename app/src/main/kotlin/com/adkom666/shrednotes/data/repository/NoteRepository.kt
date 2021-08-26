@@ -44,6 +44,13 @@ interface NoteRepository {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
+     * Getting a [List] of all notes.
+     *
+     * @return [List] of all notes.
+     */
+    suspend fun listAllUnorderedSuspending(): List<Note>
+
+    /**
      * Getting a [Page] of the [size] or fewer notes in accordance with the [requestedStartPosition]
      * in the list of notes whose exercise names contain [exerciseSubname] and match filter, or in
      * the list of all notes if [exerciseSubname] is null or blank and [filter] is not defined. If

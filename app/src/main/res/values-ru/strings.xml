@@ -44,13 +44,25 @@
     <string name="hint_note_exercise">Название упражнения</string>
 
     <string name="item_statistics_common">Общая</string>
-    <string name="item_statistics_by_weekdays">По дням недели</string>
+    <string name="item_statistics_weekdays_max_bpm">По дням недели (макс. BPM)</string>
+    <string name="item_statistics_weekdays_note_count">По дням недели (кол-во заметок)</string>
 
     <string name="title_statistics_common">Общая статистика</string>
-    <string name="title_statistics_by_weekdays">Статистика по дням недели</string>
+    <string name="title_statistics_weekdays">Статистика по дням недели</string>
 
     <string name="text_statistics_common_line_001">Всего заметок: %d</string>
     <string name="text_statistics_common_line_002">Всего упражнений: %d</string>
+
+    <string name="subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
+    <string name="subtitle_average_note_count">Среднее количество заметок</string>
+
+    <string name="label_sunday">Вск</string>
+    <string name="label_monday">Пнд</string>
+    <string name="label_tuesday">Втр</string>
+    <string name="label_wednesday">Срд</string>
+    <string name="label_thursday">Чтв</string>
+    <string name="label_friday">Птн</string>
+    <string name="label_saturday">Сбт</string>
 
     <string name="dialog_confirm_common_title">Подтверждение</string>
 

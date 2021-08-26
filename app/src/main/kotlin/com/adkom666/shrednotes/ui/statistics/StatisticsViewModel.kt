@@ -40,8 +40,12 @@ class StatisticsViewModel @Inject constructor() : ViewModel() {
             R.string.item_statistics_common
         ),
         StatisticsItem(
-            StatisticsSection.BY_WEEKDAYS,
-            R.string.item_statistics_by_weekdays
+            StatisticsSection.WEEKDAYS_MAX_BPM,
+            R.string.item_statistics_weekdays_max_bpm
+        ),
+        StatisticsItem(
+            StatisticsSection.WEEKDAYS_NOTE_COUNT,
+            R.string.item_statistics_weekdays_note_count
         )
     )
 

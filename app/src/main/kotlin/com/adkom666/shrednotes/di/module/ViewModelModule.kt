@@ -12,6 +12,7 @@ import com.adkom666.shrednotes.ui.notes.NoteViewModel
 import com.adkom666.shrednotes.ui.notes.NotesViewModel
 import com.adkom666.shrednotes.ui.statistics.CommonStatisticsViewModel
 import com.adkom666.shrednotes.ui.statistics.StatisticsViewModel
+import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -72,4 +73,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(CommonStatisticsViewModel::class)
     abstract fun commonStatisticsViewModel(viewModel: CommonStatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(WeekdaysStatisticsViewModel::class)
+    abstract fun weekdaysStatisticsViewModel(viewModel: WeekdaysStatisticsViewModel): ViewModel
 }
