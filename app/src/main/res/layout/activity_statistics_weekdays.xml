@@ -58,7 +58,7 @@
                         android:paddingTop="@dimen/padding_m"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/statistics_title_text_view"
-                        tools:text="@string/subtitle_average_among_max_bpm" />
+                        tools:text="@string/statistics_subtitle_bpm" />
 
                     <com.github.mikephil.charting.charts.PieChart
                         android:id="@+id/average_among_max_bpm_pie_chart"
