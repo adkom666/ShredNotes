@@ -193,12 +193,11 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         _signalChannel.offer(signal)
     }
 
-    private fun WeekdaysStatisticsTargetParameter.toSubtitleValue(): Signal.Subtitle.Value {
-        return when (this) {
+    private fun WeekdaysStatisticsTargetParameter.toSubtitleValue(): Signal.Subtitle.Value =
+        when (this) {
             WeekdaysStatisticsTargetParameter.MAX_BPM ->
                 Signal.Subtitle.Value.AVERAGE_AMONG_MAX_BPM
             WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
                 Signal.Subtitle.Value.AVERAGE_NOTE_COUNT
         }
-    }
 }
