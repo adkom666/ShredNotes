@@ -59,8 +59,8 @@
     <string name="text_statistics_common_line_001">Total notes: %d</string>
     <string name="text_statistics_common_line_002">Total exercises: %d</string>
 
-    <string name="subtitle_average_among_max_bpm">Average among maximum BPM</string>
-    <string name="subtitle_average_note_count">Average note count</string>
+    <string name="statistics_subtitle_average_among_max_bpm">Average among maximum BPM</string>
+    <string name="statistics_subtitle_average_note_count">Average note count</string>
 
     <string name="label_sunday">Sun</string>
     <string name="label_monday">Mon</string>

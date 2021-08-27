@@ -53,8 +53,8 @@
     <string name="text_statistics_common_line_001">Всего заметок: %d</string>
     <string name="text_statistics_common_line_002">Всего упражнений: %d</string>
 
-    <string name="subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
-    <string name="subtitle_average_note_count">Среднее количество заметок</string>
+    <string name="statistics_subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
+    <string name="statistics_subtitle_average_note_count">Среднее количество заметок</string>
 
     <string name="label_sunday">Вск</string>
     <string name="label_monday">Пнд</string>
