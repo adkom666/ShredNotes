@@ -171,6 +171,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
         binding.averageAmongMaxBpmPieChart.description.isEnabled = false
         binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
+        binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
         binding.averageAmongMaxBpmPieChart.invalidate()
     }
 
