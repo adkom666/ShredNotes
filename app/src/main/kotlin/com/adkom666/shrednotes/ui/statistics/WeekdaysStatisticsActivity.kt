@@ -146,15 +146,6 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         binding.subtitleAverageAmongMaxBpmTextView.text = getString(resId)
     }
 
-    @StringRes
-    private fun WeekdaysStatisticsViewModel.Signal.Subtitle.Value.getStringResId(): Int =
-        when (this) {
-            WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_AMONG_MAX_BPM ->
-                R.string.subtitle_average_among_max_bpm
-            WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_NOTE_COUNT ->
-                R.string.subtitle_average_note_count
-        }
-
     private fun setStatistics(statistics: WeekdaysStatistics) {
         val entries = mutableListOf<PieEntry>()
         Weekday.values().forEach { weekday ->
@@ -204,6 +195,15 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         Weekday.FRIDAY -> R.string.label_friday
         Weekday.SATURDAY -> R.string.label_saturday
     }
+
+    @StringRes
+    private fun WeekdaysStatisticsViewModel.Signal.Subtitle.Value.getStringResId(): Int =
+        when (this) {
+            WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_AMONG_MAX_BPM ->
+                R.string.subtitle_average_among_max_bpm
+            WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_NOTE_COUNT ->
+                R.string.subtitle_average_note_count
+        }
 
     private inner class StateObserver : Observer<WeekdaysStatisticsViewModel.State> {
 
