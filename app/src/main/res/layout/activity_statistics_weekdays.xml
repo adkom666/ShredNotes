@@ -50,7 +50,7 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
-                        android:id="@+id/subtitle_average_among_max_bpm_text_view"
+                        android:id="@+id/statistics_subtitle_text_view"
                         style="@style/AppTheme.Text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/pie_chart_height"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/subtitle_average_among_max_bpm_text_view" />
+                        app:layout_constraintTop_toBottomOf="@+id/statistics_subtitle_text_view" />
 
                     <Button
                         android:id="@+id/ok_button"

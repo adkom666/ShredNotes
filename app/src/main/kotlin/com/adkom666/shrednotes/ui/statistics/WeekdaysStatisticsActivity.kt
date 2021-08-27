@@ -143,7 +143,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         subtitleValue: WeekdaysStatisticsViewModel.Signal.Subtitle.Value
     ) {
         val resId = subtitleValue.getStringResId()
-        binding.subtitleAverageAmongMaxBpmTextView.text = getString(resId)
+        binding.statisticsSubtitleTextView.text = getString(resId)
     }
 
     private fun setStatistics(statistics: WeekdaysStatistics) {
