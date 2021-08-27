@@ -139,9 +139,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setSubtitle(
-        subtitleValue: WeekdaysStatisticsViewModel.Signal.Subtitle.Value
-    ) {
+    private fun setSubtitle(subtitleValue: WeekdaysStatisticsViewModel.Signal.Subtitle.Value) {
         val resId = subtitleValue.getStringResId()
         binding.statisticsSubtitleTextView.text = getString(resId)
     }
