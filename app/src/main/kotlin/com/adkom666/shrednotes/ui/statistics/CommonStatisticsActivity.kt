@@ -136,15 +136,20 @@ class CommonStatisticsActivity : AppCompatActivity() {
             R.string.text_statistics_common_active_days,
             statistics.activeDays
         )
-        val lineActiveDaysPercent = getString(
-            R.string.text_statistics_common_active_days_percent,
-            statistics.activeDaysShare * 100
-        )
-        val text = lineTotalNotes + LINE_SEPARATOR +
+        var text = lineTotalNotes + LINE_SEPARATOR +
                 lineTotalExercises + LINE_SEPARATOR +
                 lineTotalDays + LINE_SEPARATOR +
-                lineActiveDays + LINE_SEPARATOR +
-                lineActiveDaysPercent
+                lineActiveDays
+
+        statistics.activeDaysShare?.let { share ->
+            val lineActiveDaysPercent = getString(
+                R.string.text_statistics_common_active_days_percent,
+                share * 100
+            )
+            text += LINE_SEPARATOR
+            text += lineActiveDaysPercent
+        }
+
         binding.statisticsTextView.text = text
     }
 

@@ -61,7 +61,7 @@ class CommonStatisticsAggregator(
         val activeDaysShare = if (totalDays > 0) {
             activeDays.toFloat() / totalDays
         } else {
-            0f
+            null
         }
 
         return CommonStatistics(
