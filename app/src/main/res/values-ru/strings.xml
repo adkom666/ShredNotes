@@ -46,15 +46,19 @@
     <string name="item_statistics_common">Общая</string>
     <string name="item_statistics_weekdays_max_bpm">По дням недели (макс. BPM)</string>
     <string name="item_statistics_weekdays_note_count">По дням недели (кол-во заметок)</string>
+    <string name="item_statistics_records_bpm">Рекорды (BPM)</string>
+    <string name="item_statistics_records_note_count">Рекорды (кол-во заметок)</string>
 
     <string name="title_statistics_common">Общая статистика</string>
     <string name="title_statistics_weekdays">Статистика по дням недели</string>
+    <string name="title_statistics_records">Рекорды</string>
 
     <string name="text_statistics_common_line_001">Всего заметок: %d</string>
     <string name="text_statistics_common_line_002">Всего упражнений: %d</string>
 
     <string name="statistics_subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
     <string name="statistics_subtitle_average_note_count">Среднее количество заметок</string>
+    <string name="statistics_subtitle_note_count">Количество заметок</string>
 
     <string name="label_sunday">Вск</string>
     <string name="label_monday">Пнд</string>
@@ -99,6 +103,9 @@
     <string name="message_deleted_notes">Удалено заметок: %d</string>
 
     <string name="message_filter_undefined">Фильтр не определен</string>
+
+    <string name="message_no_data">Данных нет</string>
+    <string name="message_no_records">Рекордов нет</string>
 
     <string name="message_ask">На еду и на творчество</string>
 

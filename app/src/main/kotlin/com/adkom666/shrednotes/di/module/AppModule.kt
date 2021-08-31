@@ -7,6 +7,7 @@ import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
 import com.adkom666.shrednotes.ui.notes.NoteActivity
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.CommonStatisticsActivity
+import com.adkom666.shrednotes.ui.statistics.RecordsActivity
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsActivity
 import dagger.Module
@@ -44,4 +45,7 @@ abstract class AppModule {
 
     @ContributesAndroidInjector
     abstract fun weekdaysStatisticsActivity(): WeekdaysStatisticsActivity
+
+    @ContributesAndroidInjector
+    abstract fun recordsActivity(): RecordsActivity
 }

@@ -106,6 +106,16 @@ class StatisticsFragment : DaggerFragment() {
                         safeContext,
                         WeekdaysStatisticsTargetParameter.NOTE_COUNT
                     )
+                StatisticsSection.RECORDS_BPM ->
+                    RecordsActivity.newIntent(
+                        safeContext,
+                        RecordsTargetParameter.BPM
+                    )
+                StatisticsSection.RECORDS_NOTE_COUNT ->
+                    RecordsActivity.newIntent(
+                        safeContext,
+                        RecordsTargetParameter.NOTE_COUNT
+                    )
             }
             startActivity(intent)
         }

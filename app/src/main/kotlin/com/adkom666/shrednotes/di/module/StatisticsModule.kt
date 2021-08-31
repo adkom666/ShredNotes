@@ -3,6 +3,7 @@ package com.adkom666.shrednotes.di.module
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregator
+import com.adkom666.shrednotes.statistics.RecordsAggregator
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
 import dagger.Module
 import dagger.Provides
@@ -27,5 +28,13 @@ class StatisticsModule {
         noteRepository: NoteRepository
     ): WeekdaysStatisticsAggregator {
         return WeekdaysStatisticsAggregator(noteRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun recordsAggregator(
+        noteRepository: NoteRepository
+    ): RecordsAggregator {
+        return RecordsAggregator(noteRepository)
     }
 }

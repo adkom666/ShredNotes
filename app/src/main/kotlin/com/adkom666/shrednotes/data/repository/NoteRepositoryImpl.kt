@@ -7,6 +7,7 @@ import com.adkom666.shrednotes.data.converter.toNote
 import com.adkom666.shrednotes.data.converter.toNoteEntity
 import com.adkom666.shrednotes.data.db.Transactor
 import com.adkom666.shrednotes.data.db.dao.NoteDao
+import com.adkom666.shrednotes.data.db.entity.NoteCountPerExerciseInfo
 import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.Note
@@ -59,6 +60,23 @@ class NoteRepositoryImpl(
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
+    }
+
+    override suspend fun listTopBpmSuspending(size: Int): List<Note> {
+        Timber.d("listTopBpmSuspending: size=$size")
+        val noteWithExerciseEntityList = noteDao.listTopBpmWithExercisesSuspending(size)
+        val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
+        Timber.d("noteList=$noteList")
+        return noteList
+    }
+
+    override suspend fun listTopPopularExercisesSuspending(
+        size: Int
+    ): List<NoteCountPerExerciseInfo> {
+        Timber.d("listTopPopularExercisesSuspending: size=$size")
+        val noteCountPerExerciseList = noteDao.listTopPopularExercisesSuspending(size)
+        Timber.d("noteCountPerExerciseList=$noteCountPerExerciseList")
+        return noteCountPerExerciseList
     }
 
     override fun page(

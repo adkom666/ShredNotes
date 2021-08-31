@@ -11,6 +11,7 @@ import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
 import com.adkom666.shrednotes.ui.notes.NotesViewModel
 import com.adkom666.shrednotes.ui.statistics.CommonStatisticsViewModel
+import com.adkom666.shrednotes.ui.statistics.RecordsViewModel
 import com.adkom666.shrednotes.ui.statistics.StatisticsViewModel
 import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsViewModel
 import dagger.Binds
@@ -78,4 +79,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(WeekdaysStatisticsViewModel::class)
     abstract fun weekdaysStatisticsViewModel(viewModel: WeekdaysStatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(RecordsViewModel::class)
+    abstract fun recordsViewModel(viewModel: RecordsViewModel): ViewModel
 }
