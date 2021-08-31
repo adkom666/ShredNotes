@@ -33,16 +33,18 @@ import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.navigation.NavigationBarView
 import dagger.android.AndroidInjection
+import java.lang.ref.WeakReference
+import javax.inject.Inject
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
-import java.lang.ref.WeakReference
-import javax.inject.Inject
 
 /**
  * Main screen.
  */
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 class MainActivity :
     AppCompatActivity(),
     NavigationBarView.OnItemSelectedListener {

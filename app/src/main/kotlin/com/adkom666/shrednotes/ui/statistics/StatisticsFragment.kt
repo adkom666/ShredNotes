@@ -12,15 +12,17 @@ import com.adkom666.shrednotes.databinding.FragmentStatisticsBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.FirstItemDecoration
 import dagger.android.support.DaggerFragment
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.consumeEach
 
 /**
  * Statistics section sub screen.
  */
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 class StatisticsFragment : DaggerFragment() {
 
     companion object {

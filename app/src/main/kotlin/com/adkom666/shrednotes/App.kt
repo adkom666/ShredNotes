@@ -4,11 +4,14 @@ import com.adkom666.shrednotes.di.component.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
 import timber.log.Timber
 
 /**
  * "Shred Notes" application.
  */
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 class App : DaggerApplication() {
 
     override fun onCreate() {
@@ -18,7 +21,6 @@ class App : DaggerApplication() {
         }
     }
 
-    @ExperimentalCoroutinesApi
     override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
         return DaggerAppComponent.builder()
             .app(this)

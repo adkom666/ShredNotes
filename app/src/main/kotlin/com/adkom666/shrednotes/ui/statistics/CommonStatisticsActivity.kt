@@ -14,16 +14,18 @@ import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.statistics.CommonStatistics
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
+import javax.inject.Inject
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Common statistics screen.
  */
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 class CommonStatisticsActivity : AppCompatActivity() {
 
     companion object {
@@ -118,15 +120,31 @@ class CommonStatisticsActivity : AppCompatActivity() {
     }
 
     private fun setStatistics(statistics: CommonStatistics) {
-        val line001 = getString(
-            R.string.text_statistics_common_line_001,
+        val lineTotalNotes = getString(
+            R.string.text_statistics_common_total_notes,
             statistics.totalNotes
         )
-        val line002 = getString(
-            R.string.text_statistics_common_line_002,
+        val lineTotalExercises = getString(
+            R.string.text_statistics_common_total_exercises,
             statistics.totalExercises
         )
-        val text = line001 + LINE_SEPARATOR + line002
+        val lineTotalDays = getString(
+            R.string.text_statistics_common_total_days,
+            statistics.totalDays
+        )
+        val lineActiveDays = getString(
+            R.string.text_statistics_common_active_days,
+            statistics.activeDays
+        )
+        val lineActiveDaysPercent = getString(
+            R.string.text_statistics_common_active_days_percent,
+            statistics.activeDaysShare * 100
+        )
+        val text = lineTotalNotes + LINE_SEPARATOR +
+                lineTotalExercises + LINE_SEPARATOR +
+                lineTotalDays + LINE_SEPARATOR +
+                lineActiveDays + LINE_SEPARATOR +
+                lineActiveDaysPercent
         binding.statisticsTextView.text = text
     }
 

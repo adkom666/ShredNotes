@@ -8,8 +8,10 @@ import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
+import kotlin.time.ExperimentalTime
 
 @Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalTime
 @Module(includes = [RepositoryModule::class])
 class StatisticsModule {
 

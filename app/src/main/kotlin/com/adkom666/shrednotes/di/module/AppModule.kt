@@ -12,10 +12,12 @@ import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(includes = [ViewModelModule::class])
 abstract class AppModule {
 

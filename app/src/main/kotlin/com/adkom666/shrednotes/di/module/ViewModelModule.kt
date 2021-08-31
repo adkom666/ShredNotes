@@ -18,9 +18,11 @@ import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(
     includes = [
         RepositoryModule::class,

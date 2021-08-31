@@ -6,18 +6,21 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.adkom666.shrednotes.statistics.CommonStatistics
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregator
+import javax.inject.Inject
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Common statistics screen model.
  */
 @ExperimentalCoroutinesApi
-class CommonStatisticsViewModel @Inject constructor(
+@ExperimentalTime
+class CommonStatisticsViewModel
+@Inject constructor(
     private val statisticsAggregator: CommonStatisticsAggregator
 ) : ViewModel() {
 
