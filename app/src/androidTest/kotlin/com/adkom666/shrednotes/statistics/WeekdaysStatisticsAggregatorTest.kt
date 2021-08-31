@@ -7,11 +7,11 @@ import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.data.repository.TestNoteRepositoryKeeper
 import com.adkom666.shrednotes.util.time.Days
+import java.util.Calendar
+import java.util.Date
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Date
 
 class WeekdaysStatisticsAggregatorTest : TestCase() {
 
