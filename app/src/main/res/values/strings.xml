@@ -49,6 +49,35 @@
     <string name="title_note_bpm" translatable="false">BPM:</string>
     <string name="hint_note_bpm" translatable="false">BPM</string>
 
+    <string name="item_statistics_common">Common</string>
+    <string name="item_statistics_weekdays_max_bpm">By Days Of Week (Max. BPM)</string>
+    <string name="item_statistics_weekdays_note_count">By Days Of Week (Note Count)</string>
+    <string name="item_statistics_records_bpm">Records (BPM)</string>
+    <string name="item_statistics_records_note_count">Records (Note Count)</string>
+
+    <string name="title_statistics_common">Common Statistics</string>
+    <string name="title_statistics_weekdays">Statistics By Days Of Week</string>
+    <string name="title_statistics_records">Records</string>
+
+    <string name="text_statistics_common_total_notes">Total notes: %d</string>
+    <string name="text_statistics_common_total_exercises">Total exercises: %d</string>
+    <string name="text_statistics_common_total_days">Total days: %d</string>
+    <string name="text_statistics_common_active_days">Active days: %d</string>
+    <string name="text_statistics_common_active_days_percent">Active days share: %.1f%%</string>
+
+    <string name="statistics_subtitle_average_among_max_bpm">Average among maximum BPM</string>
+    <string name="statistics_subtitle_average_note_count">Average note count</string>
+    <string name="statistics_subtitle_bpm" translatable="false">BPM</string>
+    <string name="statistics_subtitle_note_count">Note count</string>
+
+    <string name="label_sunday">Sun</string>
+    <string name="label_monday">Mon</string>
+    <string name="label_tuesday">Tue</string>
+    <string name="label_wednesday">Wed</string>
+    <string name="label_thursday">Thu</string>
+    <string name="label_friday">Fri</string>
+    <string name="label_saturday">Sat</string>
+
     <string name="dialog_confirm_common_title">Confirmation</string>
 
     <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
@@ -84,6 +113,9 @@
     <string name="message_deleted_notes">Deleted notes: %d</string>
 
     <string name="message_filter_undefined">Filter is not defined</string>
+
+    <string name="message_no_data">No data</string>
+    <string name="message_no_records">No records</string>
 
     <string name="message_ask">For food and art</string>
 

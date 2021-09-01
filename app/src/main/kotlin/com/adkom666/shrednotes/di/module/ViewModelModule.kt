@@ -10,19 +10,26 @@ import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
 import com.adkom666.shrednotes.ui.exercises.ExercisesViewModel
 import com.adkom666.shrednotes.ui.notes.NoteViewModel
 import com.adkom666.shrednotes.ui.notes.NotesViewModel
+import com.adkom666.shrednotes.ui.statistics.CommonStatisticsViewModel
+import com.adkom666.shrednotes.ui.statistics.RecordsViewModel
+import com.adkom666.shrednotes.ui.statistics.StatisticsViewModel
+import com.adkom666.shrednotes.ui.statistics.WeekdaysStatisticsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.ExperimentalTime
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(
     includes = [
         RepositoryModule::class,
         DataManagerModule::class,
         PreferencesModule::class,
-        AskModule::class
+        AskModule::class,
+        StatisticsModule::class
     ]
 )
 abstract class ViewModelModule {
@@ -59,4 +66,24 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(AskViewModel::class)
     abstract fun askViewModel(viewModel: AskViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(StatisticsViewModel::class)
+    abstract fun statisticsViewModel(viewModel: StatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CommonStatisticsViewModel::class)
+    abstract fun commonStatisticsViewModel(viewModel: CommonStatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(WeekdaysStatisticsViewModel::class)
+    abstract fun weekdaysStatisticsViewModel(viewModel: WeekdaysStatisticsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(RecordsViewModel::class)
+    abstract fun recordsViewModel(viewModel: RecordsViewModel): ViewModel
 }

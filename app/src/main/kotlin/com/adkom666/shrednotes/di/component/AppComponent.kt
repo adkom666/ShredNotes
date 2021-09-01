@@ -7,11 +7,13 @@ import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Singleton
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@ExperimentalCoroutinesApi
 @Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 @Singleton
 @Component(
     modules = [

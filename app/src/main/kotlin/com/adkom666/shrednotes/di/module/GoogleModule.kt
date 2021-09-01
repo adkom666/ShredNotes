@@ -6,8 +6,12 @@ import com.adkom666.shrednotes.data.google.Google
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(includes = [ContextModule::class])
 class GoogleModule {
 

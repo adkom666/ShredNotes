@@ -7,11 +7,14 @@ import com.adkom666.shrednotes.ask.template.GoogleLikeDonor
 import com.adkom666.shrednotes.sound.ShredSound
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(includes = [BillingModule::class, SoundModule::class])
 class AskModule {
 

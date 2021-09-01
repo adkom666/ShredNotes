@@ -4,11 +4,15 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.adkom666.shrednotes.common.Id
+import com.adkom666.shrednotes.data.db.entity.NoteCountPerExerciseInfo
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_NAME
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_ID
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_NAME
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_NOTE_COUNT
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_TIMESTAMP
@@ -118,6 +122,39 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
 
 private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_NOTES"
+
+private const val SELECT_ALL_WITH_EXERCISES_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES"
+
+private const val ORDER_TOP_BPM_NOTES_WITH_EXERCISES =
+    "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM DESC, " +
+            "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
+            "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC"
+
+private const val TOP_PORTION = "LIMIT :size"
+
+private const val SELECT_TOP_BPM_WITH_EXERCISES =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "$ORDER_TOP_BPM_NOTES_WITH_EXERCISES " +
+            TOP_PORTION
+
+private const val ORDER_TOP_POPULAR_EXERCISES =
+    "ORDER BY $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_NOTE_COUNT DESC, " +
+            "$TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_NAME ASC"
+
+private const val SELECT_TOP_POPULAR_EXERCISES =
+    "SELECT $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID " +
+            "AS $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_ID, " +
+            "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_NAME " +
+            "AS $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_NAME, " +
+            "COUNT(*) " +
+            "AS $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_NOTE_COUNT " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "GROUP BY $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_ID " +
+            "$ORDER_TOP_POPULAR_EXERCISES " +
+            TOP_PORTION
 
 private const val ORDER_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
@@ -517,6 +554,38 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_ALL_UNORDERED)
     suspend fun listAllUnorderedSuspending(): List<NoteEntity>
+
+    /**
+     * Getting a [List] of all notes with their exercises' info.
+     *
+     * @return [List] of all notes with their exercises' info.
+     */
+    @Query(SELECT_ALL_WITH_EXERCISES_UNORDERED)
+    suspend fun listAllWithExercisesUnorderedSuspending(): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer notes with their exercises' info. The notes are
+     * sorted in descending order by BPM, then descending by timestamp, and then ascending by
+     * exercise name.
+     *
+     * @param size limit the count of notes.
+     * @return [List] of the [size] or fewer notes with their exercises' info. The notes are sorted
+     * in descending order by BPM, then descending by timestamp, and then ascending by exercise
+     * name.
+     */
+    @Query(SELECT_TOP_BPM_WITH_EXERCISES)
+    suspend fun listTopBpmWithExercisesSuspending(size: Int): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted
+     * in descending order by note count and then ascending by exercise name.
+     *
+     * @param size limit the count of [NoteCountPerExerciseInfo] objects.
+     * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted in
+     * descending order by note count and then ascending by exercise name.
+     */
+    @Query(SELECT_TOP_POPULAR_EXERCISES)
+    suspend fun listTopPopularExercisesSuspending(size: Int): List<NoteCountPerExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info in accordance with

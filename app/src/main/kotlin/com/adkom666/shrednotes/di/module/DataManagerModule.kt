@@ -6,8 +6,12 @@ import com.adkom666.shrednotes.data.repository.ShredNotesRepository
 import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(
     includes = [
         RepositoryModule::class,

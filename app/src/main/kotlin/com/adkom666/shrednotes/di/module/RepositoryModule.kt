@@ -9,8 +9,12 @@ import com.adkom666.shrednotes.data.repository.ShredNotesRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Suppress("unused", "UndocumentedPublicClass", "UndocumentedPublicFunction")
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 @Module(includes = [RepositoryImplModule::class])
 abstract class RepositoryModule {
 
