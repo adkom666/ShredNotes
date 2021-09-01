@@ -359,15 +359,20 @@ class MainViewModel @Inject constructor(
      * [Activity.setResult].
      * @param data an [Intent], which can return result data to the caller (various data can be
      * attached to [Intent] "extras").
+     * @return true if the result was handled.
      */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         Timber.d(
             """Handle activity result:
                 |requestCode=$requestCode,
                 |resultCode=$resultCode,
                 |data=$data""".trimMargin()
         )
-        donor.handleActivityResult(requestCode = requestCode, resultCode = resultCode, data = data)
+        return donor.handleActivityResult(
+            requestCode = requestCode,
+            resultCode = resultCode,
+            data = data
+        )
     }
 
     private fun launchRead() {

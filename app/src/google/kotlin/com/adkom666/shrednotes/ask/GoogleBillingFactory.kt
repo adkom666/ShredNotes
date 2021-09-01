@@ -135,7 +135,11 @@ class GoogleBillingFactory : GoogleLikeBillingFactory {
             billingClient.endConnection()
         }
 
-        override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        override fun handleActivityResult(
+            requestCode: Int,
+            resultCode: Int,
+            data: Intent?
+        ): Boolean {
             Timber.d(
                 """Don't handle activity result:
                     |requestCode=$requestCode,
@@ -143,6 +147,7 @@ class GoogleBillingFactory : GoogleLikeBillingFactory {
                     |data=$data""".trimMargin()
             )
             // Do nothing
+            return false
         }
 
         private val BillingResult.isOk: Boolean

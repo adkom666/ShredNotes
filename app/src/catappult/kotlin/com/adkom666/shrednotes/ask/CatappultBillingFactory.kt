@@ -133,14 +133,18 @@ class CatappultBillingFactory : GoogleLikeBillingFactory {
             billingClient.endConnection()
         }
 
-        override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        override fun handleActivityResult(
+            requestCode: Int,
+            resultCode: Int,
+            data: Intent?
+        ): Boolean {
             Timber.d(
                 """Handle activity result:
                     |requestCode=$requestCode,
                     |resultCode=$resultCode,
                     |data=$data""".trimMargin()
             )
-            billingClient.onActivityResult(requestCode, resultCode, data)
+            return billingClient.onActivityResult(requestCode, resultCode, data)
         }
 
         private val Int.isOk: Boolean

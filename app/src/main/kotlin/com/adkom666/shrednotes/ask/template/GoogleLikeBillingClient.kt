@@ -73,6 +73,7 @@ interface GoogleLikeBillingClient {
      * [Activity.setResult].
      * @param data an [Intent], which can return result data to the caller (various data can be
      * attached to [Intent] "extras").
+     * @return true if the result was handled.
      */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean
 }

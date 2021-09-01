@@ -89,14 +89,14 @@ class GoogleLikeDonor(
         setInitialState()
     }
 
-    override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         Timber.d(
             """Handle activity result:
                 |requestCode=$requestCode,
                 |resultCode=$resultCode,
                 |data=$data""".trimMargin()
         )
-        billingClient?.handleActivityResult(requestCode, resultCode, data)
+        return billingClient?.handleActivityResult(requestCode, resultCode, data) ?: false
     }
 
     private fun setInitialState() {
