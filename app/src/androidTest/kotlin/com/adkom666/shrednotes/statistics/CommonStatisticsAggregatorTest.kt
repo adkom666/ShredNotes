@@ -1,15 +1,17 @@
 package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.common.toId
-import com.adkom666.shrednotes.data.db.TestDbKeeper
+import com.adkom666.shrednotes.data.db.ShredNotesDatabase
+import com.adkom666.shrednotes.data.db.dao.ExerciseDao
+import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
-import com.adkom666.shrednotes.data.repository.TestExerciseRepositoryKeeper
-import com.adkom666.shrednotes.data.repository.TestNoteRepositoryKeeper
+import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
 import com.adkom666.shrednotes.util.time.Days
+import javax.inject.Inject
 import junit.framework.TestCase
-import kotlinx.coroutines.runBlocking
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.runBlocking
 
 @ExperimentalTime
 class CommonStatisticsAggregatorTest : TestCase() {
@@ -19,33 +21,26 @@ class CommonStatisticsAggregatorTest : TestCase() {
         private const val EXERCISE_NAME_2 = "exercise 2"
     }
 
-    private val dbKeeper: TestDbKeeper = TestDbKeeper()
-    private val noteRepositoryKeeper: TestNoteRepositoryKeeper = TestNoteRepositoryKeeper()
-    private val exerciseRepositoryKeeper: TestExerciseRepositoryKeeper = TestExerciseRepositoryKeeper()
-    private val statisticsAggregatorKeeper: TestCommonStatisticsAggregatorKeeper = TestCommonStatisticsAggregatorKeeper()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val statisticsAggregator: CommonStatisticsAggregator
-        get() = statisticsAggregatorKeeper.statisticsAggregator
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
+
+    @Inject
+    lateinit var noteDao: NoteDao
+
+    @Inject
+    lateinit var statisticsAggregator: CommonStatisticsAggregator
 
     public override fun setUp() {
         super.setUp()
-
-        dbKeeper.createDb()
-        noteRepositoryKeeper.createRepository(dbKeeper.db)
-        exerciseRepositoryKeeper.createRepository(dbKeeper.db)
-        statisticsAggregatorKeeper.createStatisticsAggregator(
-            noteRepositoryKeeper.repository,
-            exerciseRepositoryKeeper.repository
-        )
+        DaggerTestStatisticsComponent.create().inject(this)
     }
 
     public override fun tearDown() {
         super.tearDown()
-
-        statisticsAggregatorKeeper.destroyStatisticsAggregator()
-        noteRepositoryKeeper.destroyRepository()
-        exerciseRepositoryKeeper.destroyRepository()
-        dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testAggregateFromEmptySource() = runBlocking {
@@ -58,7 +53,8 @@ class CommonStatisticsAggregatorTest : TestCase() {
     }
 
     fun testAggregate() = runBlocking {
-        fillDb()
+
+        fillDatabase()
 
         val statistics = statisticsAggregator.aggregate()
         assertEquals(statistics.totalNotes, 3)
@@ -68,10 +64,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
         assertEquals(statistics.activeDaysShare, 2f / 3)
     }
 
-    private fun fillDb() {
-        val db = dbKeeper.db
-        val noteDao = db.noteDao()
-        val exerciseDao = db.exerciseDao()
+    private fun fillDatabase() {
         val exerciseEntity1 = ExerciseEntity(
             id = 1.toId(),
             name = EXERCISE_NAME_1

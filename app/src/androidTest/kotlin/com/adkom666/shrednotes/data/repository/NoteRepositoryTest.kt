@@ -1,39 +1,43 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.data.db.ShredNotesDatabase
 import com.adkom666.shrednotes.data.db.StoreExerciseTestHelper
 import com.adkom666.shrednotes.data.db.StoreNoteTestHelper
-import com.adkom666.shrednotes.data.db.TestDbKeeper
+import com.adkom666.shrednotes.data.db.dao.ExerciseDao
+import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.NoteFilter
+import com.adkom666.shrednotes.di.component.DaggerTestRepositoryComponent
 import com.adkom666.shrednotes.util.time.Days
+import javax.inject.Inject
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 
 class NoteRepositoryTest : TestCase() {
 
-    private val dbKeeper: TestDbKeeper = TestDbKeeper()
-    private val repositoryKeeper: TestNoteRepositoryKeeper = TestNoteRepositoryKeeper()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val repository: NoteRepository
-        get() = repositoryKeeper.repository
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
+
+    @Inject
+    lateinit var noteDao: NoteDao
+
+    @Inject
+    lateinit var repository: NoteRepository
 
     public override fun setUp() {
         super.setUp()
-        dbKeeper.createDb()
-        repositoryKeeper.createRepository(dbKeeper.db)
-
-        val db = dbKeeper.db
-        val noteDao = db.noteDao()
-        val exerciseDao = db.exerciseDao()
+        DaggerTestRepositoryComponent.create().inject(this)
         StoreExerciseTestHelper.insertExercises(exerciseDao)
         StoreNoteTestHelper.insertNotes(noteDao, exerciseDao)
     }
 
     public override fun tearDown() {
         super.tearDown()
-        repositoryKeeper.destroyRepository()
-        dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testCountWithoutParameters() = runBlocking {
@@ -45,7 +49,6 @@ class NoteRepositoryTest : TestCase() {
     }
 
     fun testCountByExerciseSubname() = runBlocking {
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByExerciseSubname = noteList.count {
             it.exerciseName
@@ -60,14 +63,12 @@ class NoteRepositoryTest : TestCase() {
     }
 
     fun testCountByDate() = runBlocking {
-        val noteDao = dbKeeper.db.noteDao()
-        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
-
         val now = System.currentTimeMillis()
         val testDaysScatter = (0.666f * StoreNoteTestHelper.DAYS_SCATTER).toLong()
         val dateFromInclusive = Days(now - testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
         val dateToExclusive = Days(now + testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
 
+        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByDate = noteList.count { noteWithExercise ->
             val startMillis = dateFromInclusive.epochMillis
             val endMillis = dateToExclusive.epochMillis
@@ -85,13 +86,11 @@ class NoteRepositoryTest : TestCase() {
     }
 
     fun testCountByBpm() = runBlocking {
-        val noteDao = dbKeeper.db.noteDao()
-        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
-
         val bpmRange = NOTE_BPM_MAX - NOTE_BPM_MIN
         val bpmFromInclusive = NOTE_BPM_MIN + (0.2f * bpmRange).toInt()
         val bpmToInclusive = NOTE_BPM_MAX - (0.3f * bpmRange).toInt()
 
+        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByBpm = noteList.count {
             it.noteBpm in bpmFromInclusive..bpmToInclusive
         }
@@ -107,9 +106,6 @@ class NoteRepositoryTest : TestCase() {
     }
 
     fun testCountByExerciseSubnameDateAndBpm() = runBlocking {
-        val noteDao = dbKeeper.db.noteDao()
-        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
-
         val now = System.currentTimeMillis()
         val testDaysScatter = (0.666f * StoreNoteTestHelper.DAYS_SCATTER).toLong()
         val dateFromInclusive = Days(now - testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
@@ -119,6 +115,7 @@ class NoteRepositoryTest : TestCase() {
         val bpmFromInclusive = NOTE_BPM_MIN + (0.2f * bpmRange).toInt()
         val bpmToInclusive = NOTE_BPM_MAX - (0.3f * bpmRange).toInt()
 
+        val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByExerciseSubnameDateAndBpm = noteList.count { noteWithExercise ->
             val startMillis = dateFromInclusive.epochMillis
             val endMillis = dateToExclusive.epochMillis
@@ -152,7 +149,6 @@ class NoteRepositoryTest : TestCase() {
     }
 
     fun testListByExerciseSubname() = runBlocking {
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
         val countByExerciseSubname = noteList.count {
             it.exerciseName
@@ -193,7 +189,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionByIdsAndExerciseSubname() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -219,7 +214,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionByIdsAndDate() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -247,7 +241,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionByIdsAndBpm() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -272,7 +265,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionByIdsDateAndBpm() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -307,7 +299,6 @@ class NoteRepositoryTest : TestCase() {
     
     fun testDeletionOtherByIdsAndExerciseSubname() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -336,7 +327,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionOtherByIdsAndDate() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -368,7 +358,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionOtherByIdsAndBpm() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 
@@ -397,7 +386,6 @@ class NoteRepositoryTest : TestCase() {
 
     fun testDeletionOtherByIdsDateAndBpm() = runBlocking {
         val groupSize = StoreNoteTestHelper.NOTE_COUNT / 3
-        val noteDao = dbKeeper.db.noteDao()
         val noteList = noteDao.list(groupSize, 0)
         val ids = noteList.map { it.noteId }
 

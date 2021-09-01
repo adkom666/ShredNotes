@@ -1,32 +1,33 @@
 package com.adkom666.shrednotes.data.repository
 
+import com.adkom666.shrednotes.data.db.ShredNotesDatabase
 import com.adkom666.shrednotes.data.db.StoreExerciseTestHelper
-import com.adkom666.shrednotes.data.db.TestDbKeeper
+import com.adkom666.shrednotes.data.db.dao.ExerciseDao
+import com.adkom666.shrednotes.di.component.DaggerTestRepositoryComponent
+import javax.inject.Inject
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 
 class ExerciseRepositoryTest : TestCase() {
 
-    private val dbKeeper: TestDbKeeper = TestDbKeeper()
-    private val repositoryKeeper: TestExerciseRepositoryKeeper = TestExerciseRepositoryKeeper()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val repository: ExerciseRepository
-        get() = repositoryKeeper.repository
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
+
+    @Inject
+    lateinit var repository: ExerciseRepository
 
     public override fun setUp() {
         super.setUp()
-        dbKeeper.createDb()
-        repositoryKeeper.createRepository(dbKeeper.db)
-
-        val db = dbKeeper.db
-        val exerciseDao = db.exerciseDao()
+        DaggerTestRepositoryComponent.create().inject(this)
         StoreExerciseTestHelper.insertExercises(exerciseDao)
     }
 
     public override fun tearDown() {
         super.tearDown()
-        repositoryKeeper.destroyRepository()
-        dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testCountWithoutParameters() = runBlocking {
@@ -37,7 +38,6 @@ class ExerciseRepositoryTest : TestCase() {
     }
 
     fun testCountBySubname() = runBlocking {
-        val exerciseDao = dbKeeper.db.exerciseDao()
         val exerciseList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         val countBySubname = exerciseList.count {
             it.name.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
@@ -58,7 +58,6 @@ class ExerciseRepositoryTest : TestCase() {
     }
 
     fun testListBySubname() = runBlocking {
-        val exerciseDao = dbKeeper.db.exerciseDao()
         val exerciseList = exerciseDao.list(StoreExerciseTestHelper.EXERCISE_COUNT, 0)
         val countBySubname = exerciseList.count {
             it.name.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
@@ -94,7 +93,6 @@ class ExerciseRepositoryTest : TestCase() {
 
     fun testDeletionByIdsAndSubname() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseDao = dbKeeper.db.exerciseDao()
         val exerciseList = exerciseDao.list(groupSize, 0)
         val ids = exerciseList.map { it.id }
 
@@ -116,7 +114,6 @@ class ExerciseRepositoryTest : TestCase() {
     
     fun testDeletionOtherByIdsAndSubname() = runBlocking {
         val groupSize = StoreExerciseTestHelper.EXERCISE_COUNT / 3
-        val exerciseDao = dbKeeper.db.exerciseDao()
         val exerciseList = exerciseDao.list(groupSize, 0)
         val ids = exerciseList.map { it.id }
 

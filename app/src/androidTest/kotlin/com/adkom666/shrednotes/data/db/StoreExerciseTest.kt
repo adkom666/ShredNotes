@@ -1,6 +1,8 @@
 package com.adkom666.shrednotes.data.db
 
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
+import com.adkom666.shrednotes.di.component.DaggerTestDatabaseComponent
+import javax.inject.Inject
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.startsWith
@@ -8,20 +10,21 @@ import org.hamcrest.MatcherAssert.assertThat
 
 class StoreExerciseTest : TestCase() {
 
-    private val exerciseDao: ExerciseDao
-        get() = _dbKeeper.db.exerciseDao()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val _dbKeeper: TestDbKeeper = TestDbKeeper()
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
 
     override fun setUp() {
         super.setUp()
-        _dbKeeper.createDb()
+        DaggerTestDatabaseComponent.create().inject(this)
         StoreExerciseTestHelper.insertExercises(exerciseDao)
     }
 
     override fun tearDown() {
         super.tearDown()
-        _dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testCount() {

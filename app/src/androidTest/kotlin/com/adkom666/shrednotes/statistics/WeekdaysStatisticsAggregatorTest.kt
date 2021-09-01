@@ -1,51 +1,50 @@
 package com.adkom666.shrednotes.statistics
 
+import com.adkom666.shrednotes.data.db.ShredNotesDatabase
 import com.adkom666.shrednotes.data.db.StoreExerciseTestHelper
 import com.adkom666.shrednotes.data.db.StoreNoteTestHelper
-import com.adkom666.shrednotes.data.db.TestDbKeeper
+import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
-import com.adkom666.shrednotes.data.repository.TestNoteRepositoryKeeper
+import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
 import com.adkom666.shrednotes.util.time.Days
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import junit.framework.TestCase
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
+@ExperimentalTime
 class WeekdaysStatisticsAggregatorTest : TestCase() {
 
     private companion object {
         private val ALL_WEEKDAYS = Weekday.values()
     }
 
-    private val dbKeeper: TestDbKeeper = TestDbKeeper()
-    private val repositoryKeeper: TestNoteRepositoryKeeper = TestNoteRepositoryKeeper()
-    private val statisticsAggregatorKeeper: TestWeekdaysStatisticsAggregatorKeeper = TestWeekdaysStatisticsAggregatorKeeper()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val statisticsAggregator: WeekdaysStatisticsAggregator
-        get() = statisticsAggregatorKeeper.statisticsAggregator
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
+
+    @Inject
+    lateinit var noteDao: NoteDao
+
+    @Inject
+    lateinit var statisticsAggregator: WeekdaysStatisticsAggregator
 
     override fun setUp() {
         super.setUp()
-
-        dbKeeper.createDb()
-        repositoryKeeper.createRepository(dbKeeper.db)
-        statisticsAggregatorKeeper.createStatisticsAggregator(repositoryKeeper.repository)
-
-        val db = dbKeeper.db
-        val noteDao = db.noteDao()
-        val exerciseDao = db.exerciseDao()
+        DaggerTestStatisticsComponent.create().inject(this)
         StoreExerciseTestHelper.insertExercises(exerciseDao)
         StoreNoteTestHelper.insertNotes(noteDao, exerciseDao)
     }
 
     override fun tearDown() {
         super.tearDown()
-
-        statisticsAggregatorKeeper.destroyStatisticsAggregator()
-        repositoryKeeper.destroyRepository()
-        dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testAggregateAverageAmongMaxBpm() = runBlocking {
@@ -77,7 +76,7 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
     private suspend fun aggregateAverageQuantity(
         calcQuantity: (List<NoteEntity>) -> Int?
     ): Map<Weekday, Float> {
-        val noteEntityToDaysMap = noteEntityToDaysMap(dbKeeper.db.noteDao())
+        val noteEntityToDaysMap = noteEntityToDaysMap()
         Timber.d("noteEntityToDaysMap=$noteEntityToDaysMap")
 
         val weekdayToQuantityListMap = weekdayToEmptyIntListMap()
@@ -105,7 +104,7 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         return averageQuantity
     }
 
-    private suspend fun noteEntityToDaysMap(noteDao: NoteDao): Map<Days, List<NoteEntity>> {
+    private suspend fun noteEntityToDaysMap(): Map<Days, List<NoteEntity>> {
         val noteEntities = noteDao.listAllUnorderedSuspending()
         val noteEntityToDaysMap = mutableMapOf<Days, MutableList<NoteEntity>>()
         noteEntities.forEach { note ->

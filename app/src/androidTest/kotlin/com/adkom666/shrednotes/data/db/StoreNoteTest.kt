@@ -6,30 +6,33 @@ import com.adkom666.shrednotes.common.toId
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
+import com.adkom666.shrednotes.di.component.DaggerTestDatabaseComponent
 import com.adkom666.shrednotes.util.time.Minutes
+import javax.inject.Inject
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 
 class StoreNoteTest : TestCase() {
 
-    private val exerciseDao: ExerciseDao
-        get() = _dbKeeper.db.exerciseDao()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val noteDao: NoteDao
-        get() = _dbKeeper.db.noteDao()
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
 
-    private val _dbKeeper: TestDbKeeper = TestDbKeeper()
+    @Inject
+    lateinit var noteDao: NoteDao
 
     override fun setUp() {
         super.setUp()
-        _dbKeeper.createDb()
+        DaggerTestDatabaseComponent.create().inject(this)
         StoreExerciseTestHelper.insertExercises(exerciseDao)
         StoreNoteTestHelper.insertNotes(noteDao, exerciseDao)
     }
 
     override fun tearDown() {
         super.tearDown()
-        _dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testCountAll() = runBlocking {

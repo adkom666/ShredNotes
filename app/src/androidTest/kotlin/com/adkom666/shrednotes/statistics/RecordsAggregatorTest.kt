@@ -1,14 +1,19 @@
 package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.common.toId
-import com.adkom666.shrednotes.data.db.TestDbKeeper
+import com.adkom666.shrednotes.data.db.ShredNotesDatabase
+import com.adkom666.shrednotes.data.db.dao.ExerciseDao
+import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
-import com.adkom666.shrednotes.data.repository.TestNoteRepositoryKeeper
-import junit.framework.TestCase
-import kotlinx.coroutines.runBlocking
+import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
 import java.util.Date
+import javax.inject.Inject
+import junit.framework.TestCase
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.runBlocking
 
+@ExperimentalTime
 class RecordsAggregatorTest : TestCase() {
 
     private companion object {
@@ -18,29 +23,27 @@ class RecordsAggregatorTest : TestCase() {
         private val BPM = arrayOf(666, 512, 256)
     }
 
-    private val dbKeeper: TestDbKeeper = TestDbKeeper()
-    private val repositoryKeeper: TestNoteRepositoryKeeper = TestNoteRepositoryKeeper()
-    private val recordsAggregatorKeeper: TestRecordsAggregatorKeeper = TestRecordsAggregatorKeeper()
+    @Inject
+    lateinit var database: ShredNotesDatabase
 
-    private val recordsAggregator: RecordsAggregator
-        get() = recordsAggregatorKeeper.recordsAggregator
+    @Inject
+    lateinit var exerciseDao: ExerciseDao
+
+    @Inject
+    lateinit var noteDao: NoteDao
+
+    @Inject
+    lateinit var recordsAggregator: RecordsAggregator
 
     public override fun setUp() {
         super.setUp()
-
-        dbKeeper.createDb()
-        repositoryKeeper.createRepository(dbKeeper.db)
-        recordsAggregatorKeeper.createRecordsAggregator(repositoryKeeper.repository)
-
-        fillDb()
+        DaggerTestStatisticsComponent.create().inject(this)
+        fillDatabase()
     }
 
     public override fun tearDown() {
         super.tearDown()
-
-        recordsAggregatorKeeper.destroyRecordsAggregator()
-        repositoryKeeper.destroyRepository()
-        dbKeeper.destroyDb()
+        database.close()
     }
 
     fun testAggregateBpmRecords() = runBlocking {
@@ -70,10 +73,7 @@ class RecordsAggregatorTest : TestCase() {
         )
     }
 
-    private fun fillDb() {
-        val db = dbKeeper.db
-        val noteDao = db.noteDao()
-        val exerciseDao = db.exerciseDao()
+    private fun fillDatabase() {
         val exerciseEntity1 = ExerciseEntity(
             id = 1.toId(),
             name = EXERCISE_NAME_1
