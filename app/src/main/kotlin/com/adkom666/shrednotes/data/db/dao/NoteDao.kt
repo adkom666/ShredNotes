@@ -546,11 +546,9 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
-     * Getting a [List] of all note entities. The notes are sorted in descending order by timestamp,
-     * then ascending by exercise name, and then descending by BPM.
+     * Getting a [List] of all note entities.
      *
-     * @return [List] of all note entities. The notes are sorted in descending order by timestamp,
-     * then ascending by exercise name, and then descending by BPM.
+     * @return [List] of all note entities.
      */
     @Query(SELECT_ALL_UNORDERED)
     suspend fun listAllUnorderedSuspending(): List<NoteEntity>
