@@ -45,11 +45,11 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
     fun testAggregateFromEmptySource() = runBlocking {
         val statistics = statisticsAggregator.aggregate()
-        assertEquals(statistics.totalNotes, 0)
-        assertEquals(statistics.totalExercises, 0)
-        assertEquals(statistics.totalDays, 0)
-        assertEquals(statistics.activeDays, 0)
-        assertEquals(statistics.activeDaysShare, null)
+        assertEquals(0, statistics.totalNotes)
+        assertEquals(0, statistics.totalExercises)
+        assertEquals(0, statistics.totalDays)
+        assertEquals(0, statistics.activeDays)
+        assertEquals(null, statistics.activeDaysShare)
     }
 
     fun testAggregate() = runBlocking {
@@ -57,11 +57,11 @@ class CommonStatisticsAggregatorTest : TestCase() {
         fillDatabase()
 
         val statistics = statisticsAggregator.aggregate()
-        assertEquals(statistics.totalNotes, 3)
-        assertEquals(statistics.totalExercises, 2)
-        assertEquals(statistics.totalDays, 3)
-        assertEquals(statistics.activeDays, 2)
-        assertEquals(statistics.activeDaysShare, 2f / 3)
+        assertEquals(3, statistics.totalNotes)
+        assertEquals(2, statistics.totalExercises)
+        assertEquals(3, statistics.totalDays)
+        assertEquals(2, statistics.activeDays)
+        assertEquals(2f / 3, statistics.activeDaysShare)
     }
 
     private fun fillDatabase() {

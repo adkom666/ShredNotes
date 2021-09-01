@@ -48,28 +48,28 @@ class RecordsAggregatorTest : TestCase() {
 
     fun testAggregateBpmRecords() = runBlocking {
         val records = recordsAggregator.aggregateBpmRecords(limit = RECORDS_LIMIT)
-        assertEquals(records.topNotes.size, 3)
-        assertEquals(records.topNotes[0].bpm, BPM[0])
-        assertEquals(records.topNotes[1].bpm, BPM[1])
-        assertEquals(records.topNotes[2].bpm, BPM[2])
+        assertEquals(3, records.topNotes.size)
+        assertEquals(BPM[0], records.topNotes[0].bpm)
+        assertEquals(BPM[1], records.topNotes[1].bpm)
+        assertEquals(BPM[2], records.topNotes[2].bpm)
     }
 
     fun testAggregateNoteCountRecords() = runBlocking {
         val records = recordsAggregator.aggregateNoteCountRecords(limit = RECORDS_LIMIT)
-        assertEquals(records.topExerciseNames.size, 2)
+        assertEquals(2, records.topExerciseNames.size)
         assertEquals(
-            records.topExerciseNames[0],
             NoteCountRecords.Record(
                 exerciseName = EXERCISE_NAME_2,
                 noteCount = 2
-            )
+            ),
+            records.topExerciseNames[0]
         )
         assertEquals(
-            records.topExerciseNames[1],
             NoteCountRecords.Record(
                 exerciseName = EXERCISE_NAME_1,
                 noteCount = 1
-            )
+            ),
+            records.topExerciseNames[1]
         )
     }
 
