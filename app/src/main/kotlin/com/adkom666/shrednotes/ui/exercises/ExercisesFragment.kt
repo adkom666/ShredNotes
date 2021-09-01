@@ -30,10 +30,10 @@ import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Exercises section sub screen.
