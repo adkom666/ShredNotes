@@ -88,7 +88,6 @@ class NotesFragment :
     private val scroller: ScrollToNewItem
         get() = requireNotNull(_scroller)
 
-
     private var _binding: FragmentNotesBinding? = null
     private var _model: NotesViewModel? = null
     private var _adapter: NotePagingDataAdapter? = null
