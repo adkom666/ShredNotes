@@ -117,7 +117,7 @@ class CatappultBillingFactory : GoogleLikeBillingFactory {
                 val params = BillingFlowParams(
                     skuDetails.source.sku,
                     skuDetails.source.itemType,
-                    "orderId=" + System.currentTimeMillis(),
+                    "orderId=${System.currentTimeMillis()}",
                     DEVELOPER_PAYLOAD,
                     "origin"
                 )
