@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.ui.exercises
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -189,6 +190,7 @@ class ExercisesFragment :
         bottomChildFabMargin = resources.getDimension(R.dimen.bottom_child_fab_margin)
     )
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun setupFabListeners() {
         binding.control.fabAddDel.setOnClickListener {
             if (model.selection.isActive) {
@@ -283,6 +285,7 @@ class ExercisesFragment :
             toast(R.string.error_unknown)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun process(signal: ExercisesViewModel.Signal) = when (signal) {
         ExercisesViewModel.Signal.SelectionChanged ->
             adapter.notifyDataSetChanged()
