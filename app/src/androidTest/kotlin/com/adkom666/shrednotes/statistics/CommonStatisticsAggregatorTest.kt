@@ -70,11 +70,13 @@ class CommonStatisticsAggregatorTest : TestCase() {
             name = EXERCISE_NAME_1
         )
         exerciseDao.insert(exerciseEntity1)
+
         val exerciseEntity2 = ExerciseEntity(
             id = 2.toId(),
             name = EXERCISE_NAME_2
         )
         exerciseDao.insert(exerciseEntity2)
+
         val noteEntity1 = NoteEntity(
             id = 1.toId(),
             timestamp = Days().epochMillis,
@@ -82,6 +84,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
             bpm = 666
         )
         noteDao.insert(noteEntity1)
+
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
             timestamp = Days().yesterday.yesterday.epochMillis,
@@ -89,6 +92,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
             bpm = 256
         )
         noteDao.insert(noteEntity2)
+
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
             timestamp = Days().epochMillis,
