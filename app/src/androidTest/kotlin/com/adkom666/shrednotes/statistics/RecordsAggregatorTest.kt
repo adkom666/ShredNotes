@@ -14,6 +14,8 @@ class RecordsAggregatorTest : TestCase() {
     private companion object {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
+        private const val RECORDS_LIMIT = 6666
+        private val BPM = arrayOf(666, 512, 256)
     }
 
     private val dbKeeper: TestDbKeeper = TestDbKeeper()
@@ -42,15 +44,15 @@ class RecordsAggregatorTest : TestCase() {
     }
 
     fun testAggregateBpmRecords() = runBlocking {
-        val records = recordsAggregator.aggregateBpmRecords(limit = 6666)
+        val records = recordsAggregator.aggregateBpmRecords(limit = RECORDS_LIMIT)
         assertEquals(records.topNotes.size, 3)
-        assertEquals(records.topNotes[0].bpm, 666)
-        assertEquals(records.topNotes[1].bpm, 512)
-        assertEquals(records.topNotes[2].bpm, 256)
+        assertEquals(records.topNotes[0].bpm, BPM[0])
+        assertEquals(records.topNotes[1].bpm, BPM[1])
+        assertEquals(records.topNotes[2].bpm, BPM[2])
     }
 
     fun testAggregateNoteCountRecords() = runBlocking {
-        val records = recordsAggregator.aggregateNoteCountRecords(limit = 6666)
+        val records = recordsAggregator.aggregateNoteCountRecords(limit = RECORDS_LIMIT)
         assertEquals(records.topExerciseNames.size, 2)
         assertEquals(
             records.topExerciseNames[0],
@@ -86,21 +88,21 @@ class RecordsAggregatorTest : TestCase() {
             id = 1.toId(),
             timestamp = Date().time,
             exerciseId = exerciseEntity1.id,
-            bpm = 666
+            bpm = BPM[0]
         )
         noteDao.insert(noteEntity1)
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
             timestamp = Date().time,
             exerciseId = exerciseEntity2.id,
-            bpm = 256
+            bpm = BPM[2]
         )
         noteDao.insert(noteEntity2)
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
             timestamp = Date().time,
             exerciseId = exerciseEntity2.id,
-            bpm = 512
+            bpm = BPM[1]
         )
         noteDao.insert(noteEntity3)
     }
