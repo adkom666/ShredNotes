@@ -74,6 +74,32 @@ interface NoteRepository {
     suspend fun listTopPopularExercisesSuspending(size: Int): List<NoteCountPerExerciseInfo>
 
     /**
+     * Getting a [List] of the [size] or fewer notes in accordance with the [startPosition] in the
+     * list of notes whose exercise names contain [exerciseSubname] and match filter, or in the list
+     * of all notes if [exerciseSubname] is null or blank and [filter] is not defined. The notes are
+     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * by BPM.
+     *
+     * @param size limit the count of notes.
+     * @param startPosition position of the first target note in the list of notes whose exercise
+     * names contain [exerciseSubname], or in the list of all notes if [exerciseSubname] is null or
+     * blank.
+     * @param exerciseSubname part of the names of the target notes' exercises.
+     * @param filter see [NoteFilter].
+     * @return [List] of the [size] or fewer notes in accordance with the [startPosition] in the
+     * list of notes whose exercise names contain [exerciseSubname] and match filter, or in the list
+     * of all notes if [exerciseSubname] is null or blank and [filter] is not defined. The notes are
+     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
+     * by BPM.
+     */
+    fun list(
+        size: Int,
+        startPosition: Int,
+        exerciseSubname: String? = null,
+        filter: NoteFilter? = null
+    ): List<Note>
+
+    /**
      * Getting a [Page] of the [size] or fewer notes in accordance with the [requestedStartPosition]
      * in the list of notes whose exercise names contain [exerciseSubname] and match filter, or in
      * the list of all notes if [exerciseSubname] is null or blank and [filter] is not defined. If
@@ -100,32 +126,6 @@ interface NoteRepository {
         exerciseSubname: String? = null,
         filter: NoteFilter? = null
     ): Page<Note>
-
-    /**
-     * Getting a [List] of the [size] or fewer notes in accordance with the [startPosition] in the
-     * list of notes whose exercise names contain [exerciseSubname] and match filter, or in the list
-     * of all notes if [exerciseSubname] is null or blank and [filter] is not defined. The notes are
-     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
-     * by BPM.
-     *
-     * @param size limit the count of notes.
-     * @param startPosition position of the first target note in the list of notes whose exercise
-     * names contain [exerciseSubname], or in the list of all notes if [exerciseSubname] is null or
-     * blank.
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param filter see [NoteFilter].
-     * @return [List] of the [size] or fewer notes in accordance with the [startPosition] in the
-     * list of notes whose exercise names contain [exerciseSubname] and match filter, or in the list
-     * of all notes if [exerciseSubname] is null or blank and [filter] is not defined. The notes are
-     * sorted in descending order by timestamp, then ascending by exercise name, and then ascending
-     * by BPM.
-     */
-    fun list(
-        size: Int,
-        startPosition: Int,
-        exerciseSubname: String? = null,
-        filter: NoteFilter? = null
-    ): List<Note>
 
     /**
      * Saving a note if there is an exercise with the name specified in the note.

@@ -35,6 +35,43 @@ class ExerciseRepositoryImpl(
         return count
     }
 
+    override suspend fun listAllSuspending(): List<Exercise> {
+        Timber.d("listAllSuspending")
+        val exerciseEntityList = exerciseDao.listAllSuspending()
+        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
+        Timber.d("exerciseList=$exerciseList")
+        return exerciseList
+    }
+
+    override suspend fun listByNameSuspending(name: String): List<Exercise> {
+        Timber.d("listByNameSuspending: name=$name")
+        val exerciseEntityList = exerciseDao.listByNameSuspending(name)
+        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
+        Timber.d("exerciseList=$exerciseList")
+        return exerciseList
+    }
+
+    override fun list(
+        size: Int,
+        startPosition: Int,
+        subname: String?
+    ): List<Exercise> {
+        Timber.d(
+            """list:
+                |size=$size,
+                |startPosition=$startPosition,
+                |subname=$subname""".trimMargin()
+        )
+        val exerciseEntityList = entityList(
+            size = size,
+            startPosition = startPosition,
+            subname = subname
+        )
+        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
+        Timber.d("exerciseList=$exerciseList")
+        return exerciseList
+    }
+
     override fun page(
         size: Int,
         requestedStartPosition: Int,
@@ -43,9 +80,9 @@ class ExerciseRepositoryImpl(
         transactor.transaction {
             Timber.d(
                 """page:
-                |size=$size,
-                |requestedStartPosition=$requestedStartPosition,
-                |subname=$subname""".trimMargin()
+                    |size=$size,
+                    |requestedStartPosition=$requestedStartPosition,
+                    |subname=$subname""".trimMargin()
             )
             val count = entityCountSuspending(subname)
             val exerciseEntityPage = if (count > 0 && size > 0) {
@@ -70,43 +107,6 @@ class ExerciseRepositoryImpl(
             Timber.d("exercisePage=$exercisePage")
             return@transaction exercisePage
         }
-    }
-
-    override fun list(
-        size: Int,
-        startPosition: Int,
-        subname: String?
-    ): List<Exercise> {
-        Timber.d(
-            """list:
-                |size=$size,
-                |startPosition=$startPosition,
-                |subname=$subname""".trimMargin()
-        )
-        val exerciseEntityList = entityList(
-            size = size,
-            startPosition = startPosition,
-            subname = subname
-        )
-        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
-        Timber.d("exerciseList=$exerciseList")
-        return exerciseList
-    }
-
-    override suspend fun allExercisesSuspending(): List<Exercise> {
-        Timber.d("allExercisesSuspending")
-        val exerciseEntityList = exerciseDao.listAllSuspending()
-        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
-        Timber.d("exerciseList=$exerciseList")
-        return exerciseList
-    }
-
-    override suspend fun exercisesByNameSuspending(name: String): List<Exercise> {
-        Timber.d("exercisesByNameSuspending: name=$name")
-        val exerciseEntityList = exerciseDao.listByNameSuspending(name)
-        val exerciseList = exerciseEntityList.map(ExerciseEntity::toExercise)
-        Timber.d("exerciseList=$exerciseList")
-        return exerciseList
     }
 
     override suspend fun saveIfNoSuchNameSuspending(exercise: Exercise): Boolean {

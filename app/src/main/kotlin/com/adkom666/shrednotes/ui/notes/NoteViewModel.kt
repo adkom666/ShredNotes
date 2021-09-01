@@ -220,7 +220,7 @@ class NoteViewModel @Inject constructor(
     suspend fun start() {
         Timber.d("Start")
         setState(State.Waiting)
-        val exerciseList = exerciseRepository.allExercisesSuspending()
+        val exerciseList = exerciseRepository.listAllSuspending()
         give(Signal.ExerciseList(exerciseList))
         setState(State.Working)
     }

@@ -26,6 +26,40 @@ interface ExerciseRepository {
     suspend fun countSuspending(subname: String? = null): Int
 
     /**
+     * Getting a [List] of all exercises sorted in ascending order by name.
+     *
+     * @return [List] of all exercises sorted in ascending order by name.
+     */
+    suspend fun listAllSuspending(): List<Exercise>
+
+    /**
+     * Getting a [List] of exercises whose name is equal to [name].
+     *
+     * @param name name of target exercises.
+     * @return [List] of exercises whose name is equal to [name].
+     */
+    suspend fun listByNameSuspending(name: String): List<Exercise>
+
+    /**
+     * Getting a [List] of the [size] or fewer exercises in accordance with the [startPosition] in
+     * the list of exercises whose names contain [subname], or in the list of all exercises if
+     * [subname] is null or blank. The exercises are sorted in ascending order by name.
+     *
+     * @param size limit the count of exercises.
+     * @param startPosition position of the first target exercise in the list of exercises whose
+     * names contain [subname], or in the list of all exercises if [subname] is null or blank.
+     * @param subname part of the names of the target exercises.
+     * @return [List] of the [size] or fewer exercises in accordance with the [startPosition] in the
+     * list of exercises whose names contain [subname], or in the list of all exercises if [subname]
+     * is null or blank. The exercises are sorted in ascending order by name.
+     */
+    fun list(
+        size: Int,
+        startPosition: Int,
+        subname: String? = null
+    ): List<Exercise>
+
+    /**
      * Getting a [Page] of the [size] or fewer exercises in accordance with the
      * [requestedStartPosition] in the list of exercises whose names contain [subname], or in the
      * list of all exercises if [subname] is null or blank. If the [requestedStartPosition] exceeds
@@ -48,40 +82,6 @@ interface ExerciseRepository {
         requestedStartPosition: Int,
         subname: String? = null
     ): Page<Exercise>
-
-    /**
-     * Getting a [List] of the [size] or fewer exercises in accordance with the [startPosition] in
-     * the list of exercises whose names contain [subname], or in the list of all exercises if
-     * [subname] is null or blank. The exercises are sorted in ascending order by name.
-     *
-     * @param size limit the count of exercises.
-     * @param startPosition position of the first target exercise in the list of exercises whose
-     * names contain [subname], or in the list of all exercises if [subname] is null or blank.
-     * @param subname part of the names of the target exercises.
-     * @return [List] of the [size] or fewer exercises in accordance with the [startPosition] in the
-     * list of exercises whose names contain [subname], or in the list of all exercises if [subname]
-     * is null or blank. The exercises are sorted in ascending order by name.
-     */
-    fun list(
-        size: Int,
-        startPosition: Int,
-        subname: String? = null
-    ): List<Exercise>
-
-    /**
-     * Getting a [List] of all exercises sorted in ascending order by name.
-     *
-     * @return [List] of all exercises sorted in ascending order by name.
-     */
-    suspend fun allExercisesSuspending(): List<Exercise>
-
-    /**
-     * Getting a [List] of exercises whose name is equal to [name].
-     *
-     * @param name name of target exercises.
-     * @return [List] of exercises whose name is equal to [name].
-     */
-    suspend fun exercisesByNameSuspending(name: String): List<Exercise>
 
     /**
      * Saving an exercise if it doesn't duplicate the exercise names.

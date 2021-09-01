@@ -55,7 +55,7 @@ class NoteRepositoryImpl(
     }
 
     override suspend fun listAllUnorderedSuspending(): List<Note> {
-        Timber.d("allSuspending")
+        Timber.d("listAllUnorderedSuspending")
         val noteWithExerciseEntityList = noteDao.listAllWithExercisesUnorderedSuspending()
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
@@ -77,43 +77,6 @@ class NoteRepositoryImpl(
         val noteCountPerExerciseList = noteDao.listTopPopularExercisesSuspending(size)
         Timber.d("noteCountPerExerciseList=$noteCountPerExerciseList")
         return noteCountPerExerciseList
-    }
-
-    override fun page(
-        size: Int,
-        requestedStartPosition: Int,
-        exerciseSubname: String?,
-        filter: NoteFilter?
-    ): Page<Note> = runBlocking {
-        transactor.transaction {
-            Timber.d(
-                """page:
-                |size=$size,
-                |requestedStartPosition=$requestedStartPosition,
-                |exerciseSubname=$exerciseSubname,
-                |filter=$filter""".trimMargin()
-            )
-            val count = entityCountSuspending(exerciseSubname, filter)
-            val notePage = if (count > 0 && size > 0) {
-                val offset = safeOffset(
-                    requestedOffset = requestedStartPosition,
-                    pageSize = size,
-                    count = count
-                )
-                val noteWithExerciseEntityList = entityList(
-                    size = size,
-                    startPosition = offset,
-                    exerciseSubname = exerciseSubname,
-                    filter = filter
-                )
-                val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
-                Page(noteList, offset)
-            } else {
-                Page(emptyList(), 0)
-            }
-            Timber.d("notePage=$notePage")
-            return@transaction notePage
-        }
     }
 
     override fun list(
@@ -140,6 +103,43 @@ class NoteRepositoryImpl(
         return noteList
     }
 
+    override fun page(
+        size: Int,
+        requestedStartPosition: Int,
+        exerciseSubname: String?,
+        filter: NoteFilter?
+    ): Page<Note> = runBlocking {
+        transactor.transaction {
+            Timber.d(
+                """page:
+                    |size=$size,
+                    |requestedStartPosition=$requestedStartPosition,
+                    |exerciseSubname=$exerciseSubname,
+                    |filter=$filter""".trimMargin()
+            )
+            val count = entityCountSuspending(exerciseSubname, filter)
+            val notePage = if (count > 0 && size > 0) {
+                val offset = safeOffset(
+                    requestedOffset = requestedStartPosition,
+                    pageSize = size,
+                    count = count
+                )
+                val noteWithExerciseEntityList = entityList(
+                    size = size,
+                    startPosition = offset,
+                    exerciseSubname = exerciseSubname,
+                    filter = filter
+                )
+                val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
+                Page(noteList, offset)
+            } else {
+                Page(emptyList(), 0)
+            }
+            Timber.d("notePage=$notePage")
+            return@transaction notePage
+        }
+    }
+
     override suspend fun saveIfExerciseNamePresentSuspending(
         note: Note,
         exerciseRepository: ExerciseRepository
@@ -147,7 +147,7 @@ class NoteRepositoryImpl(
         Timber.d("saveIfExerciseNamePresentSuspending: note=$note")
         val noteEntity = note.toNoteEntity { exerciseName ->
             Timber.d("exerciseName=$exerciseName")
-            val exerciseList = exerciseRepository.exercisesByNameSuspending(exerciseName)
+            val exerciseList = exerciseRepository.listByNameSuspending(exerciseName)
             Timber.d("exerciseList=$exerciseList")
             val exerciseId = if (exerciseList.isNotEmpty()) {
                 exerciseList.first().id
