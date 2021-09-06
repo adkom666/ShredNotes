@@ -37,7 +37,7 @@ data class NoteFilter(
         get() = arrayOf(
             dateFromInclusive,
             dateToExclusive
-        ).firstOrNull { it != null } != null
+        ).filterNotNull().isNotEmpty()
 
     /**
      * Filter with the undefined BPM range does not filter notes by BPM.
@@ -46,5 +46,5 @@ data class NoteFilter(
         get() = arrayOf(
             bpmFromInclusive,
             bpmToInclusive
-        ).firstOrNull { it != null } != null
+        ).filterNotNull().isNotEmpty()
 }
