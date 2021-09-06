@@ -16,13 +16,19 @@
         android:fullBackupContent="@xml/backup_descriptor">
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.SplashActivity"
+            android:theme="@style/SplashTheme"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/AppTheme" />
 
         <activity
             android:name=".ui.exercises.ExerciseActivity"
