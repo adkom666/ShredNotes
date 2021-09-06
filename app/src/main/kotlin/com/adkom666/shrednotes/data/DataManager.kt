@@ -70,7 +70,6 @@ class DataManager(
      * [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
      * thrown. This JSON should be used as [readyJson] after the rights are recovered.
      * @param readyJson information to be written on Google Drive as JSON.
-     *
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
