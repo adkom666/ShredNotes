@@ -1,7 +1,7 @@
 package com.adkom666.shrednotes.data.converter
 
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
-import com.adkom666.shrednotes.data.external.ExternalExercise
+import com.adkom666.shrednotes.data.external.ExternalExerciseV1
 import com.adkom666.shrednotes.data.model.Exercise
 
 /**
@@ -21,17 +21,17 @@ fun Exercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(
 )
 
 /**
- * Getting an external exercise from a database entity.
+ * Getting an external exercise (version 1) from a database entity.
  */
-fun ExerciseEntity.toExternalExercise(): ExternalExercise = ExternalExercise(
+fun ExerciseEntity.toExternalExerciseV1(): ExternalExerciseV1 = ExternalExerciseV1(
     id = id,
     name = name
 )
 
 /**
- * Getting a database entity from an external exercise.
+ * Getting a database entity from an external exercise (version 1).
  */
-fun ExternalExercise.toExerciseEntity(): ExerciseEntity = ExerciseEntity(
+fun ExternalExerciseV1.toExerciseEntity(): ExerciseEntity = ExerciseEntity(
     id = id,
     name = name
 )

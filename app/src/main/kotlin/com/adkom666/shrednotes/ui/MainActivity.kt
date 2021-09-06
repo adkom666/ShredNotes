@@ -482,6 +482,13 @@ class MainActivity :
             toast(R.string.error_unauthorized_user)
         MainViewModel.Message.Error.WrongJsonSyntax ->
             toast(R.string.error_wrong_json_syntax)
+        is MainViewModel.Message.Error.UnsupportedDataVersion -> {
+            val messageString = getString(
+                R.string.error_unsupported_data_version,
+                message.version
+            )
+            toast(messageString)
+        }
         is MainViewModel.Message.Error.Clarified -> {
             val messageString = getString(
                 R.string.error_clarified,

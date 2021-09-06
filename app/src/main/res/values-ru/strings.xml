@@ -114,6 +114,7 @@
 
     <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
     <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>
+    <string name="error_unsupported_data_version">Неподдерживаемая версия данных: %d</string>
 
     <string name="error_missing_excercise_name">Нет названия упражнения</string>
     <string name="error_excercise_already_exists">Упражнение \"%s\" уже есть</string>

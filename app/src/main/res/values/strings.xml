@@ -121,6 +121,7 @@
 
     <string name="error_unauthorized_user">Available only to authorized users</string>
     <string name="error_wrong_json_syntax">Wrong syntax of the JSON file on Google Drive</string>
+    <string name="error_unsupported_data_version">Unsupported data version: %d</string>
 
     <string name="error_missing_excercise_name">Exercise name is missing</string>
     <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>

@@ -3,7 +3,7 @@ package com.adkom666.shrednotes.data.converter
 import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
-import com.adkom666.shrednotes.data.external.ExternalNote
+import com.adkom666.shrednotes.data.external.ExternalNoteV1
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.util.time.Minutes
 
@@ -32,9 +32,9 @@ suspend fun Note.toNoteEntity(
 )
 
 /**
- * Getting an external note from a database entity.
+ * Getting an external note (version 1) from a database entity.
  */
-fun NoteEntity.toExternalNote(): ExternalNote = ExternalNote(
+fun NoteEntity.toExternalNoteV1(): ExternalNoteV1 = ExternalNoteV1(
     id = id,
     timestamp = timestamp,
     exerciseId = exerciseId,
@@ -42,9 +42,9 @@ fun NoteEntity.toExternalNote(): ExternalNote = ExternalNote(
 )
 
 /**
- * Getting a database entity from an external note.
+ * Getting a database entity from an external note (version 1).
  */
-fun ExternalNote.toNoteEntity(): NoteEntity = NoteEntity(
+fun ExternalNoteV1.toNoteEntity(): NoteEntity = NoteEntity(
     id = id,
     timestamp = timestamp,
     exerciseId = exerciseId,

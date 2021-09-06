@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.data.DataManager
+import com.adkom666.shrednotes.data.UnsupportedDataException
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.google.gson.JsonSyntaxException
@@ -150,6 +151,13 @@ class MainViewModel @Inject constructor(
              * The syntax of the JSON from Google Drive is incorrect.
              */
             object WrongJsonSyntax : Error()
+
+            /**
+             * The [version] of shred notes data is not supported.
+             *
+             * @property version suggested version.
+             */
+            data class UnsupportedDataVersion(val version: Int) : Error()
 
             /**
              * The details of this error are described in the [details].
@@ -401,6 +409,10 @@ class MainViewModel @Inject constructor(
                 Timber.e(e)
                 setState(State.Preparation.Continuing)
                 report(Message.Error.WrongJsonSyntax)
+            } catch (e: UnsupportedDataException) {
+                Timber.e(e)
+                setState(State.Preparation.Continuing)
+                report(Message.Error.UnsupportedDataVersion(e.version))
             } catch (e: Exception) {
                 Timber.e(e)
                 setState(State.Preparation.Continuing)
