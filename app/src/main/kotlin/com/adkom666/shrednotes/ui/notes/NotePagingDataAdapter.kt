@@ -36,7 +36,7 @@ class NotePagingDataAdapter(
         }
     }
 
-    private val dateFormat = DateFormat.getTimeInstance(
+    private val dateFormat: DateFormat = DateFormat.getTimeInstance(
         DateFormat.SHORT,
         Locale.getDefault()
     )

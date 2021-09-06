@@ -17,7 +17,7 @@ class NoteAdapter(
     private val notes: List<Note>
 ) : RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
 
-    private val dateFormat = DateFormat.getDateTimeInstance(
+    private val dateFormat: DateFormat = DateFormat.getDateTimeInstance(
         DateFormat.SHORT,
         DateFormat.SHORT,
         Locale.getDefault()

@@ -89,7 +89,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
     private var dateFromInclusive: Days? = null
     private var dateToInclusive: Days? = null
 
-    private val dateFormat = DateFormat.getDateInstance(
+    private val dateFormat: DateFormat = DateFormat.getDateInstance(
         DateFormat.SHORT,
         Locale.getDefault()
     )

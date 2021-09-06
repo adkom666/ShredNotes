@@ -85,7 +85,7 @@ class NoteActivity : AppCompatActivity() {
     private var _binding: ActivityNoteBinding? = null
     private var _model: NoteViewModel? = null
 
-    private val dateFormat = DateFormat.getDateTimeInstance(
+    private val dateFormat: DateFormat = DateFormat.getDateTimeInstance(
         DateFormat.SHORT,
         DateFormat.SHORT,
         Locale.getDefault()
