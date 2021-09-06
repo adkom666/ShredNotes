@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 
 /**
- * ItemDecoration to set the top margin for the first item.
+ * [RecyclerView.ItemDecoration] to set the top margin for the first item.
  *
  * @property marginTop top margin in pixels.
  */
