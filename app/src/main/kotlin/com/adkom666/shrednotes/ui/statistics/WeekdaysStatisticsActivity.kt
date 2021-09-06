@@ -167,6 +167,12 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             binding.averageAmongMaxBpmPieChart.setEntryLabelColor(blackColor)
         }
 
+        val cardColor = ContextCompat.getColor(this, R.color.normal_card_color)
+        binding.averageAmongMaxBpmPieChart.setHoleColor(cardColor)
+        binding.averageAmongMaxBpmPieChart.setTransparentCircleColor(cardColor)
+        binding.averageAmongMaxBpmPieChart.holeRadius = 45f
+        binding.averageAmongMaxBpmPieChart.transparentCircleRadius = 50f
+
         binding.averageAmongMaxBpmPieChart.description.isEnabled = false
         binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
         binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
