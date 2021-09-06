@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.util
 
 import android.graphics.Rect
 import android.view.View
+import androidx.annotation.Px
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -9,7 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
  *
  * @property marginTop top margin in pixels.
  */
-class FirstItemDecoration(private val marginTop: Int) : RecyclerView.ItemDecoration() {
+class FirstItemDecoration(
+    @Px
+    private val marginTop: Int
+) : RecyclerView.ItemDecoration() {
 
     override fun getItemOffsets(
         outRect: Rect,
