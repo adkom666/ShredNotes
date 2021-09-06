@@ -198,6 +198,8 @@ class NoteViewModel @Inject constructor(
      */
     private var noteToSaveWithExercise: Note? = null
 
+    private var exerciseListCache: List<Exercise>? = null
+
     /**
      * Prepare for working with the [note].
      *
@@ -220,7 +222,9 @@ class NoteViewModel @Inject constructor(
     suspend fun start() {
         Timber.d("Start")
         setState(State.Waiting)
-        val exerciseList = exerciseRepository.listAllSuspending()
+        val exerciseList = exerciseListCache
+            ?: exerciseRepository.listAllSuspending()
+                .also { exerciseListCache = it }
         give(Signal.ExerciseList(exerciseList))
         setState(State.Working)
     }
