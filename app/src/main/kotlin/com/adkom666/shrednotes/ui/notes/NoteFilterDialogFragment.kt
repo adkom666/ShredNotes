@@ -3,7 +3,6 @@ package com.adkom666.shrednotes.ui.notes
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.NoteFilter
@@ -111,18 +110,6 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        savedInstanceState?.let { state ->
-            restoreDateRange(state)
-        } ?: run {
-            initBpmRange()
-            invalidateDateRange()
-        }
-        setListeners()
-        restoreFragmentListeners()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -137,6 +124,8 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogFilterNotesBinding.inflate(layoutInflater)
+
+        init(savedInstanceState)
 
         val builder = MaterialAlertDialogBuilder(
             requireContext(),
@@ -190,6 +179,17 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
      */
     fun setOnCancelFilterListener(listener: FilterListener) {
         onCancelFilterListener = listener
+    }
+
+    private fun init(savedInstanceState: Bundle?) {
+        savedInstanceState?.let { state ->
+            restoreDateRange(state)
+        } ?: run {
+            initBpmRange()
+            invalidateDateRange()
+        }
+        setListeners()
+        restoreFragmentListeners()
     }
 
     private fun initBpmRange() {
