@@ -82,7 +82,7 @@ class MainActivity :
     private var _authOnReadLauncher: ActivityResultLauncher<Intent>? = null
     private var _authOnWriteLauncher: ActivityResultLauncher<Intent>? = null
 
-    private var menuReference: WeakReference<Menu>? = null
+    private var menuReference: WeakReference<Menu> = WeakReference(null)
 
     private val onExpandSearchViewListener: MenuItem.OnActionExpandListener =
         SearchActivenessListener()
@@ -115,8 +115,7 @@ class MainActivity :
         Timber.d("onDestroy")
         super.onDestroy()
         skipActivityLaunchers()
-        menuReference?.clear()
-        menuReference = null
+        menuReference.clear()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -365,7 +364,7 @@ class MainActivity :
     }
 
     private fun ensureNoSearchInput() {
-        menuReference?.get()?.let { menu ->
+        menuReference.get()?.let { menu ->
             val itemSearch = menu.findItem(R.id.action_search)
             val searchView = itemSearch.actionView as? SearchView
             searchView?.ensureNoTextInput()
@@ -539,7 +538,7 @@ class MainActivity :
         if (this is Filterable) {
             onFilterEnablingChangedListener = {
                 Timber.d("Filter enabling changed")
-                menuReference?.get()?.invalidate(MenuGroup.FILTER)
+                menuReference.get()?.invalidate(MenuGroup.FILTER)
             }
         }
     }
@@ -588,7 +587,7 @@ class MainActivity :
         ) {
             Timber.d("onFragmentActivityCreated")
             if (isFirstFragmentActivityCreated) {
-                menuReference?.get()?.invalidate()
+                menuReference.get()?.invalidate()
             } else {
                 isFirstFragmentActivityCreated = true
             }
