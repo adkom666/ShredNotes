@@ -28,7 +28,6 @@ import com.adkom666.shrednotes.ui.OnFilterEnablingChangedListener
 import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
-import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.ScrollToNewItem
@@ -187,10 +186,10 @@ class NotesFragment :
         val llm = LinearLayoutManager(context)
         llm.orientation = LinearLayoutManager.VERTICAL
         binding.noteRecycler.layoutManager = llm
-        val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
-        val decoration = FirstItemDecoration(marginTop.toInt())
-        binding.noteRecycler.addItemDecoration(decoration)
+        val headerMarginBottom = resources.getDimension(R.dimen.card_vertical_margin)
         val adapter = NotePagingDataAdapter(model.selectableNotes, model::onNoteClick)
+        val noteGroupHeader = NoteGroupHeader(headerMarginBottom.toInt(), adapter::peek)
+        binding.noteRecycler.addItemDecoration(noteGroupHeader)
         binding.noteRecycler.adapter = adapter
         return adapter
     }
