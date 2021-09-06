@@ -3,6 +3,7 @@ package com.adkom666.shrednotes.ui.notes
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.view.View
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.NoteFilter
@@ -110,8 +111,8 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         savedInstanceState?.let { state ->
             restoreDateRange(state)
         } ?: run {
