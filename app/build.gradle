@@ -39,15 +39,45 @@ android {
         }
     }
 
-    flavorDimensions 'venue'
+    def VENUE_DIMENSION = 'venue'
+    flavorDimensions VENUE_DIMENSION
     productFlavors {
         google {
-            dimension 'venue'
+            dimension VENUE_DIMENSION
             versionNameSuffix '-google'
+            buildConfigField 'String', 'DONATION_SKU', 'android.test.purchased'
+            ext {
+                fields = [[type: 'String', name: 'DONATION_SKU', values: [debug: 'android.test.purchased', release: 'donate']]]
+            }
         }
         catappult {
-            dimension 'venue'
+            dimension VENUE_DIMENSION
             versionNameSuffix '-catappult'
+            ext {
+                fields = []
+            }
+        }
+    }
+
+    applicationVariants.all { variant ->
+        // Get the VENUE dimension flavor
+        def venue = variant.getProductFlavors()
+                .findAll({ flavor -> flavor.dimension == VENUE_DIMENSION })
+                .get(0)
+        println "Adding ${venue.ext.fields.size()} custom buildConfigFields for flavor ${variant.name}"
+        // Loop over the fields and make appropriate buildConfigField
+        venue.ext.fields.each { field ->
+            def fldType = field['type']
+            def fldName = field['name']
+            def fldValues = field['values']
+            // Get debug/release specific value from values array
+            def fldSpecificValue = fldValues[variant.getBuildType().name]
+            // Add quotes for strings
+            if (fldType == 'String') {
+                fldSpecificValue = "\"${fldSpecificValue}\""
+            }
+            println "    => ${fldType} ${fldName} = ${fldSpecificValue}"
+            variant.buildConfigField fldType, fldName, fldSpecificValue
         }
     }
 
