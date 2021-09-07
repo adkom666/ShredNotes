@@ -41,6 +41,8 @@ class NoteAdapter(
 
     /**
      * Records item [ViewHolder].
+     *
+     * @property binding note view binding.
      */
     inner class ViewHolder(
         private val binding: ItemNoteBinding

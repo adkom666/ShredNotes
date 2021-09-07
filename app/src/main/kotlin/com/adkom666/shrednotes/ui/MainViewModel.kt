@@ -26,6 +26,7 @@ import javax.inject.Inject
  * Main screen model.
  *
  * @property dataManager [DataManager] to read and write app info.
+ * @property donor donor of money.
  */
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(

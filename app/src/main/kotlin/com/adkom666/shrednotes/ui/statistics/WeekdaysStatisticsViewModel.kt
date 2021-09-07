@@ -15,6 +15,8 @@ import javax.inject.Inject
 
 /**
  * Statistics by days of week screen model.
+ *
+ * @property statisticsAggregator source of statistics by days of week.
  */
 @ExperimentalCoroutinesApi
 class WeekdaysStatisticsViewModel @Inject constructor(

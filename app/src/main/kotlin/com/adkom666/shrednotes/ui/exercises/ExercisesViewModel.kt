@@ -40,6 +40,8 @@ import kotlin.properties.Delegates.observable
  * Exercises section model.
  *
  * @property exerciseRepository exercise storage management.
+ * @property noteRepository note storage management.
+ * @property preferences project's [SharedPreferences].
  */
 @ExperimentalCoroutinesApi
 class ExercisesViewModel @Inject constructor(

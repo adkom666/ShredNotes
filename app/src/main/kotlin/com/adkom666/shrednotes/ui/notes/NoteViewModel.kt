@@ -25,6 +25,7 @@ import javax.inject.Inject
  * Note screen model.
  *
  * @property noteRepository note storage management.
+ * @property exerciseRepository exercise storage management.
  */
 @ExperimentalCoroutinesApi
 class NoteViewModel @Inject constructor(

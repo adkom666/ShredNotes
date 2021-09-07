@@ -45,6 +45,9 @@ import kotlin.properties.Delegates.observable
 
 /**
  * Notes section model.
+ *
+ * @property noteRepository note storage management.
+ * @property preferences project's [SharedPreferences].
  */
 @ExperimentalCoroutinesApi
 class NotesViewModel @Inject constructor(

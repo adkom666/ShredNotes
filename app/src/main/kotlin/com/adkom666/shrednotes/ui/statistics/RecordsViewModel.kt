@@ -16,6 +16,8 @@ import javax.inject.Inject
 
 /**
  * Records screen model.
+ *
+ * @property recordsAggregator source of records.
  */
 @ExperimentalCoroutinesApi
 class RecordsViewModel @Inject constructor(

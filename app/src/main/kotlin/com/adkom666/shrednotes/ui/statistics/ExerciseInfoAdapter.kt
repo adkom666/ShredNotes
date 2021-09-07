@@ -32,6 +32,8 @@ class ExerciseInfoAdapter(
 
     /**
      * Records item [ViewHolder].
+     *
+     * @property binding exercise view binding.
      */
     inner class ViewHolder(
         private val binding: ItemExerciseBinding

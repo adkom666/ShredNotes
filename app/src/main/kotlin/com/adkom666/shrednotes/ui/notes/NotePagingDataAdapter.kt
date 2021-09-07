@@ -57,6 +57,8 @@ class NotePagingDataAdapter(
 
     /**
      * Note item [ViewHolder].
+     *
+     * @property binding note view binding.
      */
     inner class ViewHolder(
         private val binding: ItemNoteBinding

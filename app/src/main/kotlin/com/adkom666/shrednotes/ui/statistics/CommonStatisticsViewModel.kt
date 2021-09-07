@@ -16,6 +16,8 @@ import timber.log.Timber
 
 /**
  * Common statistics screen model.
+ *
+ * @property statisticsAggregator source of common statistics.
  */
 @ExperimentalCoroutinesApi
 @ExperimentalTime

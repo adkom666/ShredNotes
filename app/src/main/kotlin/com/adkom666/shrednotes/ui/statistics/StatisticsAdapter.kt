@@ -34,6 +34,8 @@ class StatisticsAdapter(
 
     /**
      * Statistics item [ViewHolder].
+     *
+     * @property binding title view binding.
      */
     inner class ViewHolder(
         private val binding: ItemTitleBinding
