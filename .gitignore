@@ -110,3 +110,9 @@ Temporary Items
 
 # Secrets
 /app/src/catappult/kotlin/com/adkom666/shrednotes/ask/Const.kt
+
+# Output
+/app/catappult/debug/output-metadata.json
+/app/catappult/release/output-metadata.json
+/app/google/debug/output-metadata.json
+/app/google/release/output-metadata.json
