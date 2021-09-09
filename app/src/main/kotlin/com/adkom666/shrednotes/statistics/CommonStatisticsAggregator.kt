@@ -4,7 +4,6 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.time.Days
-import com.adkom666.shrednotes.util.time.Minutes
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -45,8 +44,10 @@ class CommonStatisticsAggregator(
         val totalDays = notes.minByOrNull {
             it.dateTime.epochMillis
         }?.let { firstNote ->
-            val start = firstNote.dateTime.epochMillis.toDuration(DurationUnit.MILLISECONDS)
-            val now = Minutes().epochMillis.toDuration(DurationUnit.MILLISECONDS)
+            val startDays = Days(firstNote.dateTime.epochMillis)
+            val nowDays = Days()
+            val start = startDays.epochMillis.toDuration(DurationUnit.MILLISECONDS)
+            val now = nowDays.epochMillis.toDuration(DurationUnit.MILLISECONDS)
             val totalDuration = now - start
             totalDuration.inWholeDays.toInt() + 1
         } ?: 0

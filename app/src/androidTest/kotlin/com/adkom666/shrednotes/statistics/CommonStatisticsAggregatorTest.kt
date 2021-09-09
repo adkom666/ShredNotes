@@ -87,7 +87,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
-            timestamp = Days().yesterday.yesterday.epochMillis,
+            timestamp = Days().yesterday.epochMillis - 1L,
             exerciseId = exerciseEntity2.id,
             bpm = 256
         )
