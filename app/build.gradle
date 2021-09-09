@@ -47,7 +47,7 @@ android {
             versionNameSuffix '-google'
             buildConfigField 'String', 'DONATION_SKU', 'android.test.purchased'
             ext {
-                fields = [[type: 'String', name: 'DONATION_SKU', values: [debug: 'android.test.purchased', release: 'donate']]]
+                fields = [[type: 'String', name: 'DONATION_SKU', values: [debug: '"android.test.purchased"', release: '"donate"']]]
             }
         }
         catappult {
@@ -72,10 +72,6 @@ android {
             def fldValues = field['values']
             // Get debug/release specific value from values array
             def fldSpecificValue = fldValues[variant.getBuildType().name]
-            // Add quotes for strings
-            if (fldType == 'String') {
-                fldSpecificValue = "\"${fldSpecificValue}\""
-            }
             println "    => ${fldType} ${fldName} = ${fldSpecificValue}"
             variant.buildConfigField fldType, fldName, fldSpecificValue
         }
