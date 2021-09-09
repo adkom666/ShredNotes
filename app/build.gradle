@@ -53,7 +53,7 @@ android {
             dimension VENUE_DIMENSION
             versionNameSuffix '-catappult'
             ext {
-                fields = []
+                fields = [[type: 'String', name: 'DONATION_SKU', values: [debug: '"donate"', release: '"donate"']]]
             }
         }
     }
