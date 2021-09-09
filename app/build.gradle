@@ -45,7 +45,6 @@ android {
         google {
             dimension VENUE_DIMENSION
             versionNameSuffix '-google'
-            buildConfigField 'String', 'DONATION_SKU', 'android.test.purchased'
             ext {
                 fields = [[type: 'String', name: 'DONATION_SKU', values: [debug: '"android.test.purchased"', release: '"donate"']]]
             }
