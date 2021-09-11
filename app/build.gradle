@@ -16,6 +16,7 @@ android {
         versionCode 1
         versionName '1.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        project.archivesBaseName = "shrednotes-$versionName"
 
         kapt.arguments {
             arg('room.schemaLocation', "$projectDir/schemas")
