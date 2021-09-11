@@ -189,7 +189,7 @@ class MainActivity :
                 if (isScreenNotFirst) {
                     replaceFragment(fragment)
                 } else {
-                    // First screen is already set by system
+                    // First screen is already set
                     isScreenNotFirst = true
                 }
             } else {
