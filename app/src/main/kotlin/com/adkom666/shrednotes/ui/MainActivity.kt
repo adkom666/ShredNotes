@@ -184,7 +184,7 @@ class MainActivity :
 
         model.sectionAsLiveData.observe(this) { section ->
             val fragment = section.getFragment()
-            fragment.setListenersInNeed()
+            fragment.setListenersIfNeed()
             if (isScreenPresent) {
                 if (isScreenNotFirst) {
                     replaceFragment(fragment)
@@ -215,7 +215,7 @@ class MainActivity :
 
     private fun restoreFragmentListeners() {
         supportFragmentManager.fragments.forEach {
-            it?.setListenersInNeed()
+            it?.setListenersIfNeed()
         }
         supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_READ) {
             it.setReadingListener()
@@ -530,11 +530,11 @@ class MainActivity :
         Section.ASK -> AskFragment.newInstance()
     }
 
-    private fun Fragment.setListenersInNeed() {
-        setFilterListenersInNeed()
+    private fun Fragment.setListenersIfNeed() {
+        setFilterListenersIfNeed()
     }
 
-    private fun Fragment.setFilterListenersInNeed() {
+    private fun Fragment.setFilterListenersIfNeed() {
         if (this is Filterable) {
             onFilterEnablingChangedListener = {
                 Timber.d("Filter enabling changed")
