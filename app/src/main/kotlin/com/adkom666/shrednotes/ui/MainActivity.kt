@@ -145,6 +145,10 @@ class MainActivity :
         return handleNavSelection(item)
     }
 
+    /**
+     * Some modules, for example, 'Catappult Billing', can still call [startActivityForResult] on
+     * their own and expect to be called on response manually.
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
