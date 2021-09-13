@@ -134,9 +134,34 @@ private const val ORDER_TOP_BPM_NOTES_WITH_EXERCISES =
 
 private const val TOP_PORTION = "LIMIT :size"
 
+private const val SELECT_MAX_BPM_PER_EXERCISE_ID =
+    "SELECT $TABLE_NOTES_FIELD_EXERCISE_ID, " +
+            "IFNULL(MAX($TABLE_NOTES_FIELD_BPM), 0) " +
+            "AS $TABLE_NOTES_FIELD_BPM " +
+            "FROM $TABLE_NOTES " +
+            "GROUP BY $TABLE_NOTES_FIELD_EXERCISE_ID"
+
+// Results table fields must be named the same as TABLE_NOTES fields so that we can substitute them.
+private const val SELECT_TOP_BPM_WITH_EXERCISE_IDS =
+    "SELECT src_notes.$TABLE_NOTES_FIELD_ID, " +
+            "src_notes.$TABLE_NOTES_FIELD_EXERCISE_ID, " +
+            "src_notes.$TABLE_NOTES_FIELD_BPM, " +
+            "IFNULL(MAX(src_notes.$TABLE_NOTES_FIELD_TIMESTAMP), 0) " +
+            "AS $TABLE_NOTES_FIELD_TIMESTAMP " +
+            "FROM ($SELECT_MAX_BPM_PER_EXERCISE_ID) max_bpm_per_exercise_id " +
+            "INNER JOIN $TABLE_NOTES src_notes " +
+            "ON src_notes.$TABLE_NOTES_FIELD_EXERCISE_ID = " +
+            "    max_bpm_per_exercise_id.$TABLE_NOTES_FIELD_EXERCISE_ID " +
+            "AND src_notes.$TABLE_NOTES_FIELD_BPM = " +
+            "    max_bpm_per_exercise_id.$TABLE_NOTES_FIELD_BPM " +
+            "GROUP BY src_notes.$TABLE_NOTES_FIELD_EXERCISE_ID, src_notes.$TABLE_NOTES_FIELD_BPM"
+
 private const val SELECT_TOP_BPM_WITH_EXERCISES =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
-            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS) $TABLE_NOTES " +
+            "LEFT JOIN $TABLE_EXERCISES " +
+            "ON $TABLE_NOTES.$TABLE_NOTES_FIELD_EXERCISE_ID = " +
+            "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID " +
             "$ORDER_TOP_BPM_NOTES_WITH_EXERCISES " +
             TOP_PORTION
 
@@ -562,14 +587,12 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun listAllWithExercisesUnorderedSuspending(): List<NoteWithExerciseInfo>
 
     /**
-     * Getting a [List] of the [size] or fewer notes with their exercises' info. The notes are
-     * sorted in descending order by BPM, then descending by timestamp, and then ascending by
-     * exercise name.
+     * Getting a [List] of the [size] or fewer notes with their exercises' info. Notes are grouped
+     * by exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      *
      * @param size limit the count of notes.
-     * @return [List] of the [size] or fewer notes with their exercises' info. The notes are sorted
-     * in descending order by BPM, then descending by timestamp, and then ascending by exercise
-     * name.
+     * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
+     * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      */
     @Query(SELECT_TOP_BPM_WITH_EXERCISES)
     suspend fun listTopBpmWithExercisesSuspending(size: Int): List<NoteWithExerciseInfo>

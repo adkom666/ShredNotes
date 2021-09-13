@@ -52,14 +52,12 @@ interface NoteRepository {
     suspend fun listAllUnorderedSuspending(): List<Note>
 
     /**
-     * Getting a [List] of the [size] or fewer notes with their exercises' info. The notes are
-     * sorted in descending order by BPM, then descending by timestamp, and then ascending by
-     * exercise name.
+     * Getting a [List] of the [size] or fewer notes with their exercises' info. Notes are grouped
+     * by exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      *
      * @param size limit the count of notes.
-     * @return [List] of the [size] or fewer notes with their exercises' info. The notes are sorted
-     * in descending order by BPM, then descending by timestamp, and then ascending by exercise
-     * name.
+     * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
+     * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      */
     suspend fun listTopBpmSuspending(size: Int): List<Note>
 
