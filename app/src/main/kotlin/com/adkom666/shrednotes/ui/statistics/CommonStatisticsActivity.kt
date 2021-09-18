@@ -8,10 +8,16 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityStatisticsCommonBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.statistics.CommonStatistics
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.DateRangeFormat
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.restoreDateRangeListener
+import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
 import javax.inject.Inject
@@ -29,6 +35,12 @@ import timber.log.Timber
 class CommonStatisticsActivity : AppCompatActivity() {
 
     companion object {
+
+        private const val TAG_DATE_RANGE_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.common_statistics.date_range_picker"
+
+        private const val KEY_DATE_RANGE_TEXT =
+            "${BuildConfig.APPLICATION_ID}.keys.common_statistics.date_range_text"
 
         private val LINE_SEPARATOR = System.getProperty("line.separator")
 
@@ -55,6 +67,8 @@ class CommonStatisticsActivity : AppCompatActivity() {
     private var _binding: ActivityStatisticsCommonBinding? = null
     private var _model: CommonStatisticsViewModel? = null
 
+    private val dateRangeFormat: DateRangeFormat = DateRangeFormat()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -62,7 +76,12 @@ class CommonStatisticsActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        savedInstanceState?.let { state ->
+            restoreDateRangeText(state)
+        }
+
         setupButtonListeners()
+        restoreFragmentListeners()
         observeLiveData()
         listenChannels()
 
@@ -75,11 +94,50 @@ class CommonStatisticsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(
+            KEY_DATE_RANGE_TEXT,
+            binding.dateRange.dateRangeTextView.text.toString()
+        )
+    }
+
+    private fun restoreDateRangeText(savedInstanceState: Bundle) {
+        savedInstanceState.getString(KEY_DATE_RANGE_TEXT)?.let {
+            binding.dateRange.dateRangeTextView.text = it
+        }
+    }
+
     private fun setupButtonListeners() {
+        binding.dateRange.pickDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: pickDateRangeImageButton")
+            showDateRangePicker(
+                supportFragmentManager,
+                TAG_DATE_RANGE_PICKER,
+                { model.dateRange },
+                ::changeDateRange
+            )
+        }
+        binding.dateRange.clearDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: clearDateRangeImageButton")
+            model.dateRange = INFINITE_DATE_RANGE
+        }
         binding.okButton.setOnClickListener {
             Timber.d("OK clicked")
             model.onOkButtonClick()
         }
+    }
+
+    private fun restoreFragmentListeners() {
+        restoreDateRangeListener(
+            supportFragmentManager,
+            TAG_DATE_RANGE_PICKER,
+            ::changeDateRange
+        )
+    }
+
+    private fun changeDateRange(dateRange: DateRange) {
+        model.dateRange = dateRange
     }
 
     private fun observeLiveData() {
@@ -114,43 +172,60 @@ class CommonStatisticsActivity : AppCompatActivity() {
     private fun process(signal: CommonStatisticsViewModel.Signal) {
         Timber.d("Signal is $signal")
         when (signal) {
+            is CommonStatisticsViewModel.Signal.ActualDateRange ->
+                setDateRange(signal.value)
             is CommonStatisticsViewModel.Signal.Statistics ->
                 setStatistics(signal.value)
         }
     }
 
+    private fun setDateRange(dateRange: DateRange) {
+        binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
+    }
+
     private fun setStatistics(statistics: CommonStatistics) {
-        val lineTotalNotes = getString(
-            R.string.text_statistics_common_total_notes,
-            statistics.totalNotes
+        val lineNotes = getString(
+            R.string.text_statistics_common_notes,
+            statistics.notes
         )
-        val lineTotalExercises = getString(
-            R.string.text_statistics_common_total_exercises,
-            statistics.totalExercises
+        val lineRelatedExercises = getString(
+            R.string.text_statistics_common_related_exercises,
+            statistics.relatedExercises
         )
-        val lineTotalDays = getString(
-            R.string.text_statistics_common_total_days,
-            statistics.totalDays
+        val lineDays = getString(
+            R.string.text_statistics_common_days,
+            statistics.days
         )
         val lineActiveDays = getString(
             R.string.text_statistics_common_active_days,
             statistics.activeDays
         )
-        var text = lineTotalNotes + LINE_SEPARATOR +
-                lineTotalExercises + LINE_SEPARATOR +
-                lineTotalDays + LINE_SEPARATOR +
+        var text = lineNotes + LINE_SEPARATOR +
+                lineRelatedExercises + LINE_SEPARATOR +
+                lineDays + LINE_SEPARATOR +
                 lineActiveDays
 
         statistics.activeDaysShare?.let { share ->
-            val lineActiveDaysPercent = getString(
-                R.string.text_statistics_common_active_days_percent,
+            val lineActiveDaysShare = getString(
+                R.string.text_statistics_common_active_days_share,
                 share * 100
             )
             text += LINE_SEPARATOR
-            text += lineActiveDaysPercent
+            text += lineActiveDaysShare
         }
 
         binding.statisticsTextView.text = text
+
+        val lineAllNotes = getString(
+            R.string.text_statistics_common_all_notes,
+            statistics.allNotes
+        )
+        val lineAllExercises = getString(
+            R.string.text_statistics_common_all_exercises,
+            statistics.allExercises
+        )
+        val textForAllTheTime = lineAllNotes + LINE_SEPARATOR + lineAllExercises
+        binding.statisticsForAllTheTimeTextView.text = textForAllTheTime
     }
 
     private inner class StateObserver : Observer<CommonStatisticsViewModel.State> {

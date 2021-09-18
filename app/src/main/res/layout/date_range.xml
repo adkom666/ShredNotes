@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/date_range_text_view"
+        style="@style/AppTheme.HeaderText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/square_image_button_size"
+        android:gravity="top"
+        android:paddingStart="0dp"
+        android:paddingEnd="@dimen/square_image_button_size_x2_and_padding"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="27.07.1964 \u2014 4.07.2000" />
+
+    <ImageButton
+        android:id="@+id/pick_date_range_image_button"
+        style="@style/AppTheme.ImageButton"
+        android:layout_width="@dimen/square_image_button_size"
+        android:layout_height="@dimen/square_image_button_size"
+        android:src="@drawable/ic_edit"
+        android:contentDescription="@string/desc_pick_note_date_range"
+        android:layout_marginEnd="@dimen/padding_m"
+        app:layout_constraintEnd_toStartOf="@+id/clear_date_range_image_button"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/clear_date_range_image_button"
+        style="@style/AppTheme.ImageButton"
+        android:layout_width="@dimen/square_image_button_size"
+        android:layout_height="@dimen/square_image_button_size"
+        android:src="@drawable/ic_all_inclusive"
+        android:contentDescription="@string/desc_clear_note_date_range"
+        app:layout_constraintEnd_toEndOf="@+id/date_range_text_view"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

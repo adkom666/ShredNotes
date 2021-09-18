@@ -53,12 +53,15 @@
     <string name="title_statistics_weekdays">Статистика по дням недели</string>
     <string name="title_statistics_records">Рекорды</string>
 
-    <string name="text_statistics_common_total_notes">Всего заметок: %d</string>
-    <string name="text_statistics_common_total_exercises">Всего упражнений: %d</string>
-    <string name="text_statistics_common_total_days">Всего дней: %d</string>
+    <string name="text_statistics_common_notes">Заметок: %d</string>
+    <string name="text_statistics_common_related_exercises">Связанных упражнений: %d</string>
+    <string name="text_statistics_common_days">Дней: %d</string>
     <string name="text_statistics_common_active_days">Активных дней: %d</string>
-    <string name="text_statistics_common_active_days_percent">Доля активных дней: %.1f%%</string>
+    <string name="text_statistics_common_active_days_share">Доля активных дней: %.1f%%</string>
+    <string name="text_statistics_common_all_notes">Заметок: %d</string>
+    <string name="text_statistics_common_all_exercises">Упражнений: %d</string>
 
+    <string name="statistics_subtitle_for_all_the_time">Зарегистрировано за все время</string>
     <string name="statistics_subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
     <string name="statistics_subtitle_average_note_count">Среднее количество заметок</string>
     <string name="statistics_subtitle_note_count">Количество заметок</string>

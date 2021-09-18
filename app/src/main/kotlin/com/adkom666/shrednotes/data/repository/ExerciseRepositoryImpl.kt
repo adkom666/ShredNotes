@@ -8,8 +8,11 @@ import com.adkom666.shrednotes.data.db.Transactor
 import com.adkom666.shrednotes.data.db.dao.ExerciseDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.model.Exercise
+import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.paging.safeOffset
+import com.adkom666.shrednotes.util.time.timestampOrMax
+import com.adkom666.shrednotes.util.time.timestampOrMin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
@@ -31,6 +34,13 @@ class ExerciseRepositoryImpl(
     override suspend fun countSuspending(subname: String?): Int {
         Timber.d("countSuspending: subname=$subname")
         val count = entityCountSuspending(subname)
+        Timber.d("count=$count")
+        return count
+    }
+
+    override suspend fun countByRelatedNoteDateSuspending(dateRange: DateRange): Int {
+        Timber.d("countByRelatedNoteTimestampSuspending: dateRange=$dateRange")
+        val count = entityCountByRelatedNoteTimestampSuspending(dateRange)
         Timber.d("count=$count")
         return count
     }
@@ -154,6 +164,13 @@ class ExerciseRepositoryImpl(
     } else {
         exerciseDao.countBySubnameSuspending(subname)
     }
+
+    private suspend fun entityCountByRelatedNoteTimestampSuspending(
+        dateRange: DateRange
+    ): Int = exerciseDao.countByRelatedNoteTimestampSuspending(
+        dateRange.fromInclusive.timestampOrMin(),
+        dateRange.toInclusive?.tomorrow.timestampOrMax()
+    )
 
     private fun entityList(
         size: Int,

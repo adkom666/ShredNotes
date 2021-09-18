@@ -4,15 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.CommonStatistics
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregator
+import com.adkom666.shrednotes.util.DateRange
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.properties.Delegates.observable
 
 /**
  * Common statistics screen model.
@@ -82,6 +86,13 @@ class CommonStatisticsViewModel
     sealed class Signal {
 
         /**
+         * Show actual date range.
+         *
+         * @property value date range.
+         */
+        data class ActualDateRange(val value: DateRange) : Signal()
+
+        /**
          * Show actual common statistics.
          *
          * @property value ready-made common statistics.
@@ -107,6 +118,23 @@ class CommonStatisticsViewModel
     val signalChannel: ReceiveChannel<Signal>
         get() = _signalChannel.openSubscription()
 
+    /**
+     * The date range over which statistics should be shown.
+     */
+    var dateRange: DateRange by observable(
+        DateRange()
+    ) { _, old, new ->
+        Timber.d("Change date range: old=$old, new=$new")
+        if (new != old) {
+            setState(State.Waiting)
+            give(Signal.ActualDateRange(new))
+            viewModelScope.launch {
+                aggregateStatistics(new)
+                setState(State.Working)
+            }
+        }
+    }
+
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -121,6 +149,7 @@ class CommonStatisticsViewModel
     fun prepare() {
         Timber.d("Prepare")
         setState(State.Waiting)
+        give(Signal.ActualDateRange(dateRange))
         statisticsAggregator.clearCache()
     }
 
@@ -129,16 +158,8 @@ class CommonStatisticsViewModel
      */
     suspend fun start() {
         Timber.d("Start")
-        @Suppress("TooGenericExceptionCaught")
-        try {
-            val statistics = statisticsAggregator.aggregate()
-            give(Signal.Statistics(statistics))
-            setState(State.Working)
-        } catch (e: Exception) {
-            Timber.e(e)
-            setState(State.Working)
-            reportAbout(e)
-        }
+        aggregateStatistics(dateRange)
+        setState(State.Working)
     }
 
     /**
@@ -147,6 +168,17 @@ class CommonStatisticsViewModel
     fun onOkButtonClick() {
         Timber.d("On OK button click")
         setState(State.Finishing)
+    }
+
+    private suspend fun aggregateStatistics(dateRange: DateRange) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            val statistics = statisticsAggregator.aggregate(dateRange)
+            give(Signal.Statistics(statistics))
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
+        }
     }
 
     private fun reportAbout(e: Exception) {

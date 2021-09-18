@@ -7,6 +7,8 @@ import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
 import com.adkom666.shrednotes.util.time.Days
 import javax.inject.Inject
 import junit.framework.TestCase
@@ -19,6 +21,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
     private companion object {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
+        private const val EXERCISE_NAME_3 = "exercise 3"
     }
 
     @Inject
@@ -44,24 +47,43 @@ class CommonStatisticsAggregatorTest : TestCase() {
     }
 
     fun testAggregateFromEmptySource() = runBlocking {
-        val statistics = statisticsAggregator.aggregate()
-        assertEquals(0, statistics.totalNotes)
-        assertEquals(0, statistics.totalExercises)
-        assertEquals(0, statistics.totalDays)
+        val statistics = statisticsAggregator.aggregate(INFINITE_DATE_RANGE)
+        assertEquals(0, statistics.notes)
+        assertEquals(0, statistics.relatedExercises)
+        assertEquals(0, statistics.days)
         assertEquals(0, statistics.activeDays)
         assertEquals(null, statistics.activeDaysShare)
+        assertEquals(0, statistics.allNotes)
+        assertEquals(0, statistics.allExercises)
     }
 
-    fun testAggregate() = runBlocking {
+    fun testAggregateForInfiniteDateRange() = runBlocking {
 
         fillDatabase()
 
-        val statistics = statisticsAggregator.aggregate()
-        assertEquals(3, statistics.totalNotes)
-        assertEquals(2, statistics.totalExercises)
-        assertEquals(3, statistics.totalDays)
+        val statistics = statisticsAggregator.aggregate(INFINITE_DATE_RANGE)
+        assertEquals(3, statistics.notes)
+        assertEquals(2, statistics.relatedExercises)
+        assertEquals(3, statistics.days)
         assertEquals(2, statistics.activeDays)
         assertEquals(2f / 3, statistics.activeDaysShare)
+        assertEquals(3, statistics.allNotes)
+        assertEquals(3, statistics.allExercises)
+    }
+
+    fun testAggregateForCustomDateRange() = runBlocking {
+
+        fillDatabase()
+
+        val dateRange = DateRange(Days().yesterday, Days())
+        val statistics = statisticsAggregator.aggregate(dateRange)
+        assertEquals(2, statistics.notes)
+        assertEquals(1, statistics.relatedExercises)
+        assertEquals(1, statistics.days)
+        assertEquals(1, statistics.activeDays)
+        assertEquals(1f / 1, statistics.activeDaysShare)
+        assertEquals(3, statistics.allNotes)
+        assertEquals(3, statistics.allExercises)
     }
 
     private fun fillDatabase() {
@@ -76,6 +98,12 @@ class CommonStatisticsAggregatorTest : TestCase() {
             name = EXERCISE_NAME_2
         )
         exerciseDao.insert(exerciseEntity2)
+
+        val exerciseEntity3 = ExerciseEntity(
+            id = 3.toId(),
+            name = EXERCISE_NAME_3
+        )
+        exerciseDao.insert(exerciseEntity3)
 
         val noteEntity1 = NoteEntity(
             id = 1.toId(),
@@ -96,7 +124,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
             timestamp = Days().epochMillis,
-            exerciseId = exerciseEntity2.id,
+            exerciseId = exerciseEntity1.id,
             bpm = 512
         )
         noteDao.insert(noteEntity3)
