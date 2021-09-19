@@ -17,6 +17,11 @@ import com.adkom666.shrednotes.databinding.ActivityStatisticsWeekdaysBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.statistics.Weekday
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.DateRangeFormat
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.restoreDateRangeListener
+import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -39,6 +44,9 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
         private const val EXTRA_TARGET_PARAMETER =
             "${BuildConfig.APPLICATION_ID}.extras.weekdays_statistics_target_parameter"
+
+        private const val TAG_DATE_RANGE_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.weekdays_statistics.date_range_picker"
 
         /**
          * Creating an intent to open the screen of statistics by days of week.
@@ -69,6 +77,8 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     private var _binding: ActivityStatisticsWeekdaysBinding? = null
     private var _model: WeekdaysStatisticsViewModel? = null
 
+    private val dateRangeFormat: DateRangeFormat = DateRangeFormat()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -76,7 +86,9 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        prepareChart()
         setupButtonListeners()
+        restoreFragmentListeners()
         observeLiveData()
         listenChannels()
 
@@ -93,11 +105,51 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         }
     }
 
+    private fun prepareChart() {
+        val blackColor = ContextCompat.getColor(this, R.color.black)
+        val cardColor = ContextCompat.getColor(this, R.color.normal_card_color)
+
+        binding.averageAmongMaxBpmPieChart.setEntryLabelColor(blackColor)
+        binding.averageAmongMaxBpmPieChart.setHoleColor(cardColor)
+        binding.averageAmongMaxBpmPieChart.setTransparentCircleColor(cardColor)
+        binding.averageAmongMaxBpmPieChart.holeRadius = 45f
+        binding.averageAmongMaxBpmPieChart.transparentCircleRadius = 50f
+
+        binding.averageAmongMaxBpmPieChart.description.isEnabled = false
+        binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
+        binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
+    }
+
     private fun setupButtonListeners() {
+        binding.dateRange.pickDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: pickDateRangeImageButton")
+            showDateRangePicker(
+                supportFragmentManager,
+                TAG_DATE_RANGE_PICKER,
+                { model.dateRange },
+                ::changeDateRange
+            )
+        }
+        binding.dateRange.clearDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: clearDateRangeImageButton")
+            model.dateRange = INFINITE_DATE_RANGE
+        }
         binding.okButton.setOnClickListener {
             Timber.d("OK clicked")
             model.onOkButtonClick()
         }
+    }
+
+    private fun restoreFragmentListeners() {
+        restoreDateRangeListener(
+            supportFragmentManager,
+            TAG_DATE_RANGE_PICKER,
+            ::changeDateRange
+        )
+    }
+
+    private fun changeDateRange(dateRange: DateRange) {
+        model.dateRange = dateRange
     }
 
     private fun observeLiveData() {
@@ -134,6 +186,8 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         when (signal) {
             is WeekdaysStatisticsViewModel.Signal.Subtitle ->
                 setSubtitle(signal.value)
+            is WeekdaysStatisticsViewModel.Signal.ActualDateRange ->
+                setDateRange(signal.value)
             is WeekdaysStatisticsViewModel.Signal.Statistics ->
                 setStatistics(signal.value)
         }
@@ -144,7 +198,21 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         binding.statisticsSubtitleTextView.text = getString(resId)
     }
 
+    private fun setDateRange(dateRange: DateRange) {
+        binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
+    }
+
     private fun setStatistics(statistics: WeekdaysStatistics) {
+        binding.averageAmongMaxBpmPieChart.clear()
+        val entries = pieEntriesOf(statistics)
+        if (entries.isNotEmpty()) {
+            val dataSet = pieDataSetOf(entries)
+            binding.averageAmongMaxBpmPieChart.data = PieData(dataSet)
+        }
+        binding.averageAmongMaxBpmPieChart.invalidate()
+    }
+
+    private fun pieEntriesOf(statistics: WeekdaysStatistics): List<PieEntry> {
         val entries = mutableListOf<PieEntry>()
         Weekday.values().forEach { weekday ->
             statistics.valueMap[weekday]?.let { value ->
@@ -155,28 +223,16 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
                 }
             }
         }
+        return entries
+    }
 
-        if (entries.isNotEmpty()) {
-            val dataSet = PieDataSet(entries, "")
-            dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList()
-            val blackColor = ContextCompat.getColor(this, R.color.black)
-            dataSet.valueTextColor = blackColor
-            dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
-
-            binding.averageAmongMaxBpmPieChart.data = PieData(dataSet)
-            binding.averageAmongMaxBpmPieChart.setEntryLabelColor(blackColor)
-        }
-
-        val cardColor = ContextCompat.getColor(this, R.color.normal_card_color)
-        binding.averageAmongMaxBpmPieChart.setHoleColor(cardColor)
-        binding.averageAmongMaxBpmPieChart.setTransparentCircleColor(cardColor)
-        binding.averageAmongMaxBpmPieChart.holeRadius = 45f
-        binding.averageAmongMaxBpmPieChart.transparentCircleRadius = 50f
-
-        binding.averageAmongMaxBpmPieChart.description.isEnabled = false
-        binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
-        binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
-        binding.averageAmongMaxBpmPieChart.invalidate()
+    private fun pieDataSetOf(entries: List<PieEntry>): PieDataSet {
+        val dataSet = PieDataSet(entries, "")
+        dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList()
+        val blackColor = ContextCompat.getColor(this, R.color.black)
+        dataSet.valueTextColor = blackColor
+        dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
+        return dataSet
     }
 
     private fun PieDataSet.setValueTextSize(@DimenRes resId: Int) {

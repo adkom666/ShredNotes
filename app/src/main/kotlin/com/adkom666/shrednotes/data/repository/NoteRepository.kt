@@ -4,6 +4,7 @@ import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.db.entity.NoteCountPerExerciseInfo
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
+import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.flow.Flow
@@ -58,6 +59,14 @@ interface NoteRepository {
      * @return [List] of all notes.
      */
     suspend fun listAllUnorderedSuspending(): List<Note>
+
+    /**
+     * Getting a [List] of notes with a date in [dateRange].
+     *
+     * @param dateRange range of dates of the target notes.
+     * @return [List] of notes with a date in [dateRange].
+     */
+    suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info. Notes are grouped

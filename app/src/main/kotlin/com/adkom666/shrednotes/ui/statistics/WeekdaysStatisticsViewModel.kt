@@ -4,14 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
+import com.adkom666.shrednotes.util.DateRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 /**
  * Statistics by days of week screen model.
@@ -79,6 +83,13 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     sealed class Signal {
 
         /**
+         * Show actual date range.
+         *
+         * @property value date range.
+         */
+        data class ActualDateRange(val value: DateRange) : Signal()
+
+        /**
          * Show actual subtitle for statistics by days of week.
          *
          * @property value ready-made subtitle value.
@@ -120,6 +131,23 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     val signalChannel: ReceiveChannel<Signal>
         get() = _signalChannel.openSubscription()
 
+    /**
+     * The date range over which statistics should be shown.
+     */
+    var dateRange: DateRange by Delegates.observable(
+        DateRange()
+    ) { _, old, new ->
+        Timber.d("Change date range: old=$old, new=$new")
+        if (new != old) {
+            setState(State.Waiting)
+            give(Signal.ActualDateRange(new))
+            viewModelScope.launch {
+                aggregateStatistics(new)
+                setState(State.Working)
+            }
+        }
+    }
+
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -140,6 +168,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         this.targetParameter = targetParameter
         setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
+        give(Signal.ActualDateRange(dateRange))
         statisticsAggregator.clearCache()
     }
 
@@ -148,22 +177,8 @@ class WeekdaysStatisticsViewModel @Inject constructor(
      */
     suspend fun start() {
         Timber.d("Start")
-        @Suppress("TooGenericExceptionCaught")
-        try {
-            val statistics = when (targetParameter) {
-                WeekdaysStatisticsTargetParameter.MAX_BPM ->
-                    statisticsAggregator.aggregateAverageAmongMaxBpm()
-                WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
-                    statisticsAggregator.aggregateAverageNoteCount()
-                null -> error("Target parameter is missing!")
-            }
-            give(Signal.Statistics(statistics))
-            setState(State.Working)
-        } catch (e: Exception) {
-            Timber.e(e)
-            setState(State.Working)
-            reportAbout(e)
-        }
+        aggregateStatistics(dateRange)
+        setState(State.Working)
     }
 
     /**
@@ -172,6 +187,23 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     fun onOkButtonClick() {
         Timber.d("On OK button click")
         setState(State.Finishing)
+    }
+
+    private suspend fun aggregateStatistics(dateRange: DateRange) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            val statistics = when (targetParameter) {
+                WeekdaysStatisticsTargetParameter.MAX_BPM ->
+                    statisticsAggregator.aggregateAverageAmongMaxBpm(dateRange)
+                WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
+                    statisticsAggregator.aggregateAverageNoteCount(dateRange)
+                null -> error("Target parameter is missing!")
+            }
+            give(Signal.Statistics(statistics))
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
+        }
     }
 
     private fun reportAbout(e: Exception) {

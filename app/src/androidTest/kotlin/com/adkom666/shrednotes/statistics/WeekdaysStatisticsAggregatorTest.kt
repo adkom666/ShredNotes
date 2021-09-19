@@ -7,6 +7,9 @@ import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.time.Days
 import java.util.Calendar
 import javax.inject.Inject
 import junit.framework.TestCase
@@ -46,8 +49,8 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         database.close()
     }
 
-    fun testAggregateAverageAmongMaxBpm() = runBlocking {
-        val statistics = statisticsAggregator.aggregateAverageAmongMaxBpm()
+    fun testAggregateAverageAmongMaxBpmForInfiniteDateRange() = runBlocking {
+        val statistics = statisticsAggregator.aggregateAverageAmongMaxBpm(INFINITE_DATE_RANGE)
         Timber.d("statistics.valueMap=${statistics.valueMap}")
         assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
         assertEquals(BPM[0].toFloat(), statistics.valueMap[Weekday.MONDAY])
@@ -58,13 +61,49 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         assertEquals(null, statistics.valueMap[Weekday.SATURDAY])
     }
 
-    fun testAggregateAverageNoteCount() = runBlocking {
-        val statistics = statisticsAggregator.aggregateAverageNoteCount()
+    fun testAggregateAverageAmongMaxBpmForCustomDateRange() = runBlocking {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_WEEK, 2)
+        val monday = Days(calendar.timeInMillis)
+        calendar.set(Calendar.DAY_OF_WEEK, 4)
+        val wednesday = Days(calendar.timeInMillis)
+        val dateRange = DateRange(monday, wednesday)
+        val statistics = statisticsAggregator.aggregateAverageAmongMaxBpm(dateRange)
+        Timber.d("statistics.valueMap=${statistics.valueMap}")
+        assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
+        assertEquals(BPM[0].toFloat(), statistics.valueMap[Weekday.MONDAY])
+        assertEquals(null, statistics.valueMap[Weekday.TUESDAY])
+        assertEquals(BPM[1].toFloat(), statistics.valueMap[Weekday.WEDNESDAY])
+        assertEquals(null, statistics.valueMap[Weekday.THURSDAY])
+        assertEquals(null, statistics.valueMap[Weekday.FRIDAY])
+        assertEquals(null, statistics.valueMap[Weekday.SATURDAY])
+    }
+
+    fun testAggregateAverageNoteCountForInfiniteDateRange() = runBlocking {
+        val statistics = statisticsAggregator.aggregateAverageNoteCount(INFINITE_DATE_RANGE)
         Timber.d("statistics.valueMap=${statistics.valueMap}")
         assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
         assertEquals(1f, statistics.valueMap[Weekday.MONDAY])
         assertEquals(null, statistics.valueMap[Weekday.TUESDAY])
-        assertEquals(1.5f, statistics.valueMap[Weekday.WEDNESDAY])
+        assertEquals((2f + 1f) / 2, statistics.valueMap[Weekday.WEDNESDAY])
+        assertEquals(null, statistics.valueMap[Weekday.THURSDAY])
+        assertEquals(null, statistics.valueMap[Weekday.FRIDAY])
+        assertEquals(null, statistics.valueMap[Weekday.SATURDAY])
+    }
+
+    fun testAggregateAverageNoteCountForCustomDateRange() = runBlocking {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_WEEK, 2)
+        val monday = Days(calendar.timeInMillis)
+        calendar.set(Calendar.DAY_OF_WEEK, 4)
+        val wednesday = Days(calendar.timeInMillis)
+        val dateRange = DateRange(monday, wednesday)
+        val statistics = statisticsAggregator.aggregateAverageNoteCount(dateRange)
+        Timber.d("statistics.valueMap=${statistics.valueMap}")
+        assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
+        assertEquals(1f, statistics.valueMap[Weekday.MONDAY])
+        assertEquals(null, statistics.valueMap[Weekday.TUESDAY])
+        assertEquals(2f, statistics.valueMap[Weekday.WEDNESDAY])
         assertEquals(null, statistics.valueMap[Weekday.THURSDAY])
         assertEquals(null, statistics.valueMap[Weekday.FRIDAY])
         assertEquals(null, statistics.valueMap[Weekday.SATURDAY])

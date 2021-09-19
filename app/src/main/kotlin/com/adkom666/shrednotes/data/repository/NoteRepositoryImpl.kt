@@ -12,6 +12,8 @@ import com.adkom666.shrednotes.data.db.entity.NoteWithExerciseInfo
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.paging.safeOffset
 import com.adkom666.shrednotes.util.time.Days
@@ -66,6 +68,14 @@ class NoteRepositoryImpl(
     override suspend fun listAllUnorderedSuspending(): List<Note> {
         Timber.d("listAllUnorderedSuspending")
         val noteWithExerciseEntityList = noteDao.listAllWithExercisesUnorderedSuspending()
+        val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
+        Timber.d("noteList=$noteList")
+        return noteList
+    }
+
+    override suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note> {
+        Timber.d("listUnorderedSuspending: dateRange=$dateRange")
+        val noteWithExerciseEntityList = entityListSuspending(dateRange)
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
@@ -298,6 +308,17 @@ class NoteRepositoryImpl(
         // All:
         else ->
             noteDao.countAllSuspending()
+    }
+
+    private suspend fun entityListSuspending(
+        dateRange: DateRange
+    ) = if (dateRange != INFINITE_DATE_RANGE) {
+        noteDao.listByTimestampRangeWithExercisesUnorderedSuspending(
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toInclusive?.tomorrow.timestampOrMax()
+        )
+    } else {
+        noteDao.listAllWithExercisesUnorderedSuspending()
     }
 
     private fun entityList(

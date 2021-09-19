@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
 import timber.log.Timber
 import java.util.Calendar
@@ -19,20 +20,20 @@ class WeekdaysStatisticsAggregator(
         private val ALL_WEEKDAYS = Weekday.values()
     }
 
-    private var averageAmongMaxBpmCache: Map<Weekday, Float>? = null
-    private var averageAmongNoteCountCache: Map<Weekday, Float>? = null
+    private var averageAmongMaxBpmCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
+    private var averageAmongNoteCountCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
 
     /**
      * Aggregate statistics of the average among max BPM by days of week.
      *
      * @return aggregated statistics of the average among max BPM by days of week.
      */
-    suspend fun aggregateAverageAmongMaxBpm(): WeekdaysStatistics {
+    suspend fun aggregateAverageAmongMaxBpm(dateRange: DateRange): WeekdaysStatistics {
         Timber.d("Aggregate statistics of the average among max BPM by days of week")
-        val averageAmongMaxBpm = averageAmongMaxBpmCache
-            ?: aggregateAverageQuantity { noteList ->
+        val averageAmongMaxBpm = averageAmongMaxBpmCache[dateRange]
+            ?: aggregateAverageQuantity(dateRange) { noteList ->
                 noteList.map { it.bpm }.maxOrNull()
-            }.also { averageAmongMaxBpmCache = it }
+            }.also { averageAmongMaxBpmCache[dateRange] = it }
         return WeekdaysStatistics(valueMap = averageAmongMaxBpm)
     }
 
@@ -41,12 +42,12 @@ class WeekdaysStatisticsAggregator(
      *
      * @return aggregated statistics of the average note count by days of week.
      */
-    suspend fun aggregateAverageNoteCount(): WeekdaysStatistics {
+    suspend fun aggregateAverageNoteCount(dateRange: DateRange): WeekdaysStatistics {
         Timber.d("Aggregate statistics of the average note count by days of week")
-        val averageAmongNoteCount = averageAmongNoteCountCache
-            ?: aggregateAverageQuantity { noteList ->
+        val averageAmongNoteCount = averageAmongNoteCountCache[dateRange]
+            ?: aggregateAverageQuantity(dateRange) { noteList ->
                 noteList.count()
-            }.also { averageAmongNoteCountCache = it }
+            }.also { averageAmongNoteCountCache[dateRange] = it }
         return WeekdaysStatistics(valueMap = averageAmongNoteCount)
     }
 
@@ -54,14 +55,15 @@ class WeekdaysStatisticsAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
-        averageAmongMaxBpmCache = null
-        averageAmongNoteCountCache = null
+        averageAmongMaxBpmCache.clear()
+        averageAmongNoteCountCache.clear()
     }
 
     private suspend fun aggregateAverageQuantity(
+        dateRange: DateRange,
         calcQuantity: (List<Note>) -> Int?
-    ): Map<Weekday, Float> {
-        val noteToDaysMap = noteToDaysMap(noteRepository)
+    ): WeekdayValues {
+        val noteToDaysMap = noteToDaysMap(dateRange)
         Timber.d("noteToDaysMap=$noteToDaysMap")
 
         val weekdayToQuantityListMap = weekdayToEmptyIntListMap()
@@ -89,8 +91,8 @@ class WeekdaysStatisticsAggregator(
         return averageQuantity
     }
 
-    private suspend fun noteToDaysMap(noteRepository: NoteRepository): Map<Days, List<Note>> {
-        val notes = noteRepository.listAllUnorderedSuspending()
+    private suspend fun noteToDaysMap(dateRange: DateRange): Map<Days, List<Note>> {
+        val notes = noteRepository.listUnorderedSuspending(dateRange)
         val noteToDaysMap = mutableMapOf<Days, MutableList<Note>>()
         notes.forEach { note ->
             val days = Days(note.dateTime.epochMillis)
