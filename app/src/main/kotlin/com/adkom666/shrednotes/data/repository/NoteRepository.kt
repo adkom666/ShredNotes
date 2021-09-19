@@ -5,6 +5,7 @@ import com.adkom666.shrednotes.data.db.entity.NoteCountPerExerciseInfo
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.util.paging.Page
+import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -43,6 +44,13 @@ interface NoteRepository {
      * @return count of notes with exercises whose identifiers are not in the [exerciseIds].
      */
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
+     * Getting the date of the first note or null if it does not exist.
+     *
+     * @return date of the first note or null if it does not exist.
+     */
+    suspend fun firstNoteDateSuspending(): Days?
 
     /**
      * Getting a [List] of all notes.

@@ -79,9 +79,9 @@ class CommonStatisticsAggregatorTest : TestCase() {
         val statistics = statisticsAggregator.aggregate(dateRange)
         assertEquals(2, statistics.notes)
         assertEquals(1, statistics.relatedExercises)
-        assertEquals(1, statistics.days)
+        assertEquals(2, statistics.days)
         assertEquals(1, statistics.activeDays)
-        assertEquals(1f / 1, statistics.activeDaysShare)
+        assertEquals(1f / 2, statistics.activeDaysShare)
         assertEquals(3, statistics.allNotes)
         assertEquals(3, statistics.allExercises)
     }

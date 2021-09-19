@@ -111,6 +111,10 @@ private const val SELECT_COUNT_OTHER_BY_EXERCISE_IDS =
             "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID NOT IN (:exerciseIds)"
 
+private const val SELECT_FIRST_NOTE_TIMESTAMP =
+    "SELECT MIN($TABLE_NOTES_FIELD_TIMESTAMP) " +
+            "FROM $TABLE_NOTES"
+
 private const val NOTES_WITH_EXERCISES_FIELDS =
     "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
@@ -569,6 +573,14 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_COUNT_OTHER_BY_EXERCISE_IDS)
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
+
+    /**
+     * Getting the timestamp of the first note or null if it does not exist.
+     *
+     * @return timestamp of the first note or null if it does not exist.
+     */
+    @Query(SELECT_FIRST_NOTE_TIMESTAMP)
+    suspend fun firstNoteTimestampSuspending(): Long?
 
     /**
      * Getting a [List] of all note entities.

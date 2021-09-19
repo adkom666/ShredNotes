@@ -26,6 +26,7 @@ class CommonStatisticsAggregator(
     private val noteCountCache: MutableMap<DateRange, Int?> = mutableMapOf()
     private val relatedExerciseCountCache: MutableMap<DateRange, Int?> = mutableMapOf()
     private var allNotesCache: List<Note>? = null
+    private var firstNoteDateCache: Array<Days?>? = null
     private var allNoteCountCache: Int? = null
     private var allExerciseCountCache: Int? = null
 
@@ -54,6 +55,10 @@ class CommonStatisticsAggregator(
             ?: noteRepository.listAllUnorderedSuspending()
                 .also { allNotesCache = it }
 
+        val firstNoteDate = firstNoteDateCache?.first()
+            ?: noteRepository.firstNoteDateSuspending()
+                .also { firstNoteDateCache = arrayOf(it) }
+
         val allNoteCount = allNoteCountCache
             ?: noteRepository.countSuspending()
                 .also { allNoteCountCache = it }
@@ -62,32 +67,15 @@ class CommonStatisticsAggregator(
             ?: exerciseRepository.countSuspending()
                 .also { allExerciseCountCache = it }
 
+        val dayCount = firstNoteDate?.let {
+            daysInRange(dateRange, it)
+        } ?: 0
+
         val fromEpochMillisInclusive = dateRange.fromInclusive.timestampOrMin()
         val toEpochMillisExclusive = dateRange.toInclusive?.tomorrow.timestampOrMax()
-
         val notes = allNotes.filter {
             it.dateTime.epochMillis in fromEpochMillisInclusive until toEpochMillisExclusive
         }
-
-        val dayCount = notes.minByOrNull {
-            it.dateTime.epochMillis
-        }?.let { firstNote ->
-            val startDays = Days(firstNote.dateTime.epochMillis)
-            val nowDays = Days()
-            val endDays = if (
-                dateRange.toInclusive == null ||
-                dateRange.toInclusive.epochMillis > nowDays.epochMillis
-            ) {
-                nowDays
-            } else {
-                dateRange.toInclusive
-            }
-            val start = startDays.epochMillis.toDuration(DurationUnit.MILLISECONDS)
-            val end = endDays.epochMillis.toDuration(DurationUnit.MILLISECONDS)
-            val totalDuration = end - start
-            totalDuration.inWholeDays.toInt() + 1
-        } ?: 0
-
         val activeDaysSet = mutableSetOf<Days>()
         notes.forEach { note ->
             val days = Days(note.dateTime.date)
@@ -119,7 +107,32 @@ class CommonStatisticsAggregator(
         noteCountCache.clear()
         relatedExerciseCountCache.clear()
         allNotesCache = null
+        firstNoteDateCache = null
         allNoteCountCache = null
         allExerciseCountCache = null
+    }
+
+    private fun daysInRange(dateRange: DateRange, firstDate: Days): Int {
+        val startDate = if (
+            dateRange.fromInclusive == null ||
+            dateRange.fromInclusive.epochMillis < firstDate.epochMillis
+        ) {
+            firstDate
+        } else {
+            dateRange.fromInclusive
+        }
+        val nowDate = Days()
+        val endDate = if (
+            dateRange.toInclusive == null ||
+            dateRange.toInclusive.epochMillis > nowDate.epochMillis
+        ) {
+            nowDate
+        } else {
+            dateRange.toInclusive
+        }
+        val start = startDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)
+        val end = endDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)
+        val totalDuration = end - start
+        return totalDuration.inWholeDays.toInt() + 1
     }
 }
