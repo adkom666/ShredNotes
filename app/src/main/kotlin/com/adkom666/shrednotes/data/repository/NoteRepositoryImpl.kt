@@ -81,19 +81,23 @@ class NoteRepositoryImpl(
         return noteList
     }
 
-    override suspend fun listTopBpmSuspending(size: Int): List<Note> {
-        Timber.d("listTopBpmSuspending: size=$size")
-        val noteWithExerciseEntityList = noteDao.listTopBpmWithExercisesSuspending(size)
+    override suspend fun listTopBpmSuspending(
+        size: Int,
+        dateRange: DateRange
+    ): List<Note> {
+        Timber.d("listTopBpmSuspending: size=$size, dateRange=$dateRange")
+        val noteWithExerciseEntityList = topBpmEntityListSuspending(size, dateRange)
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
     }
 
     override suspend fun listTopPopularExercisesSuspending(
-        size: Int
+        size: Int,
+        dateRange: DateRange
     ): List<NoteCountPerExerciseInfo> {
-        Timber.d("listTopPopularExercisesSuspending: size=$size")
-        val noteCountPerExerciseList = noteDao.listTopPopularExercisesSuspending(size)
+        Timber.d("listTopPopularExercisesSuspending: size=$size, dateRange=$dateRange")
+        val noteCountPerExerciseList = topNoteCountPerExerciseListSuspending(size, dateRange)
         Timber.d("noteCountPerExerciseList=$noteCountPerExerciseList")
         return noteCountPerExerciseList
     }
@@ -312,13 +316,39 @@ class NoteRepositoryImpl(
 
     private suspend fun entityListSuspending(
         dateRange: DateRange
-    ) = if (dateRange != INFINITE_DATE_RANGE) {
+    ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
         noteDao.listByTimestampRangeWithExercisesUnorderedSuspending(
             dateRange.fromInclusive.timestampOrMin(),
             dateRange.toInclusive?.tomorrow.timestampOrMax()
         )
     } else {
         noteDao.listAllWithExercisesUnorderedSuspending()
+    }
+
+    private suspend fun topBpmEntityListSuspending(
+        size: Int,
+        dateRange: DateRange
+    ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
+        noteDao.listTopBpmWithExercisesByTimestampRangeSuspending(
+            size,
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toInclusive?.tomorrow.timestampOrMax()
+        )
+    } else {
+        noteDao.listTopBpmWithExercisesSuspending(size)
+    }
+
+    private suspend fun topNoteCountPerExerciseListSuspending(
+        size: Int,
+        dateRange: DateRange
+    ): List<NoteCountPerExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
+        noteDao.listTopPopularExercisesByTimestampRangeSuspending(
+            size,
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toInclusive?.tomorrow.timestampOrMax()
+        )
+    } else {
+        noteDao.listTopPopularExercisesSuspending(size)
     }
 
     private fun entityList(

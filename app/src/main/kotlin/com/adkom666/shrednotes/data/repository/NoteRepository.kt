@@ -69,24 +69,34 @@ interface NoteRepository {
     suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note>
 
     /**
-     * Getting a [List] of the [size] or fewer notes with their exercises' info. Notes are grouped
-     * by exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
+     * Getting a [List] of the [size] or fewer notes with their exercises' info whose dates are in
+     * the [dateRange]. Notes are grouped by exercise name, and each group consists of one note with
+     * maximum BPM and maximum timestamp.
      *
      * @param size limit the count of notes.
-     * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
-     * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
+     * @param dateRange range of dates of the target notes.
+     * @return [List] of the [size] or fewer notes with their exercises' info whose dates are in the
+     * [dateRange]. Notes are grouped by exercise name, and each group consists of one note with
+     * maximum BPM and maximum timestamp.
      */
-    suspend fun listTopBpmSuspending(size: Int): List<Note>
+    suspend fun listTopBpmSuspending(size: Int, dateRange: DateRange): List<Note>
 
     /**
-     * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted
-     * in descending order by note count and then ascending by exercise name.
+     * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related
+     * notes' dates are in the [dateRange]. The objects are sorted in descending order by note count
+     * and then ascending by exercise name.
      *
      * @param size limit the count of [NoteCountPerExerciseInfo] objects.
-     * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted in
-     * descending order by note count and then ascending by exercise name.
+     * @param dateRange range of dates of the target [NoteCountPerExerciseInfo] objects' related
+     * notes.
+     * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related notes'
+     * dates are in the [dateRange]. They are sorted in descending order by note count and then
+     * ascending by exercise name.
      */
-    suspend fun listTopPopularExercisesSuspending(size: Int): List<NoteCountPerExerciseInfo>
+    suspend fun listTopPopularExercisesSuspending(
+        size: Int,
+        dateRange: DateRange,
+    ): List<NoteCountPerExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes in accordance with the [startPosition] in the

@@ -14,7 +14,12 @@ import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityRecordsBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.DateRangeFormat
 import com.adkom666.shrednotes.util.FirstItemDecoration
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.restoreDateRangeListener
+import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,6 +38,9 @@ class RecordsActivity : AppCompatActivity() {
 
         private const val EXTRA_TARGET_PARAMETER =
             "${BuildConfig.APPLICATION_ID}.extras.records_target_parameter"
+
+        private const val TAG_DATE_RANGE_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.records.date_range_picker"
 
         /**
          * Creating an intent to open the records screen.
@@ -63,6 +71,8 @@ class RecordsActivity : AppCompatActivity() {
     private var _binding: ActivityRecordsBinding? = null
     private var _model: RecordsViewModel? = null
 
+    private val dateRangeFormat: DateRangeFormat = DateRangeFormat()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -70,7 +80,9 @@ class RecordsActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        adjustRecordsRecycler()
         setupButtonListeners()
+        restoreFragmentListeners()
         observeLiveData()
         listenChannels()
 
@@ -87,11 +99,45 @@ class RecordsActivity : AppCompatActivity() {
         }
     }
 
+    private fun adjustRecordsRecycler() {
+        val llm = LinearLayoutManager(this)
+        llm.orientation = LinearLayoutManager.VERTICAL
+        binding.recordsRecycler.layoutManager = llm
+        val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
+        val decoration = FirstItemDecoration(marginTop.toInt())
+        binding.recordsRecycler.addItemDecoration(decoration)
+    }
+
     private fun setupButtonListeners() {
+        binding.dateRange.pickDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: pickDateRangeImageButton")
+            showDateRangePicker(
+                supportFragmentManager,
+                TAG_DATE_RANGE_PICKER,
+                { model.dateRange },
+                ::changeDateRange
+            )
+        }
+        binding.dateRange.clearDateRangeImageButton.setOnClickListener {
+            Timber.d("Click: clearDateRangeImageButton")
+            model.dateRange = INFINITE_DATE_RANGE
+        }
         binding.okButton.setOnClickListener {
             Timber.d("OK clicked")
             model.onOkButtonClick()
         }
+    }
+
+    private fun restoreFragmentListeners() {
+        restoreDateRangeListener(
+            supportFragmentManager,
+            TAG_DATE_RANGE_PICKER,
+            ::changeDateRange
+        )
+    }
+
+    private fun changeDateRange(dateRange: DateRange) {
+        model.dateRange = dateRange
     }
 
     private fun observeLiveData() {
@@ -128,6 +174,8 @@ class RecordsActivity : AppCompatActivity() {
         when (signal) {
             is RecordsViewModel.Signal.Subtitle ->
                 setSubtitle(signal.value)
+            is RecordsViewModel.Signal.ActualDateRange ->
+                setDateRange(signal.value)
             is RecordsViewModel.Signal.Records ->
                 setRecords(signal)
         }
@@ -136,6 +184,10 @@ class RecordsActivity : AppCompatActivity() {
     private fun setSubtitle(subtitleValue: RecordsViewModel.Signal.Subtitle.Value) {
         val resId = subtitleValue.getStringResId()
         binding.recordsSubtitleTextView.text = getString(resId)
+    }
+
+    private fun setDateRange(dateRange: DateRange) {
+        binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
     }
 
     private fun setRecords(records: RecordsViewModel.Signal.Records) {
@@ -153,7 +205,6 @@ class RecordsActivity : AppCompatActivity() {
         }
         adapter?.let {
             setRecordsVisible(true)
-            adjustRecordsRecycler()
             binding.recordsRecycler.adapter = it
         } ?: setRecordsVisible(false)
     }
@@ -161,15 +212,6 @@ class RecordsActivity : AppCompatActivity() {
     private fun setRecordsVisible(isVisible: Boolean) {
         binding.noRecordsTextView.isVisible = isVisible.not()
         binding.recordsRecycler.isVisible = isVisible
-    }
-
-    private fun adjustRecordsRecycler() {
-        val llm = LinearLayoutManager(this)
-        llm.orientation = LinearLayoutManager.VERTICAL
-        binding.recordsRecycler.layoutManager = llm
-        val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
-        val decoration = FirstItemDecoration(marginTop.toInt())
-        binding.recordsRecycler.addItemDecoration(decoration)
     }
 
     @StringRes

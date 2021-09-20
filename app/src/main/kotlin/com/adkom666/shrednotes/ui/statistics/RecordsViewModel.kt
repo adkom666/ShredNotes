@@ -4,15 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.BpmRecords
 import com.adkom666.shrednotes.statistics.NoteCountRecords
 import com.adkom666.shrednotes.statistics.RecordsAggregator
+import com.adkom666.shrednotes.util.DateRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 /**
  * Records screen model.
@@ -99,6 +103,13 @@ class RecordsViewModel @Inject constructor(
         }
 
         /**
+         * Show actual date range.
+         *
+         * @property value date range.
+         */
+        data class ActualDateRange(val value: DateRange) : Signal()
+
+        /**
          * Show actual records.
          */
         sealed class Records : Signal() {
@@ -137,6 +148,23 @@ class RecordsViewModel @Inject constructor(
     val signalChannel: ReceiveChannel<Signal>
         get() = _signalChannel.openSubscription()
 
+    /**
+     * The date range over which records should be shown.
+     */
+    var dateRange: DateRange by Delegates.observable(
+        DateRange()
+    ) { _, old, new ->
+        Timber.d("Change date range: old=$old, new=$new")
+        if (new != old) {
+            setState(State.Waiting)
+            give(Signal.ActualDateRange(new))
+            viewModelScope.launch {
+                aggregateStatistics(new)
+                setState(State.Working)
+            }
+        }
+    }
+
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -157,6 +185,7 @@ class RecordsViewModel @Inject constructor(
         this.targetParameter = targetParameter
         setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
+        give(Signal.ActualDateRange(dateRange))
         recordsAggregator.clearCache()
     }
 
@@ -165,26 +194,8 @@ class RecordsViewModel @Inject constructor(
      */
     suspend fun start() {
         Timber.d("Start")
-        @Suppress("TooGenericExceptionCaught")
-        try {
-            val recordsSignal = when (targetParameter) {
-                RecordsTargetParameter.BPM ->
-                    Signal.Records.Bpm(
-                        recordsAggregator.aggregateBpmRecords(BPM_RECORDS_LIMIT)
-                    )
-                RecordsTargetParameter.NOTE_COUNT ->
-                    Signal.Records.NoteCount(
-                        recordsAggregator.aggregateNoteCountRecords(NOTE_COUNT_RECORDS_LIMIT)
-                    )
-                null -> error("Target parameter is missing!")
-            }
-            give(recordsSignal)
-            setState(State.Working)
-        } catch (e: Exception) {
-            Timber.e(e)
-            setState(State.Working)
-            reportAbout(e)
-        }
+        aggregateStatistics(dateRange)
+        setState(State.Working)
     }
 
     /**
@@ -193,6 +204,33 @@ class RecordsViewModel @Inject constructor(
     fun onOkButtonClick() {
         Timber.d("On OK button click")
         setState(State.Finishing)
+    }
+
+    private suspend fun aggregateStatistics(dateRange: DateRange) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            val recordsSignal = when (targetParameter) {
+                RecordsTargetParameter.BPM ->
+                    Signal.Records.Bpm(
+                        recordsAggregator.aggregateBpmRecords(
+                            dateRange,
+                            BPM_RECORDS_LIMIT
+                        )
+                    )
+                RecordsTargetParameter.NOTE_COUNT ->
+                    Signal.Records.NoteCount(
+                        recordsAggregator.aggregateNoteCountRecords(
+                            dateRange,
+                            NOTE_COUNT_RECORDS_LIMIT
+                        )
+                    )
+                null -> error("Target parameter is missing!")
+            }
+            give(recordsSignal)
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
+        }
     }
 
     private fun reportAbout(e: Exception) {
