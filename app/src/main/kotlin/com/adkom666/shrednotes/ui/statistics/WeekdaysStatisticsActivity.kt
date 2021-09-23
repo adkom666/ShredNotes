@@ -216,7 +216,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         val entries = mutableListOf<PieEntry>()
         Weekday.values().forEach { weekday ->
             statistics.valueMap[weekday]?.let { value ->
-                if (value > 0) {
+                if (value > 0f) {
                     val weekdayLabel = getString(weekday.toLabelResId())
                     val entry = PieEntry(value, weekdayLabel)
                     entries.add(entry)

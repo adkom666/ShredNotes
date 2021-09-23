@@ -83,13 +83,6 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Show actual date range.
-         *
-         * @property value date range.
-         */
-        data class ActualDateRange(val value: DateRange) : Signal()
-
-        /**
          * Show actual subtitle for statistics by days of week.
          *
          * @property value ready-made subtitle value.
@@ -104,6 +97,13 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                 AVERAGE_NOTE_COUNT
             }
         }
+
+        /**
+         * Show actual date range.
+         *
+         * @property value date range.
+         */
+        data class ActualDateRange(val value: DateRange) : Signal()
 
         /**
          * Show actual statistics by days of week.
