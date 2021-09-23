@@ -39,9 +39,6 @@ class CommonStatisticsActivity : AppCompatActivity() {
         private const val TAG_DATE_RANGE_PICKER =
             "${BuildConfig.APPLICATION_ID}.tags.common_statistics.date_range_picker"
 
-        private const val KEY_DATE_RANGE_TEXT =
-            "${BuildConfig.APPLICATION_ID}.keys.common_statistics.date_range_text"
-
         private val LINE_SEPARATOR = System.getProperty("line.separator")
 
         /**
@@ -76,10 +73,6 @@ class CommonStatisticsActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
-        savedInstanceState?.let { state ->
-            restoreDateRangeText(state)
-        }
-
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
@@ -91,20 +84,6 @@ class CommonStatisticsActivity : AppCompatActivity() {
         }
         lifecycleScope.launchWhenCreated {
             model.start()
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(
-            KEY_DATE_RANGE_TEXT,
-            binding.dateRange.dateRangeTextView.text.toString()
-        )
-    }
-
-    private fun restoreDateRangeText(savedInstanceState: Bundle) {
-        savedInstanceState.getString(KEY_DATE_RANGE_TEXT)?.let {
-            binding.dateRange.dateRangeTextView.text = it
         }
     }
 
