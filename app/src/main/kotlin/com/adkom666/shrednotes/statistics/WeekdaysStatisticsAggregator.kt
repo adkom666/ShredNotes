@@ -26,6 +26,7 @@ class WeekdaysStatisticsAggregator(
     /**
      * Aggregate statistics of the average among max BPM by days of week.
      *
+     * @param dateRange the date range over which statistics should be aggregated.
      * @return aggregated statistics of the average among max BPM by days of week.
      */
     suspend fun aggregateAverageAmongMaxBpm(dateRange: DateRange): WeekdaysStatistics {
@@ -40,6 +41,7 @@ class WeekdaysStatisticsAggregator(
     /**
      * Aggregate statistics of the average note count by days of week.
      *
+     * @param dateRange the date range over which statistics should be aggregated.
      * @return aggregated statistics of the average note count by days of week.
      */
     suspend fun aggregateAverageNoteCount(dateRange: DateRange): WeekdaysStatistics {
