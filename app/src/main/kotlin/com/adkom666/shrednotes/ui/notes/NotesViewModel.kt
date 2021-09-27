@@ -381,13 +381,12 @@ class NotesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedNotes(_manageableSelection.state)
-                setState(State.Working)
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
                 Timber.e(e)
-                setState(State.Working)
                 reportAbout(e)
             }
+            setState(State.Working)
         }
     }
 

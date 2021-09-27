@@ -307,13 +307,12 @@ class ExercisesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val noteCount = requestAssociatedNoteCount(_manageableSelection.state)
-                setState(State.Working)
                 report(Message.AssociatedNoteCount(noteCount))
             } catch (e: Exception) {
                 Timber.e(e)
-                setState(State.Working)
                 reportAbout(e)
             }
+            setState(State.Working)
         }
     }
 
@@ -327,13 +326,12 @@ class ExercisesViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedExercises(_manageableSelection.state)
-                setState(State.Working)
                 report(Message.Deletion(deletionCount))
             } catch (e: Exception) {
                 Timber.e(e)
-                setState(State.Working)
                 reportAbout(e)
             }
+            setState(State.Working)
         }
     }
 
