@@ -17,6 +17,8 @@ import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.paging.safeOffset
 import com.adkom666.shrednotes.util.time.Days
+import com.adkom666.shrednotes.util.time.timestampOrMax
+import com.adkom666.shrednotes.util.time.timestampOrMin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
@@ -616,14 +618,6 @@ class NoteRepositoryImpl(
             noteDao.deleteOtherByIdsSuspending(
                 ids = ids
             )
-    }
-
-    private fun Days?.timestampOrMin(): Long {
-        return this?.epochMillis ?: Long.MIN_VALUE
-    }
-
-    private fun Days?.timestampOrMax(): Long {
-        return this?.epochMillis ?: Long.MAX_VALUE
     }
 
     private fun Int?.valueOrMin(): Int {
