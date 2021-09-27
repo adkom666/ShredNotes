@@ -512,9 +512,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
      *
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of notes whose exercise names contain [exerciseSubname] and the timestamp is
      * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
      */
@@ -530,8 +530,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      *
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of notes whose exercise names contain [exerciseSubname] and the BPM is greater
      * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      */
@@ -549,11 +549,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [bpmToInclusive].
      *
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of notes whose exercise names contain [exerciseSubname], the timestamp is
      * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
      * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
@@ -572,9 +572,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * Getting the count of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive].
      *
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of notes whose timestamp is greater than or equal to [timestampFromInclusive]
      * and less than [timestampToExclusive].
      */
@@ -588,8 +588,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * Getting the count of notes whose BPM is greater than or equal to [bpmFromInclusive] and less
      * than or equal to [bpmToInclusive].
      *
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of notes whose BPM is greater than or equal to [bpmFromInclusive] and less than
      * or equal to [bpmToInclusive].
      */
@@ -604,11 +604,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
      * equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      *
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of notes whose timestamp is greater than or equal to [timestampFromInclusive]
      * and less than [timestampToExclusive] and the BPM is greater than or equal to
      * [bpmFromInclusive] and less than or equal to [bpmToInclusive].
@@ -792,10 +792,10 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @param offset position of the first target note in the list of notes whose exercise names
      * contain [exerciseSubname] and the timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive].
-     * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param exerciseSubname part of the names of the target notes.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the
      * timestamp is greater than or equal to [timestampFromInclusive] and less than
@@ -823,8 +823,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * contain [exerciseSubname] and the BPM is greater than or equal to [bpmFromInclusive] and less
      * than or equal to [bpmToInclusive].
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose exercise names contain [exerciseSubname] and the BPM is
      * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive]. The
@@ -854,11 +854,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * and less than [timestampToExclusive] and the BPM is greater than or equal to
      * [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose exercise names contain [exerciseSubname], the timestamp
      * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
@@ -886,9 +886,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose timestamp is
      * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive]. The notes are sorted in
@@ -911,8 +911,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @param size limit the count of notes.
      * @param offset position of the first target note in the list of notes whose BPM is greater
      * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose BPM is greater than or equal to [bpmFromInclusive] and
      * less than or equal to [bpmToInclusive]. The notes are sorted in descending order by
@@ -939,11 +939,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive] and
      * the BPM is greater than or equal to [bpmFromInclusive] and less than or equal to
      * [bpmToInclusive].
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return [List] of the [size] or fewer notes with their exercises' info in accordance with the
      * [offset] in the list of notes whose timestamp is greater than or equal to
      * [timestampFromInclusive] and less than [timestampToExclusive] and the BPM is greater than or
@@ -999,9 +999,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes to delete.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
@@ -1019,8 +1019,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes to delete.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE)
@@ -1039,11 +1039,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes to delete.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
@@ -1061,9 +1061,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * equal to [timestampFromInclusive] and less than [timestampToExclusive].
      *
      * @param ids identifiers of notes to delete.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_AND_TIMESTAMP_RANGE)
@@ -1078,8 +1078,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      *
      * @param ids identifiers of notes to delete.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_AND_BPM_RANGE)
@@ -1095,11 +1095,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      *
      * @param ids identifiers of notes to delete.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE)
@@ -1141,9 +1141,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes that should not be deleted.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_TIMESTAMP_RANGE)
@@ -1161,8 +1161,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes that should not be deleted.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_AND_BPM_RANGE)
@@ -1181,11 +1181,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @param ids identifiers of notes that should not be deleted.
      * @param exerciseSubname part of the names of the target notes' exercises.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_EXERCISE_SUBNAME_TIMESTAMP_RANGE_AND_BPM_RANGE)
@@ -1203,9 +1203,9 @@ interface NoteDao : BaseDao<NoteEntity> {
      * is greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
      *
      * @param ids identifiers of notes that should not be deleted.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
+     * notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_AND_TIMESTAMP_RANGE)
@@ -1220,8 +1220,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * greater than or equal to [bpmFromInclusive] and less than or equal to [bpmToInclusive].
      *
      * @param ids identifiers of notes that should not be deleted.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_AND_BPM_RANGE)
@@ -1238,11 +1238,11 @@ interface NoteDao : BaseDao<NoteEntity> {
      * [bpmToInclusive].
      *
      * @param ids identifiers of notes that should not be deleted.
-     * @param timestampFromInclusive minimum timestamp value of the target notes' exercises.
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
-     * notes' exercises.
-     * @param bpmFromInclusive minimum BPM value of the target notes' exercises.
-     * @param bpmToInclusive maximum BPM value of the target notes' exercises.
+     * notes.
+     * @param bpmFromInclusive minimum BPM value of the target notes.
+     * @param bpmToInclusive maximum BPM value of the target notes.
      * @return count of deleted rows from the database table.
      */
     @Query(DELETE_OTHER_BY_IDS_TIMESTAMP_RANGE_AND_BPM_RANGE)
