@@ -391,7 +391,7 @@ class MainActivity :
         if (fragment is Filterable) {
             fragment.onFilterEnablingChangedListener = {
                 Timber.d("Filter enabling changed")
-                invalidateOptionsMenu()
+                menuReference.get()?.invalidate(MenuGroup.FILTER)
             }
             fragment.filter()
         }
@@ -624,7 +624,7 @@ class MainActivity :
                     setWorking()
                 is MainViewModel.State.Waiting -> {
                     setWaiting(state.operation)
-                    invalidateOptionsMenu()
+                    menuReference.get()?.invalidate()
                 }
             }
         }
@@ -633,10 +633,10 @@ class MainActivity :
             MainViewModel.State.Preparation.Initial ->
                 Unit
             MainViewModel.State.Preparation.Continuing ->
-                invalidateOptionsMenu()
+                menuReference.get()?.invalidate()
             MainViewModel.State.Preparation.GoogleDriveStateChanged -> {
                 invalidateSubtitle()
-                invalidateOptionsMenu()
+                menuReference.get()?.invalidate(MenuGroup.GOOGLE_DRIVE_PANEL)
             }
         }
 
