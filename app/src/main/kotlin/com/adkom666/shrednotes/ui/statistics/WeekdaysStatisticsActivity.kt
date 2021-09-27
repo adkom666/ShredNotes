@@ -26,7 +26,7 @@ import com.adkom666.shrednotes.util.toast
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.utils.ColorTemplate.rgb
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
@@ -47,6 +47,16 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
         private const val TAG_DATE_RANGE_PICKER =
             "${BuildConfig.APPLICATION_ID}.tags.statistics.weekdays.date_range_picker"
+
+        private val PIE_COLORS = listOf(
+            rgb("#2ECC71"),
+            rgb("#F1C40F"),
+            rgb("#E74C3C"),
+            rgb("#3498DB"),
+            rgb("#909090"),
+            rgb("#926F5F"),
+            rgb("#9C8A82")
+        )
 
         /**
          * Creating an intent to open the screen of statistics by days of week.
@@ -228,7 +238,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
     private fun pieDataSetOf(entries: List<PieEntry>): PieDataSet {
         val dataSet = PieDataSet(entries, "")
-        dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList()
+        dataSet.colors = PIE_COLORS
         val blackColor = ContextCompat.getColor(this, R.color.black)
         dataSet.valueTextColor = blackColor
         dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
