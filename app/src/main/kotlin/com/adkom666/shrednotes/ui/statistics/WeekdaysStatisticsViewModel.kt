@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.ui.statistics
 
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -8,6 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
 import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.getNullableDays
+import com.adkom666.shrednotes.util.putNullableDays
+import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -15,21 +20,46 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.properties.Delegates
 
 /**
  * Statistics by days of week screen model.
  *
  * @property statisticsAggregator source of statistics by days of week.
+ * @property preferences project's [SharedPreferences].
  */
 @ExperimentalCoroutinesApi
 class WeekdaysStatisticsViewModel @Inject constructor(
-    private val statisticsAggregator: WeekdaysStatisticsAggregator
+    private val statisticsAggregator: WeekdaysStatisticsAggregator,
+    private val preferences: SharedPreferences
 ) : ViewModel() {
 
     private companion object {
         private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
         private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
+
+        private const val KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_FROM =
+            "statistics.weekdays.does_max_bpm_date_range_have_date_from"
+
+        private const val KEY_MAX_BPM_DATE_RANGE_DATE_FROM_INCLUSIVE =
+            "statistics.weekdays.max_bpm_date_range_date_from_inclusive"
+
+        private const val KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO =
+            "statistics.weekdays.does_max_bpm_date_range_have_date_to"
+
+        private const val KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE =
+            "statistics.weekdays.max_bpm_date_range_date_to_inclusive"
+
+        private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_FROM =
+            "statistics.weekdays.does_note_count_date_range_have_date_from"
+
+        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_FROM_INCLUSIVE =
+            "statistics.weekdays.note_count_date_range_date_from_inclusive"
+
+        private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO =
+            "statistics.weekdays.does_note_count_date_range_have_date_to"
+
+        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE =
+            "statistics.weekdays.note_count_date_range_date_to_inclusive"
     }
 
     /**
@@ -134,19 +164,23 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     /**
      * The date range over which statistics should be shown.
      */
-    var dateRange: DateRange by Delegates.observable(
-        DateRange()
-    ) { _, old, new ->
-        Timber.d("Change date range: old=$old, new=$new")
-        if (new != old) {
-            setState(State.Waiting)
-            give(Signal.ActualDateRange(new))
-            viewModelScope.launch {
-                aggregateStatistics(new)
-                setState(State.Working)
+    var dateRange: DateRange
+        get() = requireNotNull(_dateRange)
+        set(value) {
+            if (value != _dateRange) {
+                Timber.d("Change date range: old=$_dateRange, new=$value")
+                _dateRange = value
+                targetParameter?.let {
+                    saveDateRange(value, it)
+                }
+                setState(State.Waiting)
+                give(Signal.ActualDateRange(value))
+                viewModelScope.launch {
+                    aggregateStatistics(value)
+                    setState(State.Working)
+                }
             }
         }
-    }
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
@@ -157,6 +191,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
     private var targetParameter: WeekdaysStatisticsTargetParameter? = null
+    private var _dateRange: DateRange? = null
 
     /**
      * Prepare for working with the statistics by days of week.
@@ -166,6 +201,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     fun prepare(targetParameter: WeekdaysStatisticsTargetParameter) {
         Timber.d("Prepare: targetParameter=$targetParameter")
         this.targetParameter = targetParameter
+        _dateRange = loadDateRange(targetParameter)
         setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
         give(Signal.ActualDateRange(dateRange))
@@ -187,6 +223,29 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     fun onOkButtonClick() {
         Timber.d("On OK button click")
         setState(State.Finishing)
+    }
+
+    private fun loadDateRange(
+        targetParameter: WeekdaysStatisticsTargetParameter
+    ): DateRange = when (targetParameter) {
+        WeekdaysStatisticsTargetParameter.MAX_BPM ->
+            preferences.getMaxBpmDateRange()
+        WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
+            preferences.getNoteCountDateRange()
+    }
+
+    private fun saveDateRange(
+        dateRange: DateRange,
+        targetParameter: WeekdaysStatisticsTargetParameter
+    ) {
+        preferences.edit {
+            when (targetParameter) {
+                WeekdaysStatisticsTargetParameter.MAX_BPM ->
+                    putMaxBpmDateRange(dateRange)
+                WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
+                    putNoteCountDateRange(dateRange)
+            }
+        }
     }
 
     private suspend fun aggregateStatistics(dateRange: DateRange) {
@@ -234,4 +293,66 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
                 Signal.Subtitle.Value.AVERAGE_NOTE_COUNT
         }
+
+    private fun SharedPreferences.getMaxBpmDateRange(): DateRange {
+        val defaultDays = Days()
+        val dateFromInclusive = getNullableDays(
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_FROM,
+            defaultValue = defaultDays
+        )
+        val dateToExclusive = getNullableDays(
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO,
+            defaultValue = defaultDays
+        )
+        return DateRange(
+            fromInclusive = dateFromInclusive,
+            toInclusive = dateToExclusive
+        )
+    }
+
+    private fun SharedPreferences.Editor.putMaxBpmDateRange(dateRange: DateRange) {
+        putNullableDays(
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_FROM,
+            value = dateRange.fromInclusive
+        )
+        putNullableDays(
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO,
+            value = dateRange.toInclusive
+        )
+    }
+
+    private fun SharedPreferences.getNoteCountDateRange(): DateRange {
+        val defaultDays = Days()
+        val dateFromInclusive = getNullableDays(
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_FROM,
+            defaultValue = defaultDays
+        )
+        val dateToExclusive = getNullableDays(
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
+            defaultValue = defaultDays
+        )
+        return DateRange(
+            fromInclusive = dateFromInclusive,
+            toInclusive = dateToExclusive
+        )
+    }
+
+    private fun SharedPreferences.Editor.putNoteCountDateRange(dateRange: DateRange) {
+        putNullableDays(
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_FROM_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_FROM,
+            value = dateRange.fromInclusive
+        )
+        putNullableDays(
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
+            value = dateRange.toInclusive
+        )
+    }
 }
