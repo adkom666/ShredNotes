@@ -37,10 +37,10 @@ class RecordsActivity : AppCompatActivity() {
     companion object {
 
         private const val EXTRA_TARGET_PARAMETER =
-            "${BuildConfig.APPLICATION_ID}.extras.records_target_parameter"
+            "${BuildConfig.APPLICATION_ID}.extras.statistics.records.target_parameter"
 
         private const val TAG_DATE_RANGE_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.records.date_range_picker"
+            "${BuildConfig.APPLICATION_ID}.tags.statistics.records.date_range_picker"
 
         /**
          * Creating an intent to open the records screen.

@@ -43,10 +43,10 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     companion object {
 
         private const val EXTRA_TARGET_PARAMETER =
-            "${BuildConfig.APPLICATION_ID}.extras.weekdays_statistics_target_parameter"
+            "${BuildConfig.APPLICATION_ID}.extras.statistics.weekdays.target_parameter"
 
         private const val TAG_DATE_RANGE_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.weekdays_statistics.date_range_picker"
+            "${BuildConfig.APPLICATION_ID}.tags.statistics.weekdays.date_range_picker"
 
         /**
          * Creating an intent to open the screen of statistics by days of week.

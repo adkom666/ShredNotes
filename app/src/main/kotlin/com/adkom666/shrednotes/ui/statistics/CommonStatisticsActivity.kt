@@ -37,7 +37,7 @@ class CommonStatisticsActivity : AppCompatActivity() {
     companion object {
 
         private const val TAG_DATE_RANGE_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.common_statistics.date_range_picker"
+            "${BuildConfig.APPLICATION_ID}.tags.statistics.common.date_range_picker"
 
         private val LINE_SEPARATOR = System.getProperty("line.separator")
 
