@@ -169,7 +169,7 @@ class ExerciseRepositoryImpl(
         dateRange: DateRange
     ): Int = exerciseDao.countByRelatedNoteTimestampSuspending(
         dateRange.fromInclusive.timestampOrMin(),
-        dateRange.toInclusive?.tomorrow.timestampOrMax()
+        dateRange.toExclusive.timestampOrMax()
     )
 
     private fun entityList(

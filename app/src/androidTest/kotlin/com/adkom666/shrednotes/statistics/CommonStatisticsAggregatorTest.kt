@@ -75,7 +75,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
         fillDatabase()
 
-        val dateRange = DateRange(Days().yesterday, Days())
+        val dateRange = DateRange(Days().yesterday, Days().tomorrow)
         val statistics = statisticsAggregator.aggregate(dateRange)
         assertEquals(2, statistics.notes)
         assertEquals(1, statistics.relatedExercises)

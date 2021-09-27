@@ -40,7 +40,7 @@ class CommonStatisticsAggregator(
 
         val filter = NoteFilter(
             dateFromInclusive = dateRange.fromInclusive,
-            dateToExclusive = dateRange.toInclusive?.tomorrow
+            dateToExclusive = dateRange.toExclusive
         )
 
         val noteCount = noteCountCache[dateRange]
@@ -72,7 +72,7 @@ class CommonStatisticsAggregator(
         } ?: 0
 
         val fromEpochMillisInclusive = dateRange.fromInclusive.timestampOrMin()
-        val toEpochMillisExclusive = dateRange.toInclusive?.tomorrow.timestampOrMax()
+        val toEpochMillisExclusive = dateRange.toExclusive.timestampOrMax()
         val notes = allNotes.filter {
             it.dateTime.epochMillis in fromEpochMillisInclusive until toEpochMillisExclusive
         }
@@ -122,13 +122,14 @@ class CommonStatisticsAggregator(
             dateRange.fromInclusive
         }
         val nowDate = Days()
+        val toDateInclusive = dateRange.toExclusive?.yesterday
         val endDate = if (
-            dateRange.toInclusive == null ||
-            dateRange.toInclusive.epochMillis > nowDate.epochMillis
+            toDateInclusive == null ||
+            toDateInclusive.epochMillis > nowDate.epochMillis
         ) {
             nowDate
         } else {
-            dateRange.toInclusive
+            toDateInclusive
         }
         val start = startDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)
         val end = endDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)

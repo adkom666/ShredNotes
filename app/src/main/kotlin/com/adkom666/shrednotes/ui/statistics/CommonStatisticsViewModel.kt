@@ -50,8 +50,8 @@ class CommonStatisticsViewModel
         private const val KEY_DOES_DATE_RANGE_HAVE_DATE_TO =
             "statistics.common.does_date_range_have_date_to"
 
-        private const val KEY_DATE_RANGE_DATE_TO_INCLUSIVE =
-            "statistics.common.date_range_date_to_inclusive"
+        private const val KEY_DATE_RANGE_DATE_TO_EXCLUSIVE =
+            "statistics.common.date_range_date_to_exclusive"
     }
 
     /**
@@ -232,13 +232,13 @@ class CommonStatisticsViewModel
             defaultValue = defaultDays
         )
         val dateToExclusive = getNullableDays(
-            key = KEY_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_DATE_RANGE_HAVE_DATE_TO,
             defaultValue = defaultDays
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
-            toInclusive = dateToExclusive
+            toExclusive = dateToExclusive
         )
     }
 
@@ -249,9 +249,9 @@ class CommonStatisticsViewModel
             value = dateRange.fromInclusive
         )
         putNullableDays(
-            key = KEY_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_DATE_RANGE_HAVE_DATE_TO,
-            value = dateRange.toInclusive
+            value = dateRange.toExclusive
         )
     }
 }

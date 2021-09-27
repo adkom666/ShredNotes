@@ -93,8 +93,8 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
         _isFilterEnabled = arguments.getBoolean(ARG_IS_FILTER_ENABLED)
 
         _dateRange = savedInstanceState?.getParcelable(KEY_DATE_RANGE) ?: DateRange(
-            initialFilter.dateFromInclusive,
-            initialFilter.dateToExclusive?.yesterday
+            fromInclusive = initialFilter.dateFromInclusive,
+            toExclusive = initialFilter.dateToExclusive
         )
     }
 
@@ -250,7 +250,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
 
     private fun currentFilter(): NoteFilter = NoteFilter(
         dateFromInclusive = dateRange.fromInclusive,
-        dateToExclusive = dateRange.toInclusive?.tomorrow,
+        dateToExclusive = dateRange.toExclusive,
         bpmFromInclusive = binding.bpmFromEditText.numberOrNull(),
         bpmToInclusive = binding.bpmToEditText.numberOrNull()
     )

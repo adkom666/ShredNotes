@@ -46,8 +46,8 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         private const val KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO =
             "statistics.weekdays.does_max_bpm_date_range_have_date_to"
 
-        private const val KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE =
-            "statistics.weekdays.max_bpm_date_range_date_to_inclusive"
+        private const val KEY_MAX_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE =
+            "statistics.weekdays.max_bpm_date_range_date_to_exclusive"
 
         private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_FROM =
             "statistics.weekdays.does_note_count_date_range_have_date_from"
@@ -58,8 +58,8 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO =
             "statistics.weekdays.does_note_count_date_range_have_date_to"
 
-        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE =
-            "statistics.weekdays.note_count_date_range_date_to_inclusive"
+        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE =
+            "statistics.weekdays.note_count_date_range_date_to_exclusive"
     }
 
     /**
@@ -302,13 +302,13 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             defaultValue = defaultDays
         )
         val dateToExclusive = getNullableDays(
-            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO,
             defaultValue = defaultDays
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
-            toInclusive = dateToExclusive
+            toExclusive = dateToExclusive
         )
     }
 
@@ -319,9 +319,9 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             value = dateRange.fromInclusive
         )
         putNullableDays(
-            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO,
-            value = dateRange.toInclusive
+            value = dateRange.toExclusive
         )
     }
 
@@ -333,13 +333,13 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             defaultValue = defaultDays
         )
         val dateToExclusive = getNullableDays(
-            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
             defaultValue = defaultDays
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
-            toInclusive = dateToExclusive
+            toExclusive = dateToExclusive
         )
     }
 
@@ -350,9 +350,9 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             value = dateRange.fromInclusive
         )
         putNullableDays(
-            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
-            value = dateRange.toInclusive
+            value = dateRange.toExclusive
         )
     }
 }

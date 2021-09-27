@@ -50,8 +50,8 @@ class RecordsViewModel @Inject constructor(
         private const val KEY_DOES_BPM_DATE_RANGE_HAVE_DATE_TO =
             "statistics.records.does_bpm_date_range_have_date_to"
 
-        private const val KEY_BPM_DATE_RANGE_DATE_TO_INCLUSIVE =
-            "statistics.records.bpm_date_range_date_to_inclusive"
+        private const val KEY_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE =
+            "statistics.records.bpm_date_range_date_to_exclusive"
 
         private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_FROM =
             "statistics.records.does_note_count_date_range_have_date_from"
@@ -62,8 +62,8 @@ class RecordsViewModel @Inject constructor(
         private const val KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO =
             "statistics.records.does_note_count_date_range_have_date_to"
 
-        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE =
-            "statistics.records.note_count_date_range_date_to_inclusive"
+        private const val KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE =
+            "statistics.records.note_count_date_range_date_to_exclusive"
     }
 
     /**
@@ -328,13 +328,13 @@ class RecordsViewModel @Inject constructor(
             defaultValue = defaultDays
         )
         val dateToExclusive = getNullableDays(
-            key = KEY_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_BPM_DATE_RANGE_HAVE_DATE_TO,
             defaultValue = defaultDays
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
-            toInclusive = dateToExclusive
+            toExclusive = dateToExclusive
         )
     }
 
@@ -345,9 +345,9 @@ class RecordsViewModel @Inject constructor(
             value = dateRange.fromInclusive
         )
         putNullableDays(
-            key = KEY_BPM_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_BPM_DATE_RANGE_HAVE_DATE_TO,
-            value = dateRange.toInclusive
+            value = dateRange.toExclusive
         )
     }
 
@@ -359,13 +359,13 @@ class RecordsViewModel @Inject constructor(
             defaultValue = defaultDays
         )
         val dateToExclusive = getNullableDays(
-            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
             defaultValue = defaultDays
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
-            toInclusive = dateToExclusive
+            toExclusive = dateToExclusive
         )
     }
 
@@ -376,9 +376,9 @@ class RecordsViewModel @Inject constructor(
             value = dateRange.fromInclusive
         )
         putNullableDays(
-            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_INCLUSIVE,
+            key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
-            value = dateRange.toInclusive
+            value = dateRange.toExclusive
         )
     }
 }

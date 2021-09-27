@@ -59,7 +59,7 @@ class RecordsAggregatorTest : TestCase() {
     }
 
     fun testAggregateBpmRecordsForCustomDateRange() = runBlocking {
-        val dateRange = DateRange(Days().yesterday, Days())
+        val dateRange = DateRange(Days().yesterday, Days().tomorrow)
         val records = recordsAggregator.aggregateBpmRecords(
             dateRange = dateRange,
             limit = RECORDS_LIMIT
@@ -91,7 +91,7 @@ class RecordsAggregatorTest : TestCase() {
     }
 
     fun testAggregateNoteCountRecordsForCustomDateRange() = runBlocking {
-        val dateRange = DateRange(Days().yesterday, Days())
+        val dateRange = DateRange(Days().yesterday, Days().tomorrow)
         val records = recordsAggregator.aggregateNoteCountRecords(
             dateRange = dateRange,
             limit = RECORDS_LIMIT

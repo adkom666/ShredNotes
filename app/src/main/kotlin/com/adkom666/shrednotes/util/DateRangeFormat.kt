@@ -27,7 +27,7 @@ class DateRangeFormat {
      */
     fun format(dateRange: DateRange): String {
         val formatFrom = dateRange.fromInclusive?.format() ?: PLACEHOLDER_DATE_FROM
-        val formatTo = dateRange.toInclusive?.format() ?: PLACEHOLDER_DATE_TO
+        val formatTo = dateRange.toExclusive?.yesterday?.format() ?: PLACEHOLDER_DATE_TO
         return "$formatFrom — $formatTo"
     }
 

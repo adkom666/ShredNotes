@@ -321,7 +321,7 @@ class NoteRepositoryImpl(
     ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
         noteDao.listByTimestampRangeWithExercisesUnorderedSuspending(
             dateRange.fromInclusive.timestampOrMin(),
-            dateRange.toInclusive?.tomorrow.timestampOrMax()
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listAllWithExercisesUnorderedSuspending()
@@ -334,7 +334,7 @@ class NoteRepositoryImpl(
         noteDao.listTopBpmWithExercisesByTimestampRangeSuspending(
             size,
             dateRange.fromInclusive.timestampOrMin(),
-            dateRange.toInclusive?.tomorrow.timestampOrMax()
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listTopBpmWithExercisesSuspending(size)
@@ -347,7 +347,7 @@ class NoteRepositoryImpl(
         noteDao.listTopPopularExercisesByTimestampRangeSuspending(
             size,
             dateRange.fromInclusive.timestampOrMin(),
-            dateRange.toInclusive?.tomorrow.timestampOrMax()
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listTopPopularExercisesSuspending(size)

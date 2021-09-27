@@ -28,9 +28,10 @@ fun showDateRangePicker(
     val builder = MaterialDatePicker.Builder.dateRangePicker()
     builder.setTheme(R.style.AppTheme_MaterialAlertDialog_DatePicker)
     val dateRange = dateRangeProvider()
-    val selection = androidx.core.util.Pair.create<Long?, Long?>(
+    Timber.d("Initial date range: dateRange=$dateRange")
+    val selection = androidx.core.util.Pair.create(
         dateRange.fromInclusive?.epochMillis,
-        dateRange.toInclusive?.epochMillis
+        dateRange.toExclusive?.yesterday?.epochMillis
     )
     builder.setSelection(selection)
     val picker = builder.build()
@@ -59,15 +60,16 @@ private fun MaterialDatePicker<*>.addDateListener(
     onPositiveButtonClick: (DateRange) -> Unit
 ) {
     addOnPositiveButtonClickListener { selection ->
-        Timber.d("Date range selected: selection=$selection")
         if (selection is androidx.core.util.Pair<*, *>) {
             val from = selection.first as? Long
             val to = selection.second as? Long
             val dateFromInclusive = from?.let { Days(it) }
             val dateToInclusive = to?.let { Days(it) }
-            Timber.d("dateFromInclusive=$dateFromInclusive")
-            Timber.d("dateToInclusive=$dateToInclusive")
-            val dateRange = DateRange(dateFromInclusive, dateToInclusive)
+            val dateRange = DateRange(
+                fromInclusive = dateFromInclusive,
+                toExclusive = dateToInclusive?.yesterday
+            )
+            Timber.d("Date range selected: dateRange=$dateRange")
             onPositiveButtonClick(dateRange)
         }
     }
