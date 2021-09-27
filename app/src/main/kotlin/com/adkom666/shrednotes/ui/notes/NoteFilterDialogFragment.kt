@@ -12,6 +12,7 @@ import com.adkom666.shrednotes.util.DateRangeFormat
 import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
 import com.adkom666.shrednotes.util.dialog.KeyboardlessDialogFragment
 import com.adkom666.shrednotes.util.ensureNoTextInput
+import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.numberOrNull
 import com.adkom666.shrednotes.util.restoreDateRangeListener
 import com.adkom666.shrednotes.util.showDateRangePicker
@@ -183,9 +184,13 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
     private fun initBpmRangeText() {
         initialFilter.bpmFromInclusive?.let {
             binding.bpmFromEditText.setText(it.toString())
+            binding.bpmFromEditText.forwardCursor()
+            binding.bpmFromEditText.clearFocus()
         }
         initialFilter.bpmToInclusive?.let {
             binding.bpmToEditText.setText(it.toString())
+            binding.bpmToEditText.forwardCursor()
+            binding.bpmToEditText.clearFocus()
         }
     }
 
