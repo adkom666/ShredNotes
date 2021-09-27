@@ -8,6 +8,7 @@ import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.timestampOrMax
 import com.adkom666.shrednotes.util.time.timestampOrMin
+import java.util.Calendar
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -71,8 +72,9 @@ class CommonStatisticsAggregator(
             daysInRange(dateRange, it)
         } ?: 0
 
-        val fromEpochMillisInclusive = dateRange.fromInclusive.timestampOrMin()
-        val toEpochMillisExclusive = dateRange.toExclusive.timestampOrMax()
+        val calendar = Calendar.getInstance()
+        val fromEpochMillisInclusive = dateRange.fromInclusive.timestampOrMin(calendar)
+        val toEpochMillisExclusive = dateRange.toExclusive.timestampOrMax(calendar)
         val notes = allNotes.filter {
             it.dateTime.epochMillis in fromEpochMillisInclusive until toEpochMillisExclusive
         }

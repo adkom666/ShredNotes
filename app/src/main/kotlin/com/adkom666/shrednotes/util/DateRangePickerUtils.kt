@@ -3,8 +3,10 @@ package com.adkom666.shrednotes.util
 import androidx.fragment.app.FragmentManager
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.util.time.Days
+import com.adkom666.shrednotes.util.time.timestampOrNull
 import com.google.android.material.datepicker.MaterialDatePicker
 import timber.log.Timber
+import java.util.Calendar
 
 /**
  * Display the date range picker dialog, adding the fragment to the given [fragmentManager].
@@ -29,9 +31,10 @@ fun showDateRangePicker(
     builder.setTheme(R.style.AppTheme_MaterialAlertDialog_DatePicker)
     val dateRange = dateRangeProvider()
     Timber.d("Initial date range: dateRange=$dateRange")
+    val calendar = Calendar.getInstance()
     val selection = androidx.core.util.Pair.create(
-        dateRange.fromInclusive?.epochMillis,
-        dateRange.toExclusive?.yesterday?.epochMillis
+        dateRange.fromInclusive.timestampOrNull(calendar),
+        dateRange.toExclusive?.yesterday.timestampOrNull(calendar)
     )
     builder.setSelection(selection)
     val picker = builder.build()

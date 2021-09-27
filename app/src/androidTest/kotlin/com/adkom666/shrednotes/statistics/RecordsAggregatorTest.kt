@@ -23,6 +23,8 @@ class RecordsAggregatorTest : TestCase() {
         private const val EXERCISE_NAME_2 = "exercise 2"
         private const val RECORDS_LIMIT = 6666
         private val BPM = arrayOf(666, 512, 256)
+
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
     }
 
     @Inject
@@ -121,7 +123,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity1 = NoteEntity(
             id = 1.toId(),
-            timestamp = Days().tomorrow.epochMillis,
+            timestamp = System.currentTimeMillis() + MILLIS_PER_DAY,
             exerciseId = exerciseEntity1.id,
             bpm = BPM[0]
         )
@@ -129,7 +131,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
-            timestamp = Days().epochMillis,
+            timestamp = System.currentTimeMillis(),
             exerciseId = exerciseEntity2.id,
             bpm = BPM[2]
         )
@@ -137,7 +139,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
-            timestamp = Days().tomorrow.epochMillis,
+            timestamp = System.currentTimeMillis() + MILLIS_PER_DAY,
             exerciseId = exerciseEntity2.id,
             bpm = BPM[1]
         )

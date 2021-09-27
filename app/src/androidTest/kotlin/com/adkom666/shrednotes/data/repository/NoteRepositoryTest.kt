@@ -13,6 +13,7 @@ import com.adkom666.shrednotes.util.time.Days
 import javax.inject.Inject
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
+import java.util.Calendar
 
 class NoteRepositoryTest : TestCase() {
 
@@ -69,9 +70,11 @@ class NoteRepositoryTest : TestCase() {
         val dateToExclusive = Days(now + testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
 
         val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByDate = noteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             noteWithExercise.noteTimestamp in startMillis until endMillis
         }
         val filter = NoteFilter(
@@ -116,9 +119,11 @@ class NoteRepositoryTest : TestCase() {
         val bpmToInclusive = NOTE_BPM_MAX - (0.3f * bpmRange).toInt()
 
         val noteList = noteDao.list(StoreNoteTestHelper.NOTE_COUNT, 0)
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByExerciseSubnameDateAndBpm = noteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             (noteWithExercise.exerciseName
                 ?.contains(StoreExerciseTestHelper.PROBABLE_EXERCISE_SUBNAME, true)
                 ?: false)
@@ -222,9 +227,11 @@ class NoteRepositoryTest : TestCase() {
         val dateFromInclusive = Days(now - testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
         val dateToExclusive = Days(now + testDaysScatter * StoreNoteTestHelper.MILLIS_PER_DAY)
 
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByDate = noteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             noteWithExercise.noteTimestamp in startMillis until endMillis
         }
         val filter = NoteFilter(
@@ -277,9 +284,11 @@ class NoteRepositoryTest : TestCase() {
         val bpmFromInclusive = NOTE_BPM_MIN + (0.2f * bpmRange).toInt()
         val bpmToInclusive = NOTE_BPM_MAX - (0.3f * bpmRange).toInt()
 
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByDateAndBpm = noteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             noteWithExercise.noteTimestamp in startMillis until endMillis
                     && noteWithExercise.noteBpm in bpmFromInclusive..bpmToInclusive
         }
@@ -339,9 +348,11 @@ class NoteRepositoryTest : TestCase() {
             size = StoreNoteTestHelper.NOTE_COUNT - groupSize,
             offset = groupSize
         )
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByDate = otherNoteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             noteWithExercise.noteTimestamp in startMillis until endMillis
         }
         val filter = NoteFilter(
@@ -402,9 +413,11 @@ class NoteRepositoryTest : TestCase() {
             size = StoreNoteTestHelper.NOTE_COUNT - groupSize,
             offset = groupSize
         )
+        val calendar = Calendar.getInstance()
+        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         val countByDateAndBpm = otherNoteList.count { noteWithExercise ->
-            val startMillis = dateFromInclusive.epochMillis
-            val endMillis = dateToExclusive.epochMillis
+            val startMillis = dateFromInclusive.epochMillis + zoneOffset
+            val endMillis = dateToExclusive.epochMillis + zoneOffset
             noteWithExercise.noteTimestamp in startMillis until endMillis
                     && noteWithExercise.noteBpm in bpmFromInclusive..bpmToInclusive
         }

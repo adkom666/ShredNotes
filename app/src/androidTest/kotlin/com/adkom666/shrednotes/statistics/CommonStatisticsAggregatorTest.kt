@@ -22,6 +22,8 @@ class CommonStatisticsAggregatorTest : TestCase() {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
         private const val EXERCISE_NAME_3 = "exercise 3"
+
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
     }
 
     @Inject
@@ -107,7 +109,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
         val noteEntity1 = NoteEntity(
             id = 1.toId(),
-            timestamp = Days().epochMillis,
+            timestamp = System.currentTimeMillis(),
             exerciseId = exerciseEntity1.id,
             bpm = 666
         )
@@ -115,7 +117,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
-            timestamp = Days().yesterday.epochMillis - 1L,
+            timestamp = System.currentTimeMillis() - 2 * MILLIS_PER_DAY,
             exerciseId = exerciseEntity2.id,
             bpm = 256
         )
@@ -123,7 +125,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
 
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
-            timestamp = Days().epochMillis,
+            timestamp = System.currentTimeMillis(),
             exerciseId = exerciseEntity1.id,
             bpm = 512
         )
