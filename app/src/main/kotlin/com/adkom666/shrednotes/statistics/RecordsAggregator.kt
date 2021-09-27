@@ -1,7 +1,7 @@
 package com.adkom666.shrednotes.statistics
 
-import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.DateRange
 
 /**
  * Get records here.
@@ -11,19 +11,20 @@ import com.adkom666.shrednotes.data.repository.NoteRepository
 class RecordsAggregator(
     private val noteRepository: NoteRepository
 ) {
-    private var topNotesCache: List<Note>? = null
-    private var topExerciseNamesCache: List<NoteCountRecords.Record>? = null
+    private var topNotesCache: MutableMap<DateRange, TopNotes> = mutableMapOf()
+    private var topExerciseNamesCache: MutableMap<DateRange, TopExerciseNames> = mutableMapOf()
 
     /**
      * Aggregate BPM records.
      *
+     * @param dateRange the date range over which records should be aggregated.
      * @param limit max count of records.
      * @return aggregated BPM records.
      */
-    suspend fun aggregateBpmRecords(limit: Int): BpmRecords {
-        val topNotes = topNotesCache
-            ?: noteRepository.listTopBpmSuspending(limit)
-                .also { topNotesCache = it }
+    suspend fun aggregateBpmRecords(dateRange: DateRange, limit: Int): BpmRecords {
+        val topNotes = topNotesCache[dateRange]
+            ?: noteRepository.listTopBpmSuspending(limit, dateRange)
+                .also { topNotesCache[dateRange] = it }
 
         return BpmRecords(
             topNotes = topNotes
@@ -33,14 +34,15 @@ class RecordsAggregator(
     /**
      * Aggregate records of the count of exercise-related notes.
      *
+     * @param dateRange the date range over which records should be aggregated.
      * @param limit max count of records.
      * @return aggregated records of the count of exercise-related notes.
      */
-    suspend fun aggregateNoteCountRecords(limit: Int): NoteCountRecords {
-        val topExerciseNames = topExerciseNamesCache
-            ?: noteRepository.listTopPopularExercisesSuspending(limit)
+    suspend fun aggregateNoteCountRecords(dateRange: DateRange, limit: Int): NoteCountRecords {
+        val topExerciseNames = topExerciseNamesCache[dateRange]
+            ?: noteRepository.listTopPopularExercisesSuspending(limit, dateRange)
                 .map { NoteCountRecords.Record(it.exerciseName, it.noteCount) }
-                .also { topExerciseNamesCache = it }
+                .also { topExerciseNamesCache[dateRange] = it }
 
         return NoteCountRecords(
             topExerciseNames = topExerciseNames
@@ -51,7 +53,7 @@ class RecordsAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
-        topNotesCache = null
-        topExerciseNamesCache = null
+        topNotesCache.clear()
+        topExerciseNamesCache.clear()
     }
 }

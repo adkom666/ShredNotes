@@ -8,6 +8,9 @@ import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_ID
 import com.adkom666.shrednotes.data.db.entity.TABLE_EXERCISES_FIELD_NAME
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_EXERCISE_ID
+import com.adkom666.shrednotes.data.db.entity.TABLE_NOTES_FIELD_TIMESTAMP
 import kotlinx.coroutines.flow.Flow
 
 private const val SELECT_COUNT_ALL = "SELECT COUNT(*) FROM $TABLE_EXERCISES"
@@ -27,6 +30,18 @@ private const val CONDITION_BY_SUBNAME =
 private const val SELECT_COUNT_BY_SUBNAME =
     "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME"
+
+private const val SELECT_EXERCISE_IDS_BY_RELATED_NOTE_TIMESTAMP =
+    "SELECT $TABLE_NOTES_FIELD_EXERCISE_ID " +
+            "FROM $TABLE_NOTES " +
+            "WHERE :timestampFromInclusive <= $TABLE_NOTES_FIELD_TIMESTAMP " +
+            "AND $TABLE_NOTES_FIELD_TIMESTAMP < :timestampToExclusive"
+
+private const val SELECT_COUNT_BY_RELATED_NOTE_TIMESTAMP =
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_EXERCISES " +
+            "WHERE $TABLE_EXERCISES_FIELD_ID " +
+            "IN ($SELECT_EXERCISE_IDS_BY_RELATED_NOTE_TIMESTAMP)"
 
 private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_EXERCISES"
 private const val ORDER = "ORDER BY $TABLE_EXERCISES_FIELD_NAME ASC"
@@ -134,6 +149,22 @@ interface ExerciseDao : BaseDao<ExerciseEntity> {
      */
     @Query(SELECT_COUNT_BY_SUBNAME)
     suspend fun countBySubnameSuspending(subname: String): Int
+
+    /**
+     * Getting the count of exercises referenced by at least one note with a timestamp greater than
+     * or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param timestampFromInclusive minimum timestamp value of the target exercises' notes.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * exercises' notes.
+     * @return count of exercises referenced by at least one note with a timestamp greater than or
+     * equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     */
+    @Query(SELECT_COUNT_BY_RELATED_NOTE_TIMESTAMP)
+    suspend fun countByRelatedNoteTimestampSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
 
     /**
      * Getting a [List] of all exercise entities.

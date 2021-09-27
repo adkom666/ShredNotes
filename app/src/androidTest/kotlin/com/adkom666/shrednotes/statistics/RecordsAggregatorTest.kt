@@ -7,7 +7,9 @@ import com.adkom666.shrednotes.data.db.dao.NoteDao
 import com.adkom666.shrednotes.data.db.entity.ExerciseEntity
 import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
-import java.util.Date
+import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.time.Days
 import javax.inject.Inject
 import junit.framework.TestCase
 import kotlin.time.ExperimentalTime
@@ -46,16 +48,31 @@ class RecordsAggregatorTest : TestCase() {
         database.close()
     }
 
-    fun testAggregateBpmRecords() = runBlocking {
-        val records = recordsAggregator.aggregateBpmRecords(limit = RECORDS_LIMIT)
-        assertEquals(3, records.topNotes.size)
+    fun testAggregateBpmRecordsForInfiniteDateRange() = runBlocking {
+        val records = recordsAggregator.aggregateBpmRecords(
+            dateRange = INFINITE_DATE_RANGE,
+            limit = RECORDS_LIMIT
+        )
+        assertEquals(2, records.topNotes.size)
         assertEquals(BPM[0], records.topNotes[0].bpm)
         assertEquals(BPM[1], records.topNotes[1].bpm)
-        assertEquals(BPM[2], records.topNotes[2].bpm)
     }
 
-    fun testAggregateNoteCountRecords() = runBlocking {
-        val records = recordsAggregator.aggregateNoteCountRecords(limit = RECORDS_LIMIT)
+    fun testAggregateBpmRecordsForCustomDateRange() = runBlocking {
+        val dateRange = DateRange(Days().yesterday, Days())
+        val records = recordsAggregator.aggregateBpmRecords(
+            dateRange = dateRange,
+            limit = RECORDS_LIMIT
+        )
+        assertEquals(1, records.topNotes.size)
+        assertEquals(BPM[2], records.topNotes[0].bpm)
+    }
+
+    fun testAggregateNoteCountRecordsForInfiniteDateRange() = runBlocking {
+        val records = recordsAggregator.aggregateNoteCountRecords(
+            dateRange = INFINITE_DATE_RANGE,
+            limit = RECORDS_LIMIT
+        )
         assertEquals(2, records.topExerciseNames.size)
         assertEquals(
             NoteCountRecords.Record(
@@ -70,6 +87,22 @@ class RecordsAggregatorTest : TestCase() {
                 noteCount = 1
             ),
             records.topExerciseNames[1]
+        )
+    }
+
+    fun testAggregateNoteCountRecordsForCustomDateRange() = runBlocking {
+        val dateRange = DateRange(Days().yesterday, Days())
+        val records = recordsAggregator.aggregateNoteCountRecords(
+            dateRange = dateRange,
+            limit = RECORDS_LIMIT
+        )
+        assertEquals(1, records.topExerciseNames.size)
+        assertEquals(
+            NoteCountRecords.Record(
+                exerciseName = EXERCISE_NAME_2,
+                noteCount = 1
+            ),
+            records.topExerciseNames[0]
         )
     }
 
@@ -88,7 +121,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity1 = NoteEntity(
             id = 1.toId(),
-            timestamp = Date().time,
+            timestamp = Days().tomorrow.epochMillis,
             exerciseId = exerciseEntity1.id,
             bpm = BPM[0]
         )
@@ -96,7 +129,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity2 = NoteEntity(
             id = 2.toId(),
-            timestamp = Date().time,
+            timestamp = Days().epochMillis,
             exerciseId = exerciseEntity2.id,
             bpm = BPM[2]
         )
@@ -104,7 +137,7 @@ class RecordsAggregatorTest : TestCase() {
 
         val noteEntity3 = NoteEntity(
             id = 3.toId(),
-            timestamp = Date().time,
+            timestamp = Days().tomorrow.epochMillis,
             exerciseId = exerciseEntity2.id,
             bpm = BPM[1]
         )

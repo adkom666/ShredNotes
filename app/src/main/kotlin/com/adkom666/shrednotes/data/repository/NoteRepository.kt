@@ -4,7 +4,9 @@ import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.db.entity.NoteCountPerExerciseInfo
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
+import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.paging.Page
+import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -45,6 +47,13 @@ interface NoteRepository {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
+     * Getting the date of the first note or null if it does not exist.
+     *
+     * @return date of the first note or null if it does not exist.
+     */
+    suspend fun firstNoteDateSuspending(): Days?
+
+    /**
      * Getting a [List] of all notes.
      *
      * @return [List] of all notes.
@@ -52,24 +61,42 @@ interface NoteRepository {
     suspend fun listAllUnorderedSuspending(): List<Note>
 
     /**
-     * Getting a [List] of the [size] or fewer notes with their exercises' info. Notes are grouped
-     * by exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
+     * Getting a [List] of notes with a date in [dateRange].
      *
-     * @param size limit the count of notes.
-     * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
-     * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
+     * @param dateRange range of dates of the target notes.
+     * @return [List] of notes with a date in [dateRange].
      */
-    suspend fun listTopBpmSuspending(size: Int): List<Note>
+    suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note>
 
     /**
-     * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted
-     * in descending order by note count and then ascending by exercise name.
+     * Getting a [List] of the [size] or fewer notes with their exercises' info whose dates are in
+     * the [dateRange]. Notes are grouped by exercise name, and each group consists of one note with
+     * maximum BPM and maximum timestamp.
+     *
+     * @param size limit the count of notes.
+     * @param dateRange range of dates of the target notes.
+     * @return [List] of the [size] or fewer notes with their exercises' info whose dates are in the
+     * [dateRange]. Notes are grouped by exercise name, and each group consists of one note with
+     * maximum BPM and maximum timestamp.
+     */
+    suspend fun listTopBpmSuspending(size: Int, dateRange: DateRange): List<Note>
+
+    /**
+     * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related
+     * notes' dates are in the [dateRange]. The objects are sorted in descending order by note count
+     * and then ascending by exercise name.
      *
      * @param size limit the count of [NoteCountPerExerciseInfo] objects.
-     * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted in
-     * descending order by note count and then ascending by exercise name.
+     * @param dateRange range of dates of the target [NoteCountPerExerciseInfo] objects' related
+     * notes.
+     * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related notes'
+     * dates are in the [dateRange]. They are sorted in descending order by note count and then
+     * ascending by exercise name.
      */
-    suspend fun listTopPopularExercisesSuspending(size: Int): List<NoteCountPerExerciseInfo>
+    suspend fun listTopPopularExercisesSuspending(
+        size: Int,
+        dateRange: DateRange,
+    ): List<NoteCountPerExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes in accordance with the [startPosition] in the

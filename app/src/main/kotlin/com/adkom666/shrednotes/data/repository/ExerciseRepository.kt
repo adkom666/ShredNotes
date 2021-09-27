@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.data.repository
 
 import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.model.Exercise
+import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.paging.Page
 import kotlinx.coroutines.flow.Flow
 
@@ -24,6 +25,14 @@ interface ExerciseRepository {
      * [subname] is null or blank.
      */
     suspend fun countSuspending(subname: String? = null): Int
+
+    /**
+     * Getting the count of exercises referenced by at least one note with a date in [dateRange].
+     *
+     * @param dateRange range of dates of the target exercises' notes.
+     * @return count of exercises referenced by at least one note with a date in [dateRange].
+     */
+    suspend fun countByRelatedNoteDateSuspending(dateRange: DateRange): Int
 
     /**
      * Getting a [List] of all exercises sorted in ascending order by name.
