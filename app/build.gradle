@@ -111,6 +111,12 @@ android {
         noLines true
         xmlReport false
     }
+
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+        }
+    }
 }
 
 kapt {
