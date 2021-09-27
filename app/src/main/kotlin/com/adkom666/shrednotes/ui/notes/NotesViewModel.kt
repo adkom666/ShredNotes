@@ -447,7 +447,6 @@ class NotesViewModel @Inject constructor(
             if (_isFilterEnabled xor isEnabled) {
                 _isFilterEnabled = isEnabled
                 give(Signal.FilterEnablingChanged)
-                resetNotes()
             }
         }
 
