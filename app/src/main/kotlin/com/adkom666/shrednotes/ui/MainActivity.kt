@@ -389,10 +389,6 @@ class MainActivity :
         Timber.d("Item selected: filter")
         val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
         if (fragment is Filterable) {
-            fragment.onFilterEnablingChangedListener = {
-                Timber.d("Filter enabling changed")
-                menuReference.get()?.invalidate(MenuGroup.FILTER)
-            }
             fragment.filter()
         }
     }
