@@ -113,7 +113,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Show actual subtitle for statistics by days of week.
+         * Show subtitle for statistics by days of week.
          *
          * @property value ready-made subtitle value.
          */
@@ -140,7 +140,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
          *
          * @property value ready-made statistics by days of week.
          */
-        data class Statistics(val value: WeekdaysStatistics) : Signal()
+        data class ActualStatistics(val value: WeekdaysStatistics) : Signal()
     }
 
     /**
@@ -258,7 +258,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                 WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
                     statisticsAggregator.aggregateAverageNoteCount(dateRange)
             }
-            give(Signal.Statistics(statistics))
+            give(Signal.ActualStatistics(statistics))
         } catch (e: Exception) {
             Timber.e(e)
             reportAbout(e)

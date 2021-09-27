@@ -104,7 +104,7 @@ class ExerciseViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Show actual exercise name.
+         * Show exercise name.
          *
          * @property value ready-made exercise name.
          */

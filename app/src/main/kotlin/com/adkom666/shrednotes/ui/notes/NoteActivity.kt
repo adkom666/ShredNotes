@@ -228,7 +228,7 @@ class NoteActivity : AppCompatActivity() {
         when (signal) {
             is NoteViewModel.Signal.ExerciseList ->
                 setExerciseList(signal.value)
-            is NoteViewModel.Signal.NoteDateTime ->
+            is NoteViewModel.Signal.ActualNoteDateTime ->
                 setNoteDateTime(signal.value)
             is NoteViewModel.Signal.NoteExerciseName ->
                 setExerciseName(signal.value)

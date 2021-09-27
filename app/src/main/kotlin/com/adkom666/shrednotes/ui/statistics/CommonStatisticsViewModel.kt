@@ -116,7 +116,7 @@ class CommonStatisticsViewModel
          *
          * @property value ready-made common statistics.
          */
-        data class Statistics(val value: CommonStatistics) : Signal()
+        data class ActualStatistics(val value: CommonStatistics) : Signal()
     }
 
     /**
@@ -196,7 +196,7 @@ class CommonStatisticsViewModel
         @Suppress("TooGenericExceptionCaught")
         try {
             val statistics = statisticsAggregator.aggregate(dateRange)
-            give(Signal.Statistics(statistics))
+            give(Signal.ActualStatistics(statistics))
         } catch (e: Exception) {
             Timber.e(e)
             reportAbout(e)

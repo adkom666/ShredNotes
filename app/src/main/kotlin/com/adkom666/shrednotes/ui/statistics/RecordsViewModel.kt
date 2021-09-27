@@ -117,7 +117,7 @@ class RecordsViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Show actual subtitle for records.
+         * Show subtitle for records.
          *
          * @property value ready-made subtitle value.
          */
@@ -142,21 +142,21 @@ class RecordsViewModel @Inject constructor(
         /**
          * Show actual records.
          */
-        sealed class Records : Signal() {
+        sealed class ActualRecords : Signal() {
 
             /**
              * BPM records.
              *
              * @property value ready-made BPM records.
              */
-            data class Bpm(val value: BpmRecords) : Records()
+            data class Bpm(val value: BpmRecords) : ActualRecords()
 
             /**
              * Note count records.
              *
              * @property value ready-made note count records.
              */
-            data class NoteCount(val value: NoteCountRecords) : Records()
+            data class NoteCount(val value: NoteCountRecords) : ActualRecords()
         }
     }
 
@@ -271,14 +271,14 @@ class RecordsViewModel @Inject constructor(
         try {
             val recordsSignal = when (targetParameter) {
                 RecordsTargetParameter.BPM ->
-                    Signal.Records.Bpm(
+                    Signal.ActualRecords.Bpm(
                         recordsAggregator.aggregateBpmRecords(
                             dateRange,
                             BPM_RECORDS_LIMIT
                         )
                     )
                 RecordsTargetParameter.NOTE_COUNT ->
-                    Signal.Records.NoteCount(
+                    Signal.ActualRecords.NoteCount(
                         recordsAggregator.aggregateNoteCountRecords(
                             dateRange,
                             NOTE_COUNT_RECORDS_LIMIT

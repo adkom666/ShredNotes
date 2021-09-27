@@ -176,7 +176,7 @@ class RecordsActivity : AppCompatActivity() {
                 setSubtitle(signal.value)
             is RecordsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
-            is RecordsViewModel.Signal.Records ->
+            is RecordsViewModel.Signal.ActualRecords ->
                 setRecords(signal)
         }
     }
@@ -190,13 +190,13 @@ class RecordsActivity : AppCompatActivity() {
         binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
     }
 
-    private fun setRecords(records: RecordsViewModel.Signal.Records) {
+    private fun setRecords(records: RecordsViewModel.Signal.ActualRecords) {
         val adapter = when (records) {
-            is RecordsViewModel.Signal.Records.Bpm ->
+            is RecordsViewModel.Signal.ActualRecords.Bpm ->
                 records.value.topNotes.let {
                     if (it.isNotEmpty()) NoteAdapter(it) else null
                 }
-            is RecordsViewModel.Signal.Records.NoteCount ->
+            is RecordsViewModel.Signal.ActualRecords.NoteCount ->
                 records.value.topExerciseNames.map {
                     "${it.exerciseName} (${it.noteCount})"
                 }.let {

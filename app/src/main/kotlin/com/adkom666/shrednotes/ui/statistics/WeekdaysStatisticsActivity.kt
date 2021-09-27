@@ -199,7 +199,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
                 setSubtitle(signal.value)
             is WeekdaysStatisticsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
-            is WeekdaysStatisticsViewModel.Signal.Statistics ->
+            is WeekdaysStatisticsViewModel.Signal.ActualStatistics ->
                 setStatistics(signal.value)
         }
     }

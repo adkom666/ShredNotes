@@ -122,7 +122,7 @@ class NoteViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Use actual exercises lists.
+         * Use exercise list.
          *
          * @property value [List] of all exercises.
          */
@@ -133,17 +133,17 @@ class NoteViewModel @Inject constructor(
          *
          * @property value date and time of training.
          */
-        data class NoteDateTime(val value: Minutes) : Signal()
+        data class ActualNoteDateTime(val value: Minutes) : Signal()
 
         /**
-         * Show actual training exercise name.
+         * Show training exercise name.
          *
          * @property value training exercise name.
          */
         data class NoteExerciseName(val value: String) : Signal()
 
         /**
-         * Show actual training BPM.
+         * Show training BPM.
          *
          * @property value training BPM.
          */
@@ -159,7 +159,7 @@ class NoteViewModel @Inject constructor(
             if (value != _noteDateTime) {
                 Timber.d("Set noteDateTime=$value")
                 _noteDateTime = value
-                give(Signal.NoteDateTime(value))
+                give(Signal.ActualNoteDateTime(value))
             }
         }
 
@@ -210,7 +210,7 @@ class NoteViewModel @Inject constructor(
         Timber.d("Prepare: note=$note")
         _initialNote = note
         _noteDateTime = note?.dateTime ?: Minutes()
-        give(Signal.NoteDateTime(noteDateTime))
+        give(Signal.ActualNoteDateTime(noteDateTime))
         initialNote?.let { existentNote ->
             give(Signal.NoteExerciseName(existentNote.exerciseName))
             give(Signal.NoteBpmString(existentNote.bpm.toString()))

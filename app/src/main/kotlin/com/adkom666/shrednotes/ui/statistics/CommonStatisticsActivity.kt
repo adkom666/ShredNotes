@@ -153,7 +153,7 @@ class CommonStatisticsActivity : AppCompatActivity() {
         when (signal) {
             is CommonStatisticsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
-            is CommonStatisticsViewModel.Signal.Statistics ->
+            is CommonStatisticsViewModel.Signal.ActualStatistics ->
                 setStatistics(signal.value)
         }
     }

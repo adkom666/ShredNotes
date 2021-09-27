@@ -65,7 +65,7 @@ class AskViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Show actual money to donate.
+         * Show money to donate.
          *
          * @property value message text about money to donate.
          */
