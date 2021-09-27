@@ -170,9 +170,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             if (value != _dateRange) {
                 Timber.d("Change date range: old=$_dateRange, new=$value")
                 _dateRange = value
-                targetParameter?.let {
-                    saveDateRange(value, it)
-                }
+                saveDateRange(value, targetParameter)
                 setState(State.Waiting)
                 give(Signal.ActualDateRange(value))
                 viewModelScope.launch {
@@ -182,6 +180,9 @@ class WeekdaysStatisticsViewModel @Inject constructor(
             }
         }
 
+    private val targetParameter: WeekdaysStatisticsTargetParameter
+        get() = requireNotNull(_targetParameter)
+
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -190,7 +191,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     private val _signalChannel: BroadcastChannel<Signal> =
         BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
-    private var targetParameter: WeekdaysStatisticsTargetParameter? = null
+    private var _targetParameter: WeekdaysStatisticsTargetParameter? = null
     private var _dateRange: DateRange? = null
 
     /**
@@ -200,7 +201,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
      */
     fun prepare(targetParameter: WeekdaysStatisticsTargetParameter) {
         Timber.d("Prepare: targetParameter=$targetParameter")
-        this.targetParameter = targetParameter
+        _targetParameter = targetParameter
         _dateRange = loadDateRange(targetParameter)
         setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
@@ -256,7 +257,6 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                     statisticsAggregator.aggregateAverageAmongMaxBpm(dateRange)
                 WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
                     statisticsAggregator.aggregateAverageNoteCount(dateRange)
-                null -> error("Target parameter is missing!")
             }
             give(Signal.Statistics(statistics))
         } catch (e: Exception) {

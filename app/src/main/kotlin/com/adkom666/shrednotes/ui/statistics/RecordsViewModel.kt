@@ -187,9 +187,7 @@ class RecordsViewModel @Inject constructor(
             if (value != _dateRange) {
                 Timber.d("Change date range: old=$_dateRange, new=$value")
                 _dateRange = value
-                targetParameter?.let {
-                    saveDateRange(value, it)
-                }
+                saveDateRange(value, targetParameter)
                 setState(State.Waiting)
                 give(Signal.ActualDateRange(value))
                 viewModelScope.launch {
@@ -199,6 +197,9 @@ class RecordsViewModel @Inject constructor(
             }
         }
 
+    private val targetParameter: RecordsTargetParameter
+        get() = requireNotNull(_targetParameter)
+
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
 
     private val _messageChannel: BroadcastChannel<Message> =
@@ -207,7 +208,7 @@ class RecordsViewModel @Inject constructor(
     private val _signalChannel: BroadcastChannel<Signal> =
         BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
-    private var targetParameter: RecordsTargetParameter? = null
+    private var _targetParameter: RecordsTargetParameter? = null
     private var _dateRange: DateRange? = null
 
     /**
@@ -217,7 +218,7 @@ class RecordsViewModel @Inject constructor(
      */
     fun prepare(targetParameter: RecordsTargetParameter) {
         Timber.d("Prepare: targetParameter=$targetParameter")
-        this.targetParameter = targetParameter
+        _targetParameter = targetParameter
         _dateRange = loadDateRange(targetParameter)
         setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
@@ -283,7 +284,6 @@ class RecordsViewModel @Inject constructor(
                             NOTE_COUNT_RECORDS_LIMIT
                         )
                     )
-                null -> error("Target parameter is missing!")
             }
             give(recordsSignal)
         } catch (e: Exception) {
