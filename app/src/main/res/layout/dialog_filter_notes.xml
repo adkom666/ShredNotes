@@ -28,64 +28,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/title_date_range"
-                app:layout_constraintBottom_toTopOf="@+id/date_range_container"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <FrameLayout
                 android:id="@+id/date_range_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintTop_toBottomOf="@+id/date_range_title_text_view"
-                app:layout_constraintBottom_toTopOf="@+id/bpm_range_title_text_view">
+                app:layout_constraintTop_toBottomOf="@+id/date_range_title_text_view">
 
-                <TextView
-                    android:id="@+id/date_range_text_view"
-                    style="@style/AppTheme.HeaderText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/square_image_button_size"
-                    android:gravity="top"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="@dimen/square_image_button_size_x2_and_padding"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    tools:text="27.07.1964 \u2014 4.07.2000" />
+                <include
+                    android:id="@+id/date_range"
+                    layout="@layout/date_range" />
 
-                <ImageButton
-                    android:id="@+id/pick_date_range_image_button"
-                    style="@style/AppTheme.ImageButton"
-                    android:layout_width="@dimen/square_image_button_size"
-                    android:layout_height="@dimen/square_image_button_size"
-                    android:src="@drawable/ic_edit"
-                    android:contentDescription="@string/desc_pick_note_date_range"
-                    android:layout_marginEnd="@dimen/padding_m"
-                    app:layout_constraintEnd_toStartOf="@+id/clear_date_range_image_button"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0" />
-
-                <ImageButton
-                    android:id="@+id/clear_date_range_image_button"
-                    style="@style/AppTheme.ImageButton"
-                    android:layout_width="@dimen/square_image_button_size"
-                    android:layout_height="@dimen/square_image_button_size"
-                    android:src="@drawable/ic_all_inclusive"
-                    android:contentDescription="@string/desc_clear_note_date_range"
-                    app:layout_constraintEnd_toEndOf="@+id/date_range_text_view"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/bpm_range_title_text_view"
@@ -95,20 +52,14 @@
                 android:text="@string/title_bpm_range"
                 android:layout_marginTop="@dimen/padding_l"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintTop_toBottomOf="@+id/date_range_container"
-                app:layout_constraintBottom_toTopOf="@+id/bpm_range_container" />
+                app:layout_constraintTop_toBottomOf="@+id/date_range_container" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bpm_range_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintTop_toBottomOf="@+id/bpm_range_title_text_view"
-                app:layout_constraintBottom_toTopOf="@+id/clear_all_button">
+                app:layout_constraintTop_toBottomOf="@+id/bpm_range_title_text_view">
 
                 <EditText
                     android:id="@+id/bpm_from_edit_text"
@@ -121,7 +72,6 @@
                     android:inputType="number"
                     android:importantForAutofill="no"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/bpm_dash_text_view"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:text="13" />
@@ -133,7 +83,6 @@
                     android:layout_height="wrap_content"
                     android:text=" \u2014 "
                     app:layout_constraintStart_toEndOf="@+id/bpm_from_edit_text"
-                    app:layout_constraintEnd_toStartOf="@+id/bpm_to_edit_text"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:ignore="HardcodedText" />
@@ -149,7 +98,6 @@
                     android:inputType="number"
                     android:importantForAutofill="no"
                     app:layout_constraintStart_toEndOf="@+id/bpm_dash_text_view"
-                    app:layout_constraintEnd_toStartOf="@+id/clear_bpm_range_image_button"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:text="666" />
@@ -163,7 +111,6 @@
                     android:contentDescription="@string/desc_clear_note_bpm_range"
                     android:layout_marginStart="@dimen/padding_xl"
                     app:layout_constraintStart_toEndOf="@+id/bpm_to_edit_text"
-                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -175,14 +122,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/button_title_clear_all"
-                android:layout_marginStart="0dp"
                 android:layout_marginTop="@dimen/padding_l"
-                android:layout_marginBottom="0dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintTop_toBottomOf="@+id/bpm_range_container"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/bpm_range_container" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
