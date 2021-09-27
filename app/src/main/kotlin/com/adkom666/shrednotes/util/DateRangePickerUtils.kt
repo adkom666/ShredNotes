@@ -67,7 +67,7 @@ private fun MaterialDatePicker<*>.addDateListener(
             val dateToInclusive = to?.let { Days(it) }
             val dateRange = DateRange(
                 fromInclusive = dateFromInclusive,
-                toExclusive = dateToInclusive?.yesterday
+                toExclusive = dateToInclusive?.tomorrow
             )
             Timber.d("Date range selected: dateRange=$dateRange")
             onPositiveButtonClick(dateRange)
