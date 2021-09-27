@@ -146,7 +146,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             model.dateRange = INFINITE_DATE_RANGE
         }
         binding.okButton.setOnClickListener {
-            Timber.d("OK clicked")
+            Timber.d("Click: OK")
             model.onOkButtonClick()
         }
     }
