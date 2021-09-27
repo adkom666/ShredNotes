@@ -131,8 +131,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/button_title_ok"
-                        android:textColor="@color/white"
-                        android:backgroundTint="@color/grey_darkish"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
