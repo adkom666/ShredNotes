@@ -27,6 +27,18 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
 
     companion object {
 
+        private const val ARG_INITIAL_FILTER =
+            "${BuildConfig.APPLICATION_ID}.args.note_filter.initial_filter"
+
+        private const val ARG_IS_FILTER_ENABLED =
+            "${BuildConfig.APPLICATION_ID}.args.note_filter.is_filter_enabled"
+
+        private const val KEY_DATE_RANGE =
+            "${BuildConfig.APPLICATION_ID}.keys.note_filter.date_range"
+
+        private const val TAG_DATE_RANGE_PICKER =
+            "${BuildConfig.APPLICATION_ID}.tags.note_filter.date_range_picker"
+
         /**
          * Preferred way to create a fragment.
          *
@@ -45,18 +57,6 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
             fragment.arguments = arguments
             return fragment
         }
-
-        private const val ARG_INITIAL_FILTER =
-            "${BuildConfig.APPLICATION_ID}.args.note_filter.initial_filter"
-
-        private const val ARG_IS_FILTER_ENABLED =
-            "${BuildConfig.APPLICATION_ID}.args.note_filter.is_filter_enabled"
-
-        private const val KEY_DATE_RANGE =
-            "${BuildConfig.APPLICATION_ID}.keys.note_filter.date_range"
-
-        private const val TAG_DATE_RANGE_PICKER =
-            "${BuildConfig.APPLICATION_ID}.tags.note_filter.date_range_picker"
     }
 
     private val binding: DialogFilterNotesBinding
