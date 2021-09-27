@@ -125,13 +125,13 @@ private const val NOTES_WITH_EXERCISES_FIELDS =
             "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
 
-private const val SELECT_ALL_UNORDERED = "SELECT * FROM $TABLE_NOTES"
+private const val SELECT_ALL_RAW_UNORDERED = "SELECT * FROM $TABLE_NOTES"
 
-private const val SELECT_ALL_WITH_EXERCISES_UNORDERED =
+private const val SELECT_ALL_UNORDERED =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM $TABLE_NOTES_WITH_EXERCISES"
 
-private const val SELECT_BY_TIMESTAMP_RANGE_WITH_EXERCISES_UNORDERED =
+private const val SELECT_BY_TIMESTAMP_RANGE_UNORDERED =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM $TABLE_NOTES_WITH_EXERCISES " +
             "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
@@ -205,14 +205,14 @@ private const val JOIN_TOP_BPM_NOTES_TO_EXERCISES =
             "ON $TABLE_NOTES.$TABLE_NOTES_FIELD_EXERCISE_ID = " +
             "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID"
 
-private const val SELECT_TOP_BPM_WITH_EXERCISES =
+private const val SELECT_TOP_BPM =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS) $TABLE_NOTES " +
             "$JOIN_TOP_BPM_NOTES_TO_EXERCISES " +
             "$ORDER_TOP_BPM_NOTES_WITH_EXERCISES " +
             TOP_PORTION
 
-private const val SELECT_TOP_BPM_WITH_EXERCISES_BY_TIMESTAMP_RANGE =
+private const val SELECT_TOP_BPM_BY_TIMESTAMP_RANGE =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS_BY_TIMESTAMP_RANGE) $TABLE_NOTES " +
             "$JOIN_TOP_BPM_NOTES_TO_EXERCISES " +
@@ -652,16 +652,16 @@ interface NoteDao : BaseDao<NoteEntity> {
      *
      * @return [List] of all note entities.
      */
-    @Query(SELECT_ALL_UNORDERED)
-    suspend fun listAllUnorderedSuspending(): List<NoteEntity>
+    @Query(SELECT_ALL_RAW_UNORDERED)
+    suspend fun listAllRawUnorderedSuspending(): List<NoteEntity>
 
     /**
      * Getting a [List] of all notes with their exercises' info.
      *
      * @return [List] of all notes with their exercises' info.
      */
-    @Query(SELECT_ALL_WITH_EXERCISES_UNORDERED)
-    suspend fun listAllWithExercisesUnorderedSuspending(): List<NoteWithExerciseInfo>
+    @Query(SELECT_ALL_UNORDERED)
+    suspend fun listAllUnorderedSuspending(): List<NoteWithExerciseInfo>
 
     /**
      * Getting a [List] of notes with their exercises' info whose timestamp is greater than or equal
@@ -673,8 +673,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @return [List] of notes with their exercises' info whose timestamp is greater than or equal
      * to [timestampFromInclusive] and less than [timestampToExclusive].
      */
-    @Query(SELECT_BY_TIMESTAMP_RANGE_WITH_EXERCISES_UNORDERED)
-    suspend fun listByTimestampRangeWithExercisesUnorderedSuspending(
+    @Query(SELECT_BY_TIMESTAMP_RANGE_UNORDERED)
+    suspend fun listByTimestampRangeUnorderedSuspending(
         timestampFromInclusive: Long,
         timestampToExclusive: Long
     ): List<NoteWithExerciseInfo>
@@ -687,8 +687,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
      * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      */
-    @Query(SELECT_TOP_BPM_WITH_EXERCISES)
-    suspend fun listTopBpmWithExercisesSuspending(size: Int): List<NoteWithExerciseInfo>
+    @Query(SELECT_TOP_BPM)
+    suspend fun listTopBpmSuspending(size: Int): List<NoteWithExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info whose timestamp is
@@ -705,8 +705,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * are grouped by exercise name, and each group consists of one note with maximum BPM and
      * maximum timestamp.
      */
-    @Query(SELECT_TOP_BPM_WITH_EXERCISES_BY_TIMESTAMP_RANGE)
-    suspend fun listTopBpmWithExercisesByTimestampRangeSuspending(
+    @Query(SELECT_TOP_BPM_BY_TIMESTAMP_RANGE)
+    suspend fun listTopBpmByTimestampRangeSuspending(
         size: Int,
         timestampFromInclusive: Long,
         timestampToExclusive: Long

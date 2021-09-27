@@ -71,7 +71,7 @@ class NoteRepositoryImpl(
 
     override suspend fun listAllUnorderedSuspending(): List<Note> {
         Timber.d("listAllUnorderedSuspending")
-        val noteWithExerciseEntityList = noteDao.listAllWithExercisesUnorderedSuspending()
+        val noteWithExerciseEntityList = noteDao.listAllUnorderedSuspending()
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
@@ -340,12 +340,12 @@ class NoteRepositoryImpl(
         dateRange: DateRange,
         calendar: Calendar
     ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
-        noteDao.listByTimestampRangeWithExercisesUnorderedSuspending(
+        noteDao.listByTimestampRangeUnorderedSuspending(
             dateRange.fromInclusive.timestampOrMin(calendar),
             dateRange.toExclusive.timestampOrMax(calendar)
         )
     } else {
-        noteDao.listAllWithExercisesUnorderedSuspending()
+        noteDao.listAllUnorderedSuspending()
     }
 
     private suspend fun topBpmEntityListSuspending(
@@ -353,13 +353,13 @@ class NoteRepositoryImpl(
         dateRange: DateRange,
         calendar: Calendar
     ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
-        noteDao.listTopBpmWithExercisesByTimestampRangeSuspending(
+        noteDao.listTopBpmByTimestampRangeSuspending(
             size,
             dateRange.fromInclusive.timestampOrMin(calendar),
             dateRange.toExclusive.timestampOrMax(calendar)
         )
     } else {
-        noteDao.listTopBpmWithExercisesSuspending(size)
+        noteDao.listTopBpmSuspending(size)
     }
 
     private suspend fun topNoteCountPerExerciseListSuspending(

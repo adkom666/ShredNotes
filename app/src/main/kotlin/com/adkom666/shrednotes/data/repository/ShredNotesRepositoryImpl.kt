@@ -30,7 +30,7 @@ class ShredNotesRepositoryImpl(
     override suspend fun shredNotesV1Suspending(): ExternalShredNotesV1 = transactor.transaction {
         Timber.d("shredNotesV1Suspending")
         val exersiseEntityList = exerciseDao.listAllUnorderedSuspending()
-        val noteEntityList = noteDao.listAllUnorderedSuspending()
+        val noteEntityList = noteDao.listAllRawUnorderedSuspending()
         val exercises = exersiseEntityList.map(ExerciseEntity::toExternalExerciseV1)
         val notes = noteEntityList.map(NoteEntity::toExternalNoteV1)
         val shredNotes = ExternalShredNotesV1(exercises, notes)
