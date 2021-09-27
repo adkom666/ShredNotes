@@ -16,11 +16,13 @@ import kotlinx.coroutines.flow.Flow
 private const val SELECT_COUNT_ALL = "SELECT COUNT(*) FROM $TABLE_EXERCISES"
 
 private const val SELECT_COUNT_BY_ID =
-    "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_EXERCISES " +
             "WHERE $TABLE_EXERCISES_FIELD_ID = :id"
 
 private const val SELECT_COUNT_BY_ANOTHER_ID_AND_NAME =
-    "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_EXERCISES " +
             "WHERE $TABLE_EXERCISES_FIELD_ID <> :id " +
             "AND $TABLE_EXERCISES_FIELD_NAME = :name"
 
@@ -28,7 +30,8 @@ private const val CONDITION_BY_SUBNAME =
     "UPPER($TABLE_EXERCISES_FIELD_NAME) LIKE UPPER('%' || :subname || '%')"
 
 private const val SELECT_COUNT_BY_SUBNAME =
-    "SELECT COUNT(*) FROM $TABLE_EXERCISES " +
+    "SELECT COUNT(*) " +
+            "FROM $TABLE_EXERCISES " +
             "WHERE $CONDITION_BY_SUBNAME"
 
 private const val SELECT_EXERCISE_IDS_BY_RELATED_NOTE_TIMESTAMP =
