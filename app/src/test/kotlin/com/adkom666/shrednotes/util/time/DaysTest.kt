@@ -2,7 +2,6 @@ package com.adkom666.shrednotes.util.time
 
 import junit.framework.TestCase
 import java.util.Calendar
-import java.util.Date
 
 class DaysTest : TestCase() {
 
@@ -22,14 +21,12 @@ class DaysTest : TestCase() {
 
     fun testEpochMillis() {
         val calendar = Calendar.getInstance()
-        calendar.time = Date()
         val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         assertEquals(MILLIS_PER_DAY, days.epochMillis % MILLIS_PER_DAY + zoneOffset)
     }
 
     fun testDate() {
         val calendar = Calendar.getInstance()
-        calendar.time = Date()
         val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
         assertEquals(MILLIS_PER_DAY, days.date.time % MILLIS_PER_DAY + zoneOffset)
     }
