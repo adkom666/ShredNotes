@@ -15,11 +15,12 @@ import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityStatisticsWeekdaysBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
-import com.adkom666.shrednotes.statistics.Weekday
+import com.adkom666.shrednotes.util.Weekday
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.DateRangeFormat
 import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.labelResId
 import com.adkom666.shrednotes.util.restoreDateRangeListener
 import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
@@ -227,7 +228,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         Weekday.values().forEach { weekday ->
             statistics.valueMap[weekday]?.let { value ->
                 if (value > 0f) {
-                    val weekdayLabel = getString(weekday.toLabelResId())
+                    val weekdayLabel = getString(weekday.labelResId())
                     val entry = PieEntry(value, weekdayLabel)
                     entries.add(entry)
                 }
@@ -254,17 +255,6 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         } else if (BuildConfig.DEBUG) {
             error("Illegal display density: density=$density")
         }
-    }
-
-    @StringRes
-    private fun Weekday.toLabelResId(): Int = when (this) {
-        Weekday.SUNDAY -> R.string.label_sunday
-        Weekday.MONDAY -> R.string.label_monday
-        Weekday.TUESDAY -> R.string.label_tuesday
-        Weekday.WEDNESDAY -> R.string.label_wednesday
-        Weekday.THURSDAY -> R.string.label_thursday
-        Weekday.FRIDAY -> R.string.label_friday
-        Weekday.SATURDAY -> R.string.label_saturday
     }
 
     @StringRes

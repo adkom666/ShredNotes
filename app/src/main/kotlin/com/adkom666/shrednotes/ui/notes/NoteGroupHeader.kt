@@ -12,8 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ItemNoteGroupHeaderBinding
 import com.adkom666.shrednotes.util.time.Days
+import com.adkom666.shrednotes.util.titleResId
+import com.adkom666.shrednotes.util.weekday
 import java.lang.ref.WeakReference
 import java.text.DateFormat
+import java.util.Calendar
 import java.util.Locale
 import kotlin.math.min
 
@@ -33,6 +36,8 @@ class NoteGroupHeader(
         DateFormat.SHORT,
         Locale.getDefault()
     )
+
+    private val calendar = Calendar.getInstance()
 
     private val headerMap: MutableMap<Days, WeakReference<View>> = mutableMapOf()
 
@@ -165,7 +170,13 @@ class NoteGroupHeader(
     private fun RecyclerView.createHeader(days: Days): View {
         val inflater = LayoutInflater.from(context)
         val binding = ItemNoteGroupHeaderBinding.inflate(inflater, this, false)
-        binding.noteGroupHeaderTextView.text = dateFormat.format(days.date)
+
+        val weekday = days.date.weekday(calendar)
+        val weekdayTitleResId = weekday.titleResId()
+        val weekdayTitle = context.getString(weekdayTitleResId)
+        val headerText = "$weekdayTitle, ${dateFormat.format(days.date)}"
+
+        binding.noteGroupHeaderTextView.text = headerText
         val headerView = binding.root
         fixChildLayoutSize(headerView)
         return headerView

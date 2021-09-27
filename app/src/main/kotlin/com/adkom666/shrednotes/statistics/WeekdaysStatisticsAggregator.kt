@@ -2,11 +2,13 @@ package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.ALL_WEEKDAYS
 import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.Weekday
 import com.adkom666.shrednotes.util.time.Days
+import com.adkom666.shrednotes.util.weekday
 import timber.log.Timber
 import java.util.Calendar
-import java.util.Date
 
 /**
  * Get statistics by days of week here.
@@ -16,10 +18,6 @@ import java.util.Date
 class WeekdaysStatisticsAggregator(
     private val noteRepository: NoteRepository
 ) {
-    private companion object {
-        private val ALL_WEEKDAYS = Weekday.values()
-    }
-
     private var averageAmongMaxBpmCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
     private var averageAmongNoteCountCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
 
@@ -71,7 +69,7 @@ class WeekdaysStatisticsAggregator(
         val weekdayToQuantityListMap = weekdayToEmptyIntListMap()
         val calendar = Calendar.getInstance()
         noteToDaysMap.keys.forEach { days ->
-            val weekday = days.date.toWeekday(calendar)
+            val weekday = days.date.weekday(calendar)
             noteToDaysMap[days]?.let { noteList ->
                 calcQuantity(noteList)?.let { quantity ->
                     weekdayToQuantityListMap[weekday]?.add(quantity)
@@ -112,11 +110,5 @@ class WeekdaysStatisticsAggregator(
             weekdayToIntListMap[weekday] = mutableListOf()
         }
         return weekdayToIntListMap
-    }
-
-    private fun Date.toWeekday(calendar: Calendar): Weekday {
-        calendar.time = this
-        val weekdayNumber = calendar.get(Calendar.DAY_OF_WEEK)
-        return ALL_WEEKDAYS[weekdayNumber - 1]
     }
 }

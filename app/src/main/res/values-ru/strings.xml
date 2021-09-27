@@ -66,6 +66,14 @@
     <string name="statistics_subtitle_average_note_count">Среднее количество заметок</string>
     <string name="statistics_subtitle_note_count">Количество заметок</string>
 
+    <string name="title_sunday">Воскресенье</string>
+    <string name="title_monday">Понедельник</string>
+    <string name="title_tuesday">Вторник</string>
+    <string name="title_wednesday">Среда</string>
+    <string name="title_thursday">Четверг</string>
+    <string name="title_friday">Пятница</string>
+    <string name="title_saturday">Суббота</string>
+
     <string name="label_sunday">Вск</string>
     <string name="label_monday">Пнд</string>
     <string name="label_tuesday">Втр</string>

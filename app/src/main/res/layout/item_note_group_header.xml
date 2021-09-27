@@ -17,7 +17,7 @@
         android:layout_marginTop="@dimen/padding_m"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="27.07.1964" />
+        tools:text="Monday, 27.07.1964" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="match_parent"

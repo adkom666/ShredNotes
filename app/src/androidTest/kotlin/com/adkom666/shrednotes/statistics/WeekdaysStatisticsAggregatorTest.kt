@@ -9,6 +9,7 @@ import com.adkom666.shrednotes.data.db.entity.NoteEntity
 import com.adkom666.shrednotes.di.component.DaggerTestStatisticsComponent
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
+import com.adkom666.shrednotes.util.Weekday
 import com.adkom666.shrednotes.util.time.Days
 import java.util.Calendar
 import javax.inject.Inject

@@ -1,4 +1,4 @@
-package com.adkom666.shrednotes.statistics
+package com.adkom666.shrednotes.util
 
 /**
  * Day of week.

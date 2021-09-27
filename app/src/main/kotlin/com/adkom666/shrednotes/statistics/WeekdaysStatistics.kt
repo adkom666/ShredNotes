@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.statistics
 
+import com.adkom666.shrednotes.util.Weekday
+
 typealias WeekdayValues = Map<Weekday, Float>
 
 /**
