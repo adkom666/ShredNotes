@@ -394,31 +394,26 @@ class MainViewModel @Inject constructor(
                 } else {
                     Message.NoShredNotesUpdate
                 }
-                setState(State.Preparation.Continuing)
                 report(message)
             } catch (e: GoogleAuthException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 report(Message.Error.UnauthorizedUser)
             } catch (e: GoogleRecoverableAuthException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 e.intent?.let {
                     navigateTo(NavDirection.ToAuthOnRead(it))
                 } ?: report(Message.Error.Unknown)
             } catch (e: JsonSyntaxException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 report(Message.Error.WrongJsonSyntax)
             } catch (e: UnsupportedDataException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 report(Message.Error.UnsupportedDataVersion(e.version))
             } catch (e: Exception) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 reportAbout(e)
             }
+            setState(State.Preparation.Continuing)
         }
     }
 
@@ -430,24 +425,21 @@ class MainViewModel @Inject constructor(
                 val json = readyJson
                 readyJson = null
                 dataManager.write(jsonKey = KEY_JSON, readyJson = json)
-                setState(State.Preparation.Continuing)
                 report(Message.GoogleDriveUpdate)
             } catch (e: GoogleAuthException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 report(Message.Error.UnauthorizedUser)
             } catch (e: GoogleRecoverableAuthException) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 readyJson = e.additionalData[KEY_JSON] as? String
                 e.intent?.let {
                     navigateTo(NavDirection.ToAuthOnWrite(it))
                 } ?: report(Message.Error.Unknown)
             } catch (e: Exception) {
                 Timber.e(e)
-                setState(State.Preparation.Continuing)
                 reportAbout(e)
             }
+            setState(State.Preparation.Continuing)
         }
     }
 
