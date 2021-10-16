@@ -322,7 +322,7 @@ class NotesViewModel @Inject constructor(
         NoteSource(
             noteRepository = noteRepository,
             exerciseSubname = exerciseSubname,
-            filter = if (isFilterEnabled) filter else null
+            filter = filterOrNull
         ).also { noteSource = it }
     }
 
