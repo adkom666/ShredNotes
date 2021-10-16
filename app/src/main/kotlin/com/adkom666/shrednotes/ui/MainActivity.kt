@@ -628,11 +628,25 @@ class MainActivity :
         private fun prepare(state: MainViewModel.State.Preparation) = when (state) {
             MainViewModel.State.Preparation.Initial ->
                 Unit
-            MainViewModel.State.Preparation.Continuing ->
+            is MainViewModel.State.Preparation.Continuing -> {
+                if (state.isForceUnsearchAndUnfilter) {
+                    unsearchAndUnfilter()
+                }
                 menuReference.get()?.invalidate()
+            }
             MainViewModel.State.Preparation.GoogleDriveStateChanged -> {
                 invalidateSubtitle()
                 menuReference.get()?.invalidate(MenuGroup.GOOGLE_DRIVE_PANEL)
+            }
+        }
+
+        private fun unsearchAndUnfilter() {
+            val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+            if (fragment is Searchable) {
+                fragment.unsearch()
+            }
+            if (fragment is Filterable) {
+                fragment.unfilter()
             }
         }
 

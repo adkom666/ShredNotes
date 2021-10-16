@@ -438,9 +438,9 @@ class NotesViewModel @Inject constructor(
      * Call this method when the results of the filter configuration are available.
      *
      * @param status how the [filter] configuration ended.
-     * @param filter notes filter after configuration.
+     * @param filter notes filter after configuration or null to use current filter.
      */
-    fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter) {
+    fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter? = null) {
         Timber.d("onConfigFilterResult: status=$status, filter=$filter")
 
         fun ensureFilterEnabling(isEnabled: Boolean) {
@@ -451,9 +451,9 @@ class NotesViewModel @Inject constructor(
         }
 
         when (status) {
-            ConfigFilterStatus.APPLY -> {
-                this.filter = filter
-                val isFilterDefined = filter.isDefined
+            ConfigFilterStatus.APPLY -> filter?.let { safeFilter ->
+                this.filter = safeFilter
+                val isFilterDefined = safeFilter.isDefined
                 Timber.d("isFilterDefined=$isFilterDefined")
                 ensureFilterEnabling(isFilterDefined)
                 if (isFilterDefined.not()) {
@@ -462,7 +462,7 @@ class NotesViewModel @Inject constructor(
             }
             ConfigFilterStatus.DISABLE -> {
                 ensureFilterEnabling(false)
-                this.filter = filter
+                filter?.let { this.filter = it }
             }
             ConfigFilterStatus.CANCEL -> Unit
         }

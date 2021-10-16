@@ -60,8 +60,11 @@ class MainViewModel @Inject constructor(
 
             /**
              * Show options menu before continuing.
+             *
+             * @property isForceUnsearchAndUnfilter whether to forcibly inactivate search and filter
+             * after continuing.
              */
-            object Continuing : Preparation()
+            data class Continuing(val isForceUnsearchAndUnfilter: Boolean) : Preparation()
 
             /**
              * The user is logged in or logged out. Invalidate the options menu and the account
@@ -388,32 +391,39 @@ class MainViewModel @Inject constructor(
         setState(State.Waiting(State.Waiting.Operation.READING))
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
-            try {
-                val message = if (dataManager.read()) {
+            val isForceUnsearchAndUnfilter = try {
+                val isShredNotesUpdate = dataManager.read()
+                val message = if (isShredNotesUpdate) {
                     Message.ShredNotesUpdate
                 } else {
                     Message.NoShredNotesUpdate
                 }
                 report(message)
+                isShredNotesUpdate
             } catch (e: GoogleAuthException) {
                 Timber.e(e)
                 report(Message.Error.UnauthorizedUser)
+                false
             } catch (e: GoogleRecoverableAuthException) {
                 Timber.e(e)
                 e.intent?.let {
                     navigateTo(NavDirection.ToAuthOnRead(it))
                 } ?: report(Message.Error.Unknown)
+                false
             } catch (e: JsonSyntaxException) {
                 Timber.e(e)
                 report(Message.Error.WrongJsonSyntax)
+                false
             } catch (e: UnsupportedDataException) {
                 Timber.e(e)
                 report(Message.Error.UnsupportedDataVersion(e.version))
+                false
             } catch (e: Exception) {
                 Timber.e(e)
                 reportAbout(e)
+                false
             }
-            setState(State.Preparation.Continuing)
+            setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter))
         }
     }
 
@@ -439,7 +449,7 @@ class MainViewModel @Inject constructor(
                 Timber.e(e)
                 reportAbout(e)
             }
-            setState(State.Preparation.Continuing)
+            setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter = false))
         }
     }
 

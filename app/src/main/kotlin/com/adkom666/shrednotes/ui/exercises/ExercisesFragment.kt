@@ -146,6 +146,11 @@ class ExercisesFragment :
         return true
     }
 
+    override fun unsearch() {
+        model.isSearchActive = false
+        model.subname = null
+    }
+
     private fun acquireActivityLaunchers() {
         _addExerciseLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
