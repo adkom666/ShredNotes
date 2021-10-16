@@ -650,12 +650,12 @@ class MainActivity :
             }
         }
 
+        private fun setWorking() = setProgressActive(false)
+
         private fun setWaiting(operation: MainViewModel.State.Waiting.Operation) {
             setProgressActive(true)
             binding.operationTextView.setText(operation.stringResId())
         }
-
-        private fun setWorking() = setProgressActive(false)
 
         private fun setProgressActive(isActive: Boolean) {
             binding.progress.isVisible = isActive
