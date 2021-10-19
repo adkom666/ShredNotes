@@ -22,6 +22,7 @@ import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.FragmentExercisesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
+import com.adkom666.shrednotes.ui.Scrollable
 import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
@@ -42,12 +43,15 @@ import timber.log.Timber
 @ExperimentalCoroutinesApi
 class ExercisesFragment :
     DaggerFragment(),
-    Searchable {
+    Searchable,
+    Scrollable {
 
     companion object {
 
         private const val TAG_CONFIRM_EXERCISES_DELETION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_exercises_deletion"
+
+        private const val SCROLL_DELAY_MILLIS = 666L
 
         /**
          * Preferred way to create a fragment.
@@ -149,6 +153,12 @@ class ExercisesFragment :
     override fun unsearch() {
         model.isSearchActive = false
         model.subname = null
+    }
+
+    override fun scrollToBegin() {
+        view?.handler?.postDelayed({
+            binding.exercisesRecycler.scrollToPosition(0)
+        }, SCROLL_DELAY_MILLIS)
     }
 
     private fun acquireActivityLaunchers() {

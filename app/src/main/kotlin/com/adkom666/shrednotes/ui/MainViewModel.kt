@@ -39,6 +39,7 @@ class MainViewModel @Inject constructor(
 
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
+        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_JSON = "json"
     }
@@ -178,6 +179,17 @@ class MainViewModel @Inject constructor(
     }
 
     /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * All app content has been updated.
+         */
+        object ContentUpdated : Signal()
+    }
+
+    /**
      * Visibility of the menu items that allow you to work with 'Google Drive'.
      *
      * @property isItemReadVisibile whether the 'Read' item must be visible.
@@ -232,6 +244,12 @@ class MainViewModel @Inject constructor(
         get() = _messageChannel.openSubscription()
 
     /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val signalChannel: ReceiveChannel<Signal>
+        get() = _signalChannel.openSubscription()
+
+    /**
      * Read visibility of the menu items that allow you to work with 'Google Drive'.
      */
     val googleDriveItemsVisibility: GoogleDriveItemsVisibility
@@ -262,6 +280,9 @@ class MainViewModel @Inject constructor(
 
     private val _messageChannel: BroadcastChannel<Message> =
         BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
+
+    private val _signalChannel: BroadcastChannel<Signal> =
+        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
     private var readyJson: String? = null
 
@@ -393,6 +414,9 @@ class MainViewModel @Inject constructor(
             @Suppress("TooGenericExceptionCaught")
             val isForceUnsearchAndUnfilter = try {
                 val isShredNotesUpdate = dataManager.read()
+                if (isShredNotesUpdate) {
+                    give(Signal.ContentUpdated)
+                }
                 val message = if (isShredNotesUpdate) {
                     Message.ShredNotesUpdate
                 } else {
@@ -472,5 +496,10 @@ class MainViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun give(signal: Signal) {
+        Timber.d("Give: signal=$signal")
+        _signalChannel.offer(signal)
     }
 }

@@ -243,6 +243,9 @@ class MainActivity :
         lifecycleScope.launchWhenStarted {
             model.messageChannel.consumeEach(::show)
         }
+        lifecycleScope.launchWhenStarted {
+            model.signalChannel.consumeEach(::process)
+        }
     }
 
     private fun prepareSearch(
@@ -497,6 +500,17 @@ class MainActivity :
         }
         MainViewModel.Message.Error.Unknown ->
             toast(R.string.error_unknown)
+    }
+
+    private fun process(signal: MainViewModel.Signal) = when (signal) {
+        MainViewModel.Signal.ContentUpdated -> scrollToBegin()
+    }
+
+    private fun scrollToBegin() {
+        val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+        if (fragment is Scrollable) {
+            fragment.scrollToBegin()
+        }
     }
 
     private fun Menu.invalidate(vararg groups: MenuGroup = MenuGroup.values()) {

@@ -25,6 +25,7 @@ import com.adkom666.shrednotes.databinding.FragmentNotesBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.Filterable
 import com.adkom666.shrednotes.ui.OnFilterEnablingChangedListener
+import com.adkom666.shrednotes.ui.Scrollable
 import com.adkom666.shrednotes.ui.Searchable
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.FabDashboard
@@ -46,7 +47,8 @@ import timber.log.Timber
 class NotesFragment :
     DaggerFragment(),
     Searchable,
-    Filterable {
+    Filterable,
+    Scrollable {
 
     companion object {
 
@@ -55,6 +57,8 @@ class NotesFragment :
 
         private const val TAG_FILTER_NOTES =
             "${BuildConfig.APPLICATION_ID}.tags.filter_notes"
+
+        private const val SCROLL_DELAY_MILLIS = 666L
 
         /**
          * Preferred way to create a fragment.
@@ -169,6 +173,12 @@ class NotesFragment :
 
     override fun unfilter() {
         model.onConfigFilterResult(NotesViewModel.ConfigFilterStatus.DISABLE)
+    }
+
+    override fun scrollToBegin() {
+        view?.handler?.postDelayed({
+            binding.noteRecycler.scrollToPosition(0)
+        }, SCROLL_DELAY_MILLIS)
     }
 
     private fun acquireActivityLaunchers() {
