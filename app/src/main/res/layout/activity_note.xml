@@ -75,9 +75,8 @@
             <com.adkom666.shrednotes.widget.InstantAutoCompleteTextView
                 android:id="@+id/note_exercise_auto_complete_text_view"
                 style="@style/AppTheme.EditText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="11"
                 android:inputType="text"
                 android:importantForAutofill="no"
                 android:hint="@string/hint_note_exercise"
@@ -97,9 +96,8 @@
             <EditText
                 android:id="@+id/note_bpm_edit_text"
                 style="@style/AppTheme.EditText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="11"
                 android:inputType="numberDecimal"
                 android:importantForAutofill="no"
                 android:hint="@string/hint_note_bpm"

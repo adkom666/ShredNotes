@@ -36,9 +36,8 @@
             <EditText
                 android:id="@+id/exercise_name_edit_text"
                 style="@style/AppTheme.EditText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="11"
                 android:inputType="text"
                 android:importantForAutofill="no"
                 android:hint="@string/hint_exercise_name"
