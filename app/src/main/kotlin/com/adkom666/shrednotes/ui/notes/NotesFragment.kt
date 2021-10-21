@@ -297,6 +297,15 @@ class NotesFragment :
             showFilterDialog(direction.filter, direction.isFilterEnabled)
     }
 
+    private fun showFilterDialog(filter: NoteFilter, isFilterEnabled: Boolean) {
+        val dialogFragment = NoteFilterDialogFragment.newInstance(
+            filter,
+            isFilterEnabled
+        )
+        dialogFragment.setListeners()
+        dialogFragment.show(childFragmentManager, TAG_FILTER_NOTES)
+    }
+
     private fun show(message: NotesViewModel.Message) = when (message) {
         NotesViewModel.Message.Addition ->
             toast(R.string.message_note_has_been_added)
@@ -345,15 +354,6 @@ class NotesFragment :
         setOnConfirmListener {
             model.deleteSelectedNotes()
         }
-    }
-
-    private fun showFilterDialog(filter: NoteFilter, isFilterEnabled: Boolean) {
-        val dialogFragment = NoteFilterDialogFragment.newInstance(
-            filter,
-            isFilterEnabled
-        )
-        dialogFragment.setListeners()
-        dialogFragment.show(childFragmentManager, TAG_FILTER_NOTES)
     }
 
     private fun NoteFilterDialogFragment.setListeners() {
