@@ -182,6 +182,11 @@ class NotesViewModel @Inject constructor(
          * Indicates that at least one selected note appears or no more selected notes.
          */
         object SelectionChanged : Signal()
+
+        /**
+         * Indicates that at least one note has been changed.
+         */
+        object NoteChanged : Signal()
     }
 
     /**
@@ -422,6 +427,7 @@ class NotesViewModel @Inject constructor(
         Timber.d("onUpdateNoteResult: isResultOk=$isResultOk")
         if (isResultOk) {
             Timber.d("Note has been updated")
+            give(Signal.NoteChanged)
             report(Message.Update)
         }
     }

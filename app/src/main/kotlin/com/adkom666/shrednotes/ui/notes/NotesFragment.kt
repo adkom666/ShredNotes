@@ -59,6 +59,7 @@ class NotesFragment :
             "${BuildConfig.APPLICATION_ID}.tags.filter_notes"
 
         private const val SCROLL_DELAY_MILLIS = 666L
+        private const val INVALIDATION_DELAY_MILLIS = 666L
 
         /**
          * Preferred way to create a fragment.
@@ -330,6 +331,14 @@ class NotesFragment :
             onFilterEnablingChangedListener?.invoke()
         NotesViewModel.Signal.SelectionChanged ->
             adapter.notifyDataSetChanged()
+        NotesViewModel.Signal.NoteChanged ->
+            invalidateNoteDecorations()
+    }
+
+    private fun invalidateNoteDecorations() {
+        view?.handler?.postDelayed({
+            binding.noteRecycler.invalidateItemDecorations()
+        }, INVALIDATION_DELAY_MILLIS)
     }
 
     private fun ConfirmationDialogFragment.setDeletingListener() {
