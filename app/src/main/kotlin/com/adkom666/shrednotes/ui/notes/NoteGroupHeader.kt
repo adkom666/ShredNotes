@@ -133,7 +133,9 @@ class NoteGroupHeader(
 
     private fun <VH : RecyclerView.ViewHolder?> RecyclerView.Adapter<VH>.isHeaderNeed(
         position: Int
-    ): Boolean = if (position in 0 until itemCount) {
+    ): Boolean = if (position == 0) {
+        true
+    } else if (position in 1 until itemCount) {
         noteProvider(position)?.let { note ->
             noteProvider(position - 1)?.let { previousNote ->
                 Days(note.dateTime.epochMillis) != Days(previousNote.dateTime.epochMillis)
