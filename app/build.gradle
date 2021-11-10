@@ -125,7 +125,6 @@ kapt {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // AndroidX
     def lifecycle_version = '2.3.1'
