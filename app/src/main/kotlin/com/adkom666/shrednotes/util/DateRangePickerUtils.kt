@@ -3,7 +3,7 @@ package com.adkom666.shrednotes.util
 import androidx.fragment.app.FragmentManager
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.util.time.Days
-import com.adkom666.shrednotes.util.time.timestampOrNull
+import com.adkom666.shrednotes.util.time.localTimestampOrNull
 import com.google.android.material.datepicker.MaterialDatePicker
 import timber.log.Timber
 
@@ -31,8 +31,8 @@ fun showDateRangePicker(
     val dateRange = dateRangeProvider()
     Timber.d("Initial date range: dateRange=$dateRange")
     val selection = androidx.core.util.Pair.create(
-        dateRange.fromInclusive.timestampOrNull(),
-        dateRange.toExclusive?.yesterday.timestampOrNull()
+        dateRange.fromInclusive.localTimestampOrNull(),
+        dateRange.toExclusive?.yesterday.localTimestampOrNull()
     )
     builder.setSelection(selection)
     val picker = builder.build()
