@@ -39,8 +39,7 @@ class Days(private val initialEpochMillis: Long) : Time(), Parcelable {
         get() = Days(epochMillis.addDays(1))
 
     private fun Long.roundToDays(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = this
+        val calendar = this.toLocalCalendar()
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
@@ -49,8 +48,7 @@ class Days(private val initialEpochMillis: Long) : Time(), Parcelable {
     }
 
     private fun Long.addDays(amount: Int): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = this
+        val calendar = this.toLocalCalendar()
         calendar.add(Calendar.DATE, amount)
         return calendar.timeInMillis
     }

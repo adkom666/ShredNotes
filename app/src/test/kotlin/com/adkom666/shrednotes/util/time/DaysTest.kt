@@ -1,7 +1,7 @@
 package com.adkom666.shrednotes.util.time
 
 import junit.framework.TestCase
-import java.util.Calendar
+import java.util.TimeZone
 
 class DaysTest : TestCase() {
 
@@ -20,15 +20,15 @@ class DaysTest : TestCase() {
     }
 
     fun testEpochMillis() {
-        val calendar = Calendar.getInstance()
-        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
-        assertEquals(MILLIS_PER_DAY, days.epochMillis % MILLIS_PER_DAY + zoneOffset)
+        val zoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis())
+        val epochMillis = days.epochMillis + zoneOffset
+        assertEquals(0L, epochMillis % MILLIS_PER_DAY)
     }
 
     fun testDate() {
-        val calendar = Calendar.getInstance()
-        val zoneOffset = calendar.get(Calendar.ZONE_OFFSET)
-        assertEquals(MILLIS_PER_DAY, days.date.time % MILLIS_PER_DAY + zoneOffset)
+        val zoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis())
+        val epochMillis = days.date.time + zoneOffset
+        assertEquals(0L, epochMillis % MILLIS_PER_DAY)
     }
 
     fun testTestEquals() {

@@ -22,7 +22,6 @@ import com.adkom666.shrednotes.util.time.timestampOrMin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.Calendar
 
 /**
  * Implementation of [NoteRepository].
@@ -40,8 +39,7 @@ class NoteRepositoryImpl(
 
     override suspend fun countSuspending(exerciseSubname: String?, filter: NoteFilter?): Int {
         Timber.d("countSuspending: exerciseSubname=$exerciseSubname, filter=$filter")
-        val calendar = Calendar.getInstance()
-        val count = entityCountSuspending(exerciseSubname, filter, calendar)
+        val count = entityCountSuspending(exerciseSubname, filter)
         Timber.d("count=$count")
         return count
     }
@@ -79,8 +77,7 @@ class NoteRepositoryImpl(
 
     override suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note> {
         Timber.d("listUnorderedSuspending: dateRange=$dateRange")
-        val calendar = Calendar.getInstance()
-        val noteWithExerciseEntityList = entityListSuspending(dateRange, calendar)
+        val noteWithExerciseEntityList = entityListSuspending(dateRange)
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
@@ -91,11 +88,9 @@ class NoteRepositoryImpl(
         dateRange: DateRange
     ): List<Note> {
         Timber.d("listTopBpmSuspending: size=$size, dateRange=$dateRange")
-        val calendar = Calendar.getInstance()
         val noteWithExerciseEntityList = topBpmEntityListSuspending(
             size = size,
-            dateRange = dateRange,
-            calendar = calendar
+            dateRange = dateRange
         )
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
@@ -107,11 +102,9 @@ class NoteRepositoryImpl(
         dateRange: DateRange
     ): List<NoteCountPerExerciseInfo> {
         Timber.d("listTopPopularExercisesSuspending: size=$size, dateRange=$dateRange")
-        val calendar = Calendar.getInstance()
         val noteCountPerExerciseList = topNoteCountPerExerciseListSuspending(
             size = size,
-            dateRange = dateRange,
-            calendar = calendar
+            dateRange = dateRange
         )
         Timber.d("noteCountPerExerciseList=$noteCountPerExerciseList")
         return noteCountPerExerciseList
@@ -130,13 +123,11 @@ class NoteRepositoryImpl(
                 |exerciseSubname=$exerciseSubname,
                 |filter=$filter""".trimMargin()
         )
-        val calendar = Calendar.getInstance()
         val noteWithExerciseEntityList = entityList(
             size = size,
             startPosition = startPosition,
             exerciseSubname = exerciseSubname,
-            filter = filter,
-            calendar = calendar
+            filter = filter
         )
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
@@ -157,8 +148,7 @@ class NoteRepositoryImpl(
                     |exerciseSubname=$exerciseSubname,
                     |filter=$filter""".trimMargin()
             )
-            val calendar = Calendar.getInstance()
-            val count = entityCountSuspending(exerciseSubname, filter, calendar)
+            val count = entityCountSuspending(exerciseSubname, filter)
             val notePage = if (count > 0 && size > 0) {
                 val offset = safeOffset(
                     requestedOffset = requestedStartPosition,
@@ -169,8 +159,7 @@ class NoteRepositoryImpl(
                     size = size,
                     startPosition = offset,
                     exerciseSubname = exerciseSubname,
-                    filter = filter,
-                    calendar = calendar
+                    filter = filter
                 )
                 val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
                 Page(noteList, offset)
@@ -236,8 +225,7 @@ class NoteRepositoryImpl(
                 |exerciseSubname=$exerciseSubname,
                 |filter=$filter""".trimMargin()
         )
-        val calendar = Calendar.getInstance()
-        val deletedNoteCount = deleteEntitiesSuspending(ids, exerciseSubname, filter, calendar)
+        val deletedNoteCount = deleteEntitiesSuspending(ids, exerciseSubname, filter)
         Timber.d("deletedNoteCount=$deletedNoteCount")
         return deletedNoteCount
     }
@@ -253,16 +241,14 @@ class NoteRepositoryImpl(
                 |exerciseSubname=$exerciseSubname,
                 |filter=$filter""".trimMargin()
         )
-        val calendar = Calendar.getInstance()
-        val deletedNoteCount = deleteOtherEntitiesSuspending(ids, exerciseSubname, filter, calendar)
+        val deletedNoteCount = deleteOtherEntitiesSuspending(ids, exerciseSubname, filter)
         Timber.d("deletedNoteCount=$deletedNoteCount")
         return deletedNoteCount
     }
 
     private suspend fun entityCountSuspending(
         exerciseSubname: String?,
-        filter: NoteFilter?,
-        calendar: Calendar
+        filter: NoteFilter?
     ): Int = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
@@ -277,8 +263,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined.not() ->
             noteDao.countByExerciseSubnameAndTimestampRangeSuspending(
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Using search query and filtering by BPM:
         !exerciseSubname.isNullOrBlank()
@@ -297,8 +283,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined ->
             noteDao.countByExerciseSubnameTimestampRangeAndBpmRangeSuspending(
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -308,8 +294,8 @@ class NoteRepositoryImpl(
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined.not() ->
             noteDao.countByTimestampRangeSuspending(
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Filtering by BPM:
         exerciseSubname.isNullOrBlank()
@@ -326,8 +312,8 @@ class NoteRepositoryImpl(
                 && filter.isDateRangeDefined
                 && filter.isBpmRangeDefined ->
             noteDao.countByTimestampRangeAndBpmRangeSuspending(
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -337,12 +323,11 @@ class NoteRepositoryImpl(
     }
 
     private suspend fun entityListSuspending(
-        dateRange: DateRange,
-        calendar: Calendar
+        dateRange: DateRange
     ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
         noteDao.listByTimestampRangeUnorderedSuspending(
-            dateRange.fromInclusive.timestampOrMin(calendar),
-            dateRange.toExclusive.timestampOrMax(calendar)
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listAllUnorderedSuspending()
@@ -350,13 +335,12 @@ class NoteRepositoryImpl(
 
     private suspend fun topBpmEntityListSuspending(
         size: Int,
-        dateRange: DateRange,
-        calendar: Calendar
+        dateRange: DateRange
     ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
         noteDao.listTopBpmByTimestampRangeSuspending(
             size,
-            dateRange.fromInclusive.timestampOrMin(calendar),
-            dateRange.toExclusive.timestampOrMax(calendar)
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listTopBpmSuspending(size)
@@ -364,13 +348,12 @@ class NoteRepositoryImpl(
 
     private suspend fun topNoteCountPerExerciseListSuspending(
         size: Int,
-        dateRange: DateRange,
-        calendar: Calendar
+        dateRange: DateRange
     ): List<NoteCountPerExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
         noteDao.listTopPopularExercisesByTimestampRangeSuspending(
             size,
-            dateRange.fromInclusive.timestampOrMin(calendar),
-            dateRange.toExclusive.timestampOrMax(calendar)
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toExclusive.timestampOrMax()
         )
     } else {
         noteDao.listTopPopularExercisesSuspending(size)
@@ -380,8 +363,7 @@ class NoteRepositoryImpl(
         size: Int,
         startPosition: Int,
         exerciseSubname: String?,
-        filter: NoteFilter?,
-        calendar: Calendar
+        filter: NoteFilter?
     ): List<NoteWithExerciseInfo> = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
@@ -400,8 +382,8 @@ class NoteRepositoryImpl(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Using search query and filtering by BPM:
         !exerciseSubname.isNullOrBlank()
@@ -424,8 +406,8 @@ class NoteRepositoryImpl(
                 size = size,
                 offset = startPosition,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -437,8 +419,8 @@ class NoteRepositoryImpl(
             noteDao.listByTimestampRange(
                 size = size,
                 offset = startPosition,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Filtering by BPM:
         exerciseSubname.isNullOrBlank()
@@ -459,8 +441,8 @@ class NoteRepositoryImpl(
             noteDao.listByTimestampRangeAndBpmRange(
                 size = size,
                 offset = startPosition,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -475,8 +457,7 @@ class NoteRepositoryImpl(
     private suspend fun deleteEntitiesSuspending(
         ids: List<Id>,
         exerciseSubname: String?,
-        filter: NoteFilter?,
-        calendar: Calendar
+        filter: NoteFilter?
     ): Int = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
@@ -493,8 +474,8 @@ class NoteRepositoryImpl(
             noteDao.deleteByIdsExerciseSubnameAndTimestampRangeSuspending(
                 ids = ids,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Using search query and filtering by BPM:
         !exerciseSubname.isNullOrBlank()
@@ -515,8 +496,8 @@ class NoteRepositoryImpl(
             noteDao.deleteByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
                 ids = ids,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -527,8 +508,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined.not() ->
             noteDao.deleteByIdsAndTimestampRangeSuspending(
                 ids = ids,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Filtering by BPM:
         exerciseSubname.isNullOrBlank()
@@ -547,8 +528,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined ->
             noteDao.deleteByIdsTimestampRangeAndBpmRangeSuspending(
                 ids = ids,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -562,8 +543,7 @@ class NoteRepositoryImpl(
     private suspend fun deleteOtherEntitiesSuspending(
         ids: List<Id>,
         exerciseSubname: String?,
-        filter: NoteFilter?,
-        calendar: Calendar
+        filter: NoteFilter?
     ): Int = when {
         // Using search query:
         !exerciseSubname.isNullOrBlank()
@@ -580,8 +560,8 @@ class NoteRepositoryImpl(
             noteDao.deleteOtherByIdsExerciseSubnameAndTimestampRangeSuspending(
                 ids = ids,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Using search query and filtering by BPM:
         !exerciseSubname.isNullOrBlank()
@@ -602,8 +582,8 @@ class NoteRepositoryImpl(
             noteDao.deleteOtherByIdsExerciseSubnameTimestampRangeAndBpmRangeSuspending(
                 ids = ids,
                 exerciseSubname = exerciseSubname,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )
@@ -614,8 +594,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined.not() ->
             noteDao.deleteOtherByIdsAndTimestampRangeSuspending(
                 ids = ids,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar)
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax()
             )
         // Filtering by BPM:
         exerciseSubname.isNullOrBlank()
@@ -634,8 +614,8 @@ class NoteRepositoryImpl(
                 && filter.isBpmRangeDefined ->
             noteDao.deleteOtherByIdsTimestampRangeAndBpmRangeSuspending(
                 ids = ids,
-                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(calendar),
-                timestampToExclusive = filter.dateToExclusive.timestampOrMax(calendar),
+                timestampFromInclusive = filter.dateFromInclusive.timestampOrMin(),
+                timestampToExclusive = filter.dateToExclusive.timestampOrMax(),
                 bpmFromInclusive = filter.bpmFromInclusive.valueOrMin(),
                 bpmToInclusive = filter.bpmToInclusive.valueOrMax()
             )

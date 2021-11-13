@@ -16,7 +16,6 @@ import com.adkom666.shrednotes.util.time.timestampOrMin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.Calendar
 
 /**
  * Implementation of [ExerciseRepository].
@@ -41,8 +40,7 @@ class ExerciseRepositoryImpl(
 
     override suspend fun countByRelatedNoteDateSuspending(dateRange: DateRange): Int {
         Timber.d("countByRelatedNoteTimestampSuspending: dateRange=$dateRange")
-        val calendar = Calendar.getInstance()
-        val count = entityCountByRelatedNoteTimestampSuspending(dateRange, calendar)
+        val count = entityCountByRelatedNoteTimestampSuspending(dateRange)
         Timber.d("count=$count")
         return count
     }
@@ -168,11 +166,10 @@ class ExerciseRepositoryImpl(
     }
 
     private suspend fun entityCountByRelatedNoteTimestampSuspending(
-        dateRange: DateRange,
-        calendar: Calendar
+        dateRange: DateRange
     ): Int = exerciseDao.countByRelatedNoteTimestampSuspending(
-        dateRange.fromInclusive.timestampOrMin(calendar),
-        dateRange.toExclusive.timestampOrMax(calendar)
+        dateRange.fromInclusive.timestampOrMin(),
+        dateRange.toExclusive.timestampOrMax()
     )
 
     private fun entityList(

@@ -25,8 +25,7 @@ class Minutes(private val initialEpochMillis: Long) : Time(), Parcelable {
         get() = initialEpochMillis.roundToMinutes()
 
     private fun Long.roundToMinutes(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = this
+        val calendar = this.toLocalCalendar()
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis

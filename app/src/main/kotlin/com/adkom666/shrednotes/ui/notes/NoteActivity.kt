@@ -21,7 +21,9 @@ import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
+import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.Minutes
+import com.adkom666.shrednotes.util.time.toLocalCalendar
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -33,6 +35,7 @@ import timber.log.Timber
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 /**
@@ -165,7 +168,10 @@ class NoteActivity : AppCompatActivity() {
 
     private fun pickDate(afterPick: (Calendar) -> Unit) {
         val builder = MaterialDatePicker.Builder.datePicker()
-        builder.setSelection(model.noteDateTime.epochMillis)
+        val oldUtcEpochMillis = model.noteDateTime.epochMillis
+        val zoneOffset = TimeZone.getDefault().getOffset(oldUtcEpochMillis)
+        val oldLocalEpochMillis = oldUtcEpochMillis + zoneOffset
+        builder.setSelection(oldLocalEpochMillis)
         val picker = builder.build()
         picker.addDateListeners(afterPick)
         picker.show(supportFragmentManager, TAG_DATE_PICKER)
@@ -268,14 +274,11 @@ class NoteActivity : AppCompatActivity() {
     private fun MaterialDatePicker<*>.addDateListeners(afterPick: (Calendar) -> Unit) {
 
         fun setDate(epochMillis: Long): Calendar {
-            val oldCalendar = model.noteDateTime.epochMillis.toCalendar()
-            val hour = oldCalendar.get(Calendar.HOUR_OF_DAY)
-            val minute = oldCalendar.get(Calendar.MINUTE)
-            val newCalendar = epochMillis.toCalendar()
-            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
-            newCalendar.set(Calendar.MINUTE, minute)
-            model.noteDateTime = newCalendar.toMinutes()
-            return newCalendar
+            val oldUtcEpochMillis = model.noteDateTime.epochMillis
+            val dayUtcEpochMillis = oldUtcEpochMillis - Days(oldUtcEpochMillis).epochMillis
+            val newUtcEpochMillis = Days(epochMillis).epochMillis + dayUtcEpochMillis
+            model.noteDateTime = Minutes(newUtcEpochMillis)
+            return newUtcEpochMillis.toLocalCalendar()
         }
 
         addOnPositiveButtonClickListener { epochMillis ->
@@ -289,10 +292,10 @@ class NoteActivity : AppCompatActivity() {
     private fun MaterialTimePicker.addTimeListeners() {
 
         fun setTime(hour: Int, minute: Int) {
-            val calendar = model.noteDateTime.epochMillis.toCalendar()
+            val calendar = model.noteDateTime.epochMillis.toLocalCalendar()
             calendar.set(Calendar.HOUR_OF_DAY, hour)
             calendar.set(Calendar.MINUTE, minute)
-            model.noteDateTime = calendar.toMinutes()
+            model.noteDateTime = Minutes(calendar.timeInMillis)
         }
 
         addOnPositiveButtonClickListener {
@@ -304,16 +307,6 @@ class NoteActivity : AppCompatActivity() {
         setOnConfirmListener { model.acceptSaveWithExercise() }
         setOnNotConfirmListener { model.declineSaveWithExercise() }
         setOnCancelConfirmListener { model.declineSaveWithExercise() }
-    }
-
-    private fun Long.toCalendar(): Calendar {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = this
-        return calendar
-    }
-
-    private fun Calendar.toMinutes(): Minutes {
-        return Minutes(time)
     }
 
     private inner class StateObserver : Observer<NoteViewModel.State> {
