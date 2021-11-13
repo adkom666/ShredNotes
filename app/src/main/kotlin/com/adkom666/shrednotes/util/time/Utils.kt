@@ -32,7 +32,6 @@ fun Days?.timestampOrNull(): Long? {
     return this?.epochMillis
 }
 
-
 /**
  * Create the [Calendar] for local time zone with the current long value as time in UTC milliseconds
  * from the epoch.
