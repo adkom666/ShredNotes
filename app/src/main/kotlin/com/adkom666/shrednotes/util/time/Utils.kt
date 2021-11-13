@@ -40,6 +40,13 @@ fun Days?.timestampOrNull(): Long? {
 fun Days?.localTimestampOrNull(): Long? = this?.epochMillis?.localTimestamp()
 
 /**
+ * Getting the timestamp for local time zone or null value if [this] is null.
+ *
+ * @return timestamp for local time zone or null if [this] is null.
+ */
+fun Minutes?.localTimestampOrNull(): Long? = this?.epochMillis?.localTimestamp()
+
+/**
  * Create the [Calendar] for local time zone with the current long value as time in UTC milliseconds
  * from the epoch.
  *

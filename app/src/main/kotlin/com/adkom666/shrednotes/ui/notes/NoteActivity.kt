@@ -23,6 +23,7 @@ import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.Minutes
+import com.adkom666.shrednotes.util.time.localTimestampOrNull
 import com.adkom666.shrednotes.util.time.toLocalCalendar
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -35,7 +36,6 @@ import timber.log.Timber
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.TimeZone
 import javax.inject.Inject
 
 /**
@@ -168,10 +168,8 @@ class NoteActivity : AppCompatActivity() {
 
     private fun pickDate(afterPick: (Calendar) -> Unit) {
         val builder = MaterialDatePicker.Builder.datePicker()
-        val oldUtcEpochMillis = model.noteDateTime.epochMillis
-        val zoneOffset = TimeZone.getDefault().getOffset(oldUtcEpochMillis)
-        val oldLocalEpochMillis = oldUtcEpochMillis + zoneOffset
-        builder.setSelection(oldLocalEpochMillis)
+        val selection = model.noteDateTime.localTimestampOrNull()
+        builder.setSelection(selection)
         val picker = builder.build()
         picker.addDateListeners(afterPick)
         picker.show(supportFragmentManager, TAG_DATE_PICKER)
