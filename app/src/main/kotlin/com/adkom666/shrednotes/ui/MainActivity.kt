@@ -30,6 +30,7 @@ import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.ensureNoTextInput
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.temporarilyDisable
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.navigation.NavigationBarView
 import dagger.android.AndroidInjection
@@ -133,6 +134,13 @@ class MainActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Timber.d("onOptionsItemSelected: item=$item")
+        when (item.itemId) {
+            R.id.action_filter,
+            R.id.action_read,
+            R.id.action_write,
+            R.id.action_sign_out,
+            R.id.action_sign_in -> item.temporarilyDisable() // To avoid multi clicks
+        }
         return if (handleToolSelection(item)) {
             true
         } else {

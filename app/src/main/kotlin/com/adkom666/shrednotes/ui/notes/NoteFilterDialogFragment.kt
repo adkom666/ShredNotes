@@ -15,6 +15,7 @@ import com.adkom666.shrednotes.util.ensureNoTextInput
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.numberOrNull
 import com.adkom666.shrednotes.util.restoreDateRangeListener
+import com.adkom666.shrednotes.util.setOnSafeClickListener
 import com.adkom666.shrednotes.util.showDateRangePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import timber.log.Timber
@@ -208,7 +209,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
             binding.bpmToEditText.text?.clear()
         }
 
-        binding.dateRange.pickDateRangeImageButton.setOnClickListener {
+        binding.dateRange.pickDateRangeImageButton.setOnSafeClickListener {
             Timber.d("Click: pickDateRangeImageButton")
             showDateRangePicker(
                 childFragmentManager,

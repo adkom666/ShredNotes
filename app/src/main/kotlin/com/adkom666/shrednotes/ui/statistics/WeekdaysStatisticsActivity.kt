@@ -22,6 +22,7 @@ import com.adkom666.shrednotes.util.DateRangeFormat
 import com.adkom666.shrednotes.util.INFINITE_DATE_RANGE
 import com.adkom666.shrednotes.util.labelResId
 import com.adkom666.shrednotes.util.restoreDateRangeListener
+import com.adkom666.shrednotes.util.setOnSafeClickListener
 import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
 import com.github.mikephil.charting.data.PieData
@@ -132,7 +133,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        binding.dateRange.pickDateRangeImageButton.setOnClickListener {
+        binding.dateRange.pickDateRangeImageButton.setOnSafeClickListener {
             Timber.d("Click: pickDateRangeImageButton")
             showDateRangePicker(
                 supportFragmentManager,

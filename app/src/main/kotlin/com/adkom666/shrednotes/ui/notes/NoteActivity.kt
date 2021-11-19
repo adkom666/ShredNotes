@@ -21,6 +21,7 @@ import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
+import com.adkom666.shrednotes.util.setOnSafeClickListener
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.Minutes
 import com.adkom666.shrednotes.util.time.localTimestampOrNull
@@ -118,7 +119,7 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        binding.pickNoteDateTimeImageButton.setOnClickListener {
+        binding.pickNoteDateTimeImageButton.setOnSafeClickListener {
             pickDateTime()
         }
         binding.okButton.setOnClickListener {
