@@ -30,9 +30,4 @@ interface Searchable {
      * @return true if the action was handled.
      */
     fun preview(newText: String?): Boolean
-
-    /**
-     * Don't search anything.
-     */
-    fun unsearch()
 }

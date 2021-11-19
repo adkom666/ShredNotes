@@ -150,11 +150,6 @@ class ExercisesFragment :
         return true
     }
 
-    override fun unsearch() {
-        model.isSearchActive = false
-        model.subname = null
-    }
-
     override fun scrollToBegin() {
         view?.handler?.postDelayed({
             binding.exercisesRecycler.scrollToPosition(0)

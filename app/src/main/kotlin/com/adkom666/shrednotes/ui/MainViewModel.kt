@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.data.DataManager
+import com.adkom666.shrednotes.data.pref.ToolPreferences
 import com.adkom666.shrednotes.data.UnsupportedDataException
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
@@ -27,11 +28,13 @@ import javax.inject.Inject
  *
  * @property dataManager [DataManager] to read and write app info.
  * @property donor donor of money.
+ * @property toolPreferences project's [ToolPreferences] to manage, for example, filter and search.
  */
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val dataManager: DataManager,
-    private val donor: Donor
+    private val donor: Donor,
+    private val toolPreferences: ToolPreferences
 ) : ViewModel() {
 
     private companion object {
@@ -62,10 +65,10 @@ class MainViewModel @Inject constructor(
             /**
              * Show options menu before continuing.
              *
-             * @property isForceUnsearchAndUnfilter whether to forcibly inactivate search and filter
-             * after continuing.
+             * @property isForceResetTools whether to forcibly reset tools after continuing, for
+             * example, inactivate search and filter.
              */
-            data class Continuing(val isForceUnsearchAndUnfilter: Boolean) : Preparation()
+            data class Continuing(val isForceResetTools: Boolean) : Preparation()
 
             /**
              * The user is logged in or logged out. Invalidate the options menu and the account
@@ -408,6 +411,13 @@ class MainViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Reset tools for all possible screens.
+     */
+    fun resetTools() {
+        toolPreferences.reset()
+    }
+
     private fun launchRead() {
         setState(State.Waiting(State.Waiting.Operation.READING))
         viewModelScope.launch {
@@ -473,7 +483,7 @@ class MainViewModel @Inject constructor(
                 Timber.e(e)
                 reportAbout(e)
             }
-            setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter = false))
+            setState(State.Preparation.Continuing(isForceResetTools = false))
         }
     }
 

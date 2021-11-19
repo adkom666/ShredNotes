@@ -17,8 +17,8 @@ import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
+import com.adkom666.shrednotes.data.pref.NoteToolPreferences
 import com.adkom666.shrednotes.data.repository.NoteRepository
-import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
 import com.adkom666.shrednotes.util.paging.Page
@@ -35,6 +35,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -47,11 +48,13 @@ import kotlin.properties.Delegates.observable
  * Notes section model.
  *
  * @property noteRepository note storage management.
+ * @property noteToolPreferences to manage note filter and search.
  * @property preferences project's [SharedPreferences].
  */
 @ExperimentalCoroutinesApi
 class NotesViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
+    private val noteToolPreferences: NoteToolPreferences,
     private val preferences: SharedPreferences
 ) : ViewModel() {
 
@@ -62,10 +65,6 @@ class NotesViewModel @Inject constructor(
         private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
         private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
-        private const val KEY_IS_SEARCH_ACTIVE = "notes.is_search_active"
-        private const val KEY_EXERCISE_SUBNAME = "notes.exercise_subname"
-
-        private const val KEY_IS_FILTER_ENABLED = "notes.is_filter_enabled"
         private const val KEY_DOES_FILTER_HAVE_DATE_FROM = "notes.does_filter_have_date_from"
         private const val KEY_FILTER_DATE_FROM_INCLUSIVE = "notes.filter_date_from_inclusive"
         private const val KEY_DOES_FILTER_HAVE_DATE_TO = "notes.does_filter_have_date_to"
@@ -255,49 +254,27 @@ class NotesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean by observable(
-        preferences.getBoolean(KEY_IS_SEARCH_ACTIVE, false)
-    ) { _, old, new ->
-        Timber.d("Change isSearchActive: old=$old, new=$new")
-        preferences.edit {
-            putBoolean(KEY_IS_SEARCH_ACTIVE, new)
+    var isSearchActive: Boolean
+        get() = noteToolPreferences.isNoteSearchActive
+        set(value) {
+            noteToolPreferences.isNoteSearchActive = value
         }
-    }
 
     /**
      * The text that must be contained in the names of the displayed notes' exercises
      * (case-insensitive).
      */
-    var exerciseSubname: String? by observable(
-        preferences.getString(KEY_EXERCISE_SUBNAME, null)
-    ) { _, old, new ->
-        Timber.d("Change exerciseSubname: old=$old, new=$new")
-        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            val finalExerciseSubname = new?.trim()
-            preferences.edit {
-                putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
-            }
-            resetNotes()
+    var exerciseSubname: String?
+        get() = noteToolPreferences.noteExerciseSubname
+        set(value) {
+            noteToolPreferences.noteExerciseSubname = value
         }
-    }
 
     /**
      * Indicates whether the filter is enabled.
      */
     val isFilterEnabled: Boolean
-        get() = _isFilterEnabled
-
-    private var _isFilterEnabled: Boolean by observable(
-        preferences.getBoolean(KEY_IS_FILTER_ENABLED, false)
-    ) { _, old, new ->
-        Timber.d("Change _isFilterEnabled: old=$old, new=$new")
-        if (new != old) {
-            preferences.edit {
-                putBoolean(KEY_IS_FILTER_ENABLED, new)
-            }
-            resetNotes()
-        }
-    }
+        get() = noteToolPreferences.isNoteFilterEnabled
 
     private var filter: NoteFilter by observable(
         preferences.getNoteFilter()
@@ -307,14 +284,14 @@ class NotesViewModel @Inject constructor(
             preferences.edit {
                 putNoteFilter(new)
             }
-            if (_isFilterEnabled) {
+            if (noteToolPreferences.isNoteFilterEnabled) {
                 resetNotes()
             }
         }
     }
 
     private val filterOrNull: NoteFilter?
-        get() = if (_isFilterEnabled) filter else null
+        get() = if (noteToolPreferences.isNoteFilterEnabled) filter else null
 
     private var noteSource: NoteSource? = null
 
@@ -364,6 +341,9 @@ class NotesViewModel @Inject constructor(
                 Timber.d("Note list changed: noteCount=$noteCount")
                 resetNotes()
             }
+        }
+        viewModelScope.launch {
+            noteToolPreferences.noteToolSignalChannel.consumeEach(::process)
         }
     }
 
@@ -437,7 +417,12 @@ class NotesViewModel @Inject constructor(
      */
     fun requestFilter() {
         Timber.d("Filter requested")
-        navigateTo(NavDirection.ToConfigFilterScreen(filter, _isFilterEnabled))
+        navigateTo(
+            NavDirection.ToConfigFilterScreen(
+                filter,
+                noteToolPreferences.isNoteFilterEnabled
+            )
+        )
     }
 
     /**
@@ -448,26 +433,18 @@ class NotesViewModel @Inject constructor(
      */
     fun onConfigFilterResult(status: ConfigFilterStatus, filter: NoteFilter? = null) {
         Timber.d("onConfigFilterResult: status=$status, filter=$filter")
-
-        fun ensureFilterEnabling(isEnabled: Boolean) {
-            if (_isFilterEnabled xor isEnabled) {
-                _isFilterEnabled = isEnabled
-                give(Signal.FilterEnablingChanged)
-            }
-        }
-
         when (status) {
             ConfigFilterStatus.APPLY -> filter?.let { safeFilter ->
                 this.filter = safeFilter
                 val isFilterDefined = safeFilter.isDefined
                 Timber.d("isFilterDefined=$isFilterDefined")
-                ensureFilterEnabling(isFilterDefined)
+                noteToolPreferences.isNoteFilterEnabled = isFilterDefined
                 if (isFilterDefined.not()) {
                     report(Message.FilterUndefined)
                 }
             }
             ConfigFilterStatus.DISABLE -> {
-                ensureFilterEnabling(false)
+                noteToolPreferences.isNoteFilterEnabled = false
                 filter?.let { this.filter = it }
             }
             ConfigFilterStatus.CANCEL -> Unit
@@ -507,6 +484,17 @@ class NotesViewModel @Inject constructor(
             )
         }
         ManageableSelection.State.Inactive -> 0
+    }
+
+    private fun process(signal: NoteToolPreferences.Signal) = when (signal) {
+        NoteToolPreferences.Signal.NoteSearchActivenessChanged ->
+            Unit
+        NoteToolPreferences.Signal.NoteExerciseSubnameChanged ->
+            resetNotes()
+        NoteToolPreferences.Signal.NoteFilterEnablementChanged -> {
+            resetNotes()
+            give(Signal.FilterEnablingChanged)
+        }
     }
 
     private fun reportAbout(e: Exception) {

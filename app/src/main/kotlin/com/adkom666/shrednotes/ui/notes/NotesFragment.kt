@@ -163,17 +163,8 @@ class NotesFragment :
         return true
     }
 
-    override fun unsearch() {
-        model.isSearchActive = false
-        model.exerciseSubname = null
-    }
-
     override fun filter() {
         model.requestFilter()
-    }
-
-    override fun unfilter() {
-        model.onConfigFilterResult(NotesViewModel.ConfigFilterStatus.DISABLE)
     }
 
     override fun scrollToBegin() {

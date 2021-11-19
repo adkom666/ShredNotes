@@ -1,7 +1,5 @@
 package com.adkom666.shrednotes.ui.exercises
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
@@ -14,9 +12,9 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.adkom666.shrednotes.data.model.Exercise
+import com.adkom666.shrednotes.data.pref.ExerciseToolPreferences
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
-import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
@@ -28,26 +26,26 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.properties.Delegates.observable
 
 /**
  * Exercises section model.
  *
  * @property exerciseRepository exercise storage management.
  * @property noteRepository note storage management.
- * @property preferences project's [SharedPreferences].
+ * @property exerciseToolPreferences to manage exercise search.
  */
 @ExperimentalCoroutinesApi
 class ExercisesViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val noteRepository: NoteRepository,
-    private val preferences: SharedPreferences
+    private val exerciseToolPreferences: ExerciseToolPreferences
 ) : ViewModel() {
 
     private companion object {
@@ -56,9 +54,6 @@ class ExercisesViewModel @Inject constructor(
         private const val NAVIGATION_CHANNEL_CAPACITY = 1
         private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
         private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-
-        private const val KEY_SUBNAME = "exercises.subname"
-        private const val KEY_IS_SEARCH_ACTIVE = "exercises.is_search_active"
     }
 
     /**
@@ -211,32 +206,20 @@ class ExercisesViewModel @Inject constructor(
     /**
      * Property for storing a flag indicating whether the search is active.
      */
-    var isSearchActive: Boolean by observable(
-        preferences.getBoolean(KEY_IS_SEARCH_ACTIVE, false)
-    ) { _, old, new ->
-        Timber.d("Change isSearchActive: old=$old, new=$new")
-        preferences.edit {
-            putBoolean(KEY_IS_SEARCH_ACTIVE, new)
+    var isSearchActive: Boolean
+        get() = exerciseToolPreferences.isExcerciseSearchActive
+        set(value) {
+            exerciseToolPreferences.isExcerciseSearchActive = value
         }
-    }
 
     /**
      * The text that must be contained in the names of the displayed exercises (case-insensitive).
      */
-    var subname: String? by observable(
-        preferences.getString(KEY_SUBNAME, null)
-    ) { _, old, new ->
-        Timber.d("Change subname: old=$old, new=$new")
-        if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
-            viewModelScope.launch {
-                val finalSubname = new?.trim()
-                preferences.edit {
-                    putString(KEY_SUBNAME, finalSubname)
-                }
-                resetExercises()
-            }
+    var subname: String?
+        get() = exerciseToolPreferences.exerciseSubname
+        set(value) {
+            exerciseToolPreferences.exerciseSubname = value
         }
-    }
 
     private var exerciseSource: ExerciseSource? = null
 
@@ -285,6 +268,9 @@ class ExercisesViewModel @Inject constructor(
                 Timber.d("Exercise list changed: exerciseCount=$exerciseCount")
                 resetExercises()
             }
+        }
+        viewModelScope.launch {
+            exerciseToolPreferences.exerciseToolSignalChannel.consumeEach(::process)
         }
     }
 
@@ -407,6 +393,13 @@ class ExercisesViewModel @Inject constructor(
             exerciseRepository.deleteOtherSuspending(unselectedExerciseIdList, subname)
         }
         ManageableSelection.State.Inactive -> 0
+    }
+
+    private fun process(signal: ExerciseToolPreferences.Signal) = when (signal) {
+        ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged ->
+            Unit
+        ExerciseToolPreferences.Signal.ExerciseSubnameChanged ->
+            resetExercises()
     }
 
     private fun reportAbout(e: Exception) {

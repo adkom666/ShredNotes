@@ -21,9 +21,4 @@ interface Filterable {
      * Call filter for configuration.
      */
     fun filter()
-
-    /**
-     * Don't filter anything.
-     */
-    fun unfilter()
 }

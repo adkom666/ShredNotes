@@ -643,24 +643,14 @@ class MainActivity :
             MainViewModel.State.Preparation.Initial ->
                 Unit
             is MainViewModel.State.Preparation.Continuing -> {
-                if (state.isForceUnsearchAndUnfilter) {
-                    unsearchAndUnfilter()
+                if (state.isForceResetTools) {
+                    model.resetTools()
                 }
                 menuReference.get()?.invalidate()
             }
             MainViewModel.State.Preparation.GoogleDriveStateChanged -> {
                 invalidateSubtitle()
                 menuReference.get()?.invalidate(MenuGroup.GOOGLE_DRIVE_PANEL)
-            }
-        }
-
-        private fun unsearchAndUnfilter() {
-            val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
-            if (fragment is Searchable) {
-                fragment.unsearch()
-            }
-            if (fragment is Filterable) {
-                fragment.unfilter()
             }
         }
 

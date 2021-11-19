@@ -1,0 +1,41 @@
+package com.adkom666.shrednotes.data.pref
+
+import kotlinx.coroutines.channels.ReceiveChannel
+
+/**
+ * Managing exercise search.
+ */
+interface ExerciseToolPreferences {
+
+    /**
+     * Information signal.
+     */
+    sealed class Signal {
+
+        /**
+         * Indicates that exercise search activeness has been changed.
+         */
+        object ExcerciseSearchActivenessChanged : Signal()
+
+        /**
+         * Indicates that part of the target exercise name has been changed.
+         */
+        object ExerciseSubnameChanged : Signal()
+    }
+
+    /**
+     * Property for storing a flag indicating whether the search is active.
+     */
+    var isExcerciseSearchActive: Boolean
+
+    /**
+     * The text that must be contained in the names of the displayed notes' exercises
+     * (case-insensitive).
+     */
+    var exerciseSubname: String?
+
+    /**
+     * Consume information signals from this channel in the UI thread.
+     */
+    val exerciseToolSignalChannel: ReceiveChannel<Signal>
+}
