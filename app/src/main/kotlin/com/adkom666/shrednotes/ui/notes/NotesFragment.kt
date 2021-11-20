@@ -33,6 +33,7 @@ import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
+import com.adkom666.shrednotes.util.setOnSafeClickListener
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
@@ -219,18 +220,18 @@ class NotesFragment :
 
     @SuppressLint("NotifyDataSetChanged")
     private fun setupFabListeners() {
-        binding.control.fabAddDel.setOnClickListener {
+        binding.control.fabAddDel.setOnSafeClickListener {
             if (model.selection.isActive) {
                 deleteSelectedNotesIfConfirmed()
             } else {
                 model.addNote()
             }
         }
-        binding.control.fabSelectAll.setOnClickListener {
+        binding.control.fabSelectAll.setOnSafeClickListener {
             model.selectionDashboard.selectAll()
             adapter.notifyDataSetChanged()
         }
-        binding.control.fabCancel.setOnClickListener {
+        binding.control.fabCancel.setOnSafeClickListener {
             model.selectionDashboard.deselectAll()
         }
     }
