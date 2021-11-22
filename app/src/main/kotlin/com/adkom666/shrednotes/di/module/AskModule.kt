@@ -18,7 +18,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @Module(includes = [BillingModule::class, SoundModule::class])
 class AskModule {
 
-    @ExperimentalCoroutinesApi
     @Provides
     @Singleton
     fun donor(
