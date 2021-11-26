@@ -15,7 +15,7 @@ import kotlin.time.ExperimentalTime
 class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Timber.d("savedInstanceState: savedInstanceState=$savedInstanceState")
+        Timber.d("onCreate: savedInstanceState=$savedInstanceState")
         super.onCreate(savedInstanceState)
         startActivity(Intent(this, MainActivity::class.java))
         finish()

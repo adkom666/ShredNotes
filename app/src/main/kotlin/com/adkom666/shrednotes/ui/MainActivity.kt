@@ -95,7 +95,7 @@ class MainActivity :
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Timber.d("savedInstanceState: savedInstanceState=$savedInstanceState")
+        Timber.d("onCreate: savedInstanceState=$savedInstanceState")
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
