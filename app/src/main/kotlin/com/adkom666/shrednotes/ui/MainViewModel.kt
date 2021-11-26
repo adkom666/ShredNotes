@@ -386,32 +386,6 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Call this method from [Activity.onActivityResult] so the model can select the information it
-     * needs.
-     *
-     * @param requestCode the integer request code originally supplied to
-     * [Activity.startActivityForResult], allowing you to identify who this result came from.
-     * @param resultCode the integer result code returned by the child activity through its
-     * [Activity.setResult].
-     * @param data an [Intent], which can return result data to the caller (various data can be
-     * attached to [Intent] "extras").
-     * @return true if the result was handled.
-     */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        Timber.d(
-            """Handle activity result:
-                |requestCode=$requestCode,
-                |resultCode=$resultCode,
-                |data=$data""".trimMargin()
-        )
-        return donor.handleActivityResult(
-            requestCode = requestCode,
-            resultCode = resultCode,
-            data = data
-        )
-    }
-
-    /**
      * Reset tools for all possible screens.
      */
     fun resetTools() {

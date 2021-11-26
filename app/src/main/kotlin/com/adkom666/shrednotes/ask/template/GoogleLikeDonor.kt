@@ -2,7 +2,6 @@ package com.adkom666.shrednotes.ask.template
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import com.adkom666.shrednotes.ask.DonationResult
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.ask.OnDonationFinishListener
@@ -11,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.time.ExperimentalTime
 
 /**
  * Donation way based on [GoogleLikeBillingClient].
@@ -19,6 +19,7 @@ import timber.log.Timber
  * @property sku donation purchase identifier.
  */
 @ExperimentalCoroutinesApi
+@ExperimentalTime
 class GoogleLikeDonor(
     private val billingFactory: GoogleLikeBillingFactory,
     private val sku: String
@@ -87,16 +88,6 @@ class GoogleLikeDonor(
         billingClient?.endConnection()
         finishDonation(DonationResult.DISPOSED)
         setInitialState()
-    }
-
-    override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        Timber.d(
-            """Handle activity result:
-                |requestCode=$requestCode,
-                |resultCode=$resultCode,
-                |data=$data""".trimMargin()
-        )
-        return billingClient?.handleActivityResult(requestCode, resultCode, data) ?: false
     }
 
     private fun setInitialState() {

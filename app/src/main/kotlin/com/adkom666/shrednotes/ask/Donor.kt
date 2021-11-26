@@ -2,7 +2,6 @@ package com.adkom666.shrednotes.ask
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 
 /**
  * Here you can donate me money.
@@ -57,18 +56,4 @@ interface Donor {
      * Reset to initial state.
      */
     fun dispose()
-
-    /**
-     * Call this method from [Activity.onActivityResult] so the donor can select the information it
-     * needs.
-     *
-     * @param requestCode the integer request code originally supplied to
-     * [Activity.startActivityForResult], allowing you to identify who this result came from.
-     * @param resultCode the integer result code returned by the child activity through its
-     * [Activity.setResult].
-     * @param data an [Intent], which can return result data to the caller (various data can be
-     * attached to [Intent] "extras").
-     * @return true if the result was handled.
-     */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean
 }

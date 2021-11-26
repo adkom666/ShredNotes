@@ -2,7 +2,6 @@ package com.adkom666.shrednotes.ask
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.ask.template.GoogleLikeBillingClient
 import com.adkom666.shrednotes.ask.template.GoogleLikeBillingFactory
@@ -22,7 +21,9 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.SkuDetails
 import com.android.billingclient.api.SkuDetailsParams
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import timber.log.Timber
+import kotlin.time.ExperimentalTime
 
 /**
  * Factory for instantiating [GoogleLikeBillingClient] based on
@@ -30,6 +31,8 @@ import timber.log.Timber
  */
 class GoogleBillingFactory : GoogleLikeBillingFactory {
 
+    @ExperimentalCoroutinesApi
+    @ExperimentalTime
     override fun createBillingClient(
         context: Context,
         purchasesUpdatedListener: GoogleLikePurchasesUpdatedListener
@@ -133,21 +136,6 @@ class GoogleBillingFactory : GoogleLikeBillingFactory {
         override fun endConnection() {
             Timber.d("End connection")
             billingClient.endConnection()
-        }
-
-        override fun handleActivityResult(
-            requestCode: Int,
-            resultCode: Int,
-            data: Intent?
-        ): Boolean {
-            Timber.d(
-                """Don't handle activity result:
-                    |requestCode=$requestCode,
-                    |resultCode=$resultCode,
-                    |data=$data""".trimMargin()
-            )
-            // Do nothing
-            return false
         }
 
         private val BillingResult.isOk: Boolean

@@ -1,12 +1,12 @@
 package com.adkom666.shrednotes.ask.template
 
 import android.app.Activity
-import android.content.Intent
 
 /**
  * Main interface for communication between the billing library and user application code. It
  * provides convenience methods for in-app billing. Similar to Google's billing client interface.
- * This is done so that its implementations can use Google-like billing clients.
+ * This is done so that its implementations can use Google-like billing clients. Should be created
+ * before the activity initiating the donation starts.
  */
 interface GoogleLikeBillingClient {
 
@@ -62,18 +62,4 @@ interface GoogleLikeBillingClient {
      * Closes the connection and releases all held resources such as service connections.
      */
     fun endConnection()
-
-    /**
-     * Call this method from [Activity.onActivityResult] so the client can select the information it
-     * needs.
-     *
-     * @param requestCode the integer request code originally supplied to
-     * [Activity.startActivityForResult], allowing you to identify who this result came from.
-     * @param resultCode the integer result code returned by the child activity through its
-     * [Activity.setResult].
-     * @param data an [Intent], which can return result data to the caller (various data can be
-     * attached to [Intent] "extras").
-     * @return true if the result was handled.
-     */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean
 }
