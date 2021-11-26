@@ -144,7 +144,13 @@ class GoogleLikeDonor(
 
                 override fun onBillingSetupFinished(isOk: Boolean) {
                     Timber.d("Billing setup finished: isOk=$isOk")
-                    continuation.resume(isOk, null)
+                    try {
+                        if (continuation.isActive) {
+                            continuation.resume(isOk, null)
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
                 }
 
                 override fun onBillingServiceDisconnected() {
