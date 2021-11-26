@@ -149,7 +149,6 @@ class GoogleLikeDonor(
 
                 override fun onBillingServiceDisconnected() {
                     Timber.d("Billing service disconnected")
-                    continuation.resume(false, null)
                 }
             }
             Timber.d("Start connection")
