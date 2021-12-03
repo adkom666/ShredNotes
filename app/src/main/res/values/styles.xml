@@ -106,28 +106,36 @@
     </style>
 
     <style name="AppTheme.MaterialAlertDialog.OutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="android:textColor">@color/dialog_button_color</item>
-        <item name="strokeColor">@color/dialog_button_color</item>
+        <item name="android:textColor">@color/content_color</item>
+        <item name="strokeColor">@color/content_color</item>
         <item name="rippleColor">@color/color_control</item>
     </style>
 
-    <style name="AppTheme.MaterialAlertDialog.OutlinedButton.Unsafe" parent="AppTheme.MaterialAlertDialog.OutlinedButton">
+    <style name="AppTheme.MaterialAlertDialog.OutlinedButton.Unsafe">
         <item name="rippleColor">@color/red</item>
     </style>
 
     <style name="AppTheme.Text" parent="TextAppearance.AppCompat.Small">
-        <item name="android:textColor">@color/yellow</item>
+        <item name="android:textColor">@color/content_color</item>
+    </style>
+
+    <style name="AppTheme.LargeText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/content_color</item>
     </style>
 
     <style name="AppTheme.HeaderText" parent="TextAppearance.AppCompat.Medium">
-        <item name="android:textColor">@color/yellow</item>
+        <item name="android:textColor">@color/illustration_color</item>
+    </style>
+
+    <style name="AppTheme.SubHeaderText" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/illustration_color</item>
     </style>
 
     <style name="AppTheme.ProgressHeaderText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/color_accent</item>
     </style>
 
-    <style name="AppTheme.EditableText" parent="AppTheme.HeaderText">
+    <style name="AppTheme.EditableText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/color_accent</item>
         <item name="android:textColorHint">@color/color_control</item>
     </style>
@@ -143,9 +151,13 @@
 
     <style name="AppTheme.ImageButton">
         <item name="android:scaleType">fitCenter</item>
-        <item name="android:tint">@color/yellow</item>
+        <item name="android:tint">@color/content_color</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:padding">@dimen/padding_xs</item>
+    </style>
+
+    <style name="AppTheme.ImageButton.ForHeader">
+        <item name="android:tint">@color/illustration_color</item>
     </style>
 
     <style name="AppTheme.Fab">

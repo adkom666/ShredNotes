@@ -48,7 +48,7 @@
 
                     <TextView
                         android:id="@+id/statistics_subtitle_text_view"
-                        style="@style/AppTheme.Text"
+                        style="@style/AppTheme.SubHeaderText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:freezesText="true"

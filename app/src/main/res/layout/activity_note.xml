@@ -50,7 +50,7 @@
 
                 <ImageButton
                     android:id="@+id/pick_note_date_time_image_button"
-                    style="@style/AppTheme.ImageButton"
+                    style="@style/AppTheme.ImageButton.ForHeader"
                     android:layout_width="@dimen/square_image_button_size"
                     android:layout_height="@dimen/square_image_button_size"
                     android:src="@drawable/ic_edit"
@@ -64,7 +64,7 @@
 
             <TextView
                 android:id="@+id/note_exercise_title_text_view"
-                style="@style/AppTheme.Text"
+                style="@style/AppTheme.SubHeaderText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/padding_m"
@@ -86,7 +86,7 @@
 
             <TextView
                 android:id="@+id/note_bpm_title_text_view"
-                style="@style/AppTheme.Text"
+                style="@style/AppTheme.SubHeaderText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/title_note_bpm"

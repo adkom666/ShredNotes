@@ -118,6 +118,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     }
 
     private fun prepareChart() {
+        val illustrationColor = ContextCompat.getColor(this, R.color.illustration_color)
         val blackColor = ContextCompat.getColor(this, R.color.black)
         val cardColor = ContextCompat.getColor(this, R.color.normal_card_color)
 
@@ -130,6 +131,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         binding.averageAmongMaxBpmPieChart.description.isEnabled = false
         binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
         binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
+        binding.averageAmongMaxBpmPieChart.setNoDataTextColor(illustrationColor)
     }
 
     private fun setupButtonListeners() {
