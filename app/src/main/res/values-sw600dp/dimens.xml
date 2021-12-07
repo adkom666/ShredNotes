@@ -14,4 +14,5 @@
     <dimen name="square_image_button_size_and_padding">76dp</dimen>
     <dimen name="square_image_button_size_x2_and_padding">128dp</dimen>
     <dimen name="pie_chart_height">512dp</dimen>
+    <dimen name="bar_chart_height">512dp</dimen>
 </resources>

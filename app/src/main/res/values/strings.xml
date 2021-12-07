@@ -54,10 +54,14 @@
     <string name="item_statistics_weekdays_note_count">By Days Of Week (Note Count)</string>
     <string name="item_statistics_records_bpm">Records (BPM)</string>
     <string name="item_statistics_records_note_count">Records (Note Count)</string>
+    <string name="item_statistics_tracking_training_intensity">Training Intensity</string>
+    <string name="item_statistics_tracking_progress">Progress</string>
 
     <string name="title_statistics_common">Common Statistics</string>
     <string name="title_statistics_weekdays">Statistics By Days Of Week</string>
     <string name="title_statistics_records">Records</string>
+    <string name="title_statistics_tracking_training_intensity">Training Intensity</string>
+    <string name="title_statistics_tracking_progress">Progress</string>
 
     <string name="text_statistics_common_notes">Notes: %d</string>
     <string name="text_statistics_common_related_exercises">Related exercises: %d</string>

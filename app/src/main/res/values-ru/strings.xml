@@ -48,10 +48,14 @@
     <string name="item_statistics_weekdays_note_count">По дням недели (кол-во заметок)</string>
     <string name="item_statistics_records_bpm">Рекорды (BPM)</string>
     <string name="item_statistics_records_note_count">Рекорды (кол-во заметок)</string>
+    <string name="item_statistics_tracking_training_intensity">Интенсивность тренировок</string>
+    <string name="item_statistics_tracking_progress">Прогресс</string>
 
     <string name="title_statistics_common">Общая статистика</string>
     <string name="title_statistics_weekdays">Статистика по дням недели</string>
     <string name="title_statistics_records">Рекорды</string>
+    <string name="title_statistics_tracking_training_intensity">Интенсивность тренировок</string>
+    <string name="title_statistics_tracking_progress">Прогресс</string>
 
     <string name="text_statistics_common_notes">Заметок: %d</string>
     <string name="text_statistics_common_related_exercises">Связанных упражнений: %d</string>

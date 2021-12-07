@@ -118,6 +118,16 @@ class StatisticsFragment : DaggerFragment() {
                         safeContext,
                         RecordsTargetParameter.NOTE_COUNT
                     )
+                StatisticsSection.TRAINING_INTENSITY ->
+                    TrackingActivity.newIntent(
+                        safeContext,
+                        TrackingTargetParameter.NOTE_COUNT
+                    )
+                StatisticsSection.PROGRESS ->
+                    TrackingActivity.newIntent(
+                        safeContext,
+                        TrackingTargetParameter.MAX_BPM
+                    )
             }
             startActivity(intent)
         }
