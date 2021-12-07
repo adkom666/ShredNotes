@@ -6,7 +6,7 @@ import java.util.TimeZone
 class DaysTest : TestCase() {
 
     private companion object {
-        const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
+        const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
     }
 
     private val days: Days
