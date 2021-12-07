@@ -21,10 +21,10 @@ class RecordsAggregatorTest : TestCase() {
     private companion object {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
-        private const val RECORDS_LIMIT = 6666
+        private const val RECORDS_LIMIT = 6_666
         private val BPM = arrayOf(666, 512, 256)
 
-        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
     }
 
     @Inject
