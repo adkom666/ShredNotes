@@ -23,16 +23,16 @@ class TrackingAggregator(
         // DUMMY
         val random = Random(System.currentTimeMillis())
         val points = mutableListOf<MaxBpmTracking.Point>()
-        var day = Days().tomorrow
+        var days = Days().tomorrow
         repeat(6) {
             points.add(
                 0,
                 MaxBpmTracking.Point(
-                    day = day,
+                    days = days,
                     maxBpm = random.nextInt(45, 166)
                 )
             )
-            day = day.yesterday
+            days = days.yesterday
         }
         return MaxBpmTracking(points)
     }
@@ -47,16 +47,16 @@ class TrackingAggregator(
         // DUMMY
         val random = Random(System.currentTimeMillis())
         val points = mutableListOf<NoteCountTracking.Point>()
-        var day = Days().tomorrow
+        var days = Days().tomorrow
         repeat(666) {
             points.add(
                 0,
                 NoteCountTracking.Point(
-                    day = day,
+                    days = days,
                     noteCount = random.nextInt(0, 30)
                 )
             )
-            day = day.yesterday
+            days = days.yesterday
         }
         return NoteCountTracking(points)
     }

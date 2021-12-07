@@ -15,11 +15,11 @@ data class MaxBpmTracking(
     /**
      * Maximum BPM on a specific day.
      *
-     * @property day target day.
-     * @property maxBpm maximum BPM that [day].
+     * @property days information about target day.
+     * @property maxBpm maximum BPM that day.
      */
     data class Point(
-        val day: Days,
+        val days: Days,
         val maxBpm: Int
     )
 }

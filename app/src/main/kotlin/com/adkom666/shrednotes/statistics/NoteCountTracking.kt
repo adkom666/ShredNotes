@@ -15,11 +15,11 @@ data class NoteCountTracking(
     /**
      * Note count on a specific day.
      *
-     * @property day target day.
-     * @property noteCount note count that [day].
+     * @property days information about target day.
+     * @property noteCount note count that day.
      */
     data class Point(
-        val day: Days,
+        val days: Days,
         val noteCount: Int
     )
 }

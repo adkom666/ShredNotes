@@ -254,7 +254,7 @@ class TrackingActivity : AppCompatActivity() {
         maxBpmTracking: MaxBpmTracking
     ): List<BarEntry> = maxBpmTracking.points.map { point ->
         BarEntry(
-            point.day.order().toFloat(),
+            point.days.order().toFloat(),
             point.maxBpm.toFloat()
         )
     }
@@ -263,7 +263,7 @@ class TrackingActivity : AppCompatActivity() {
         noteCountTracking: NoteCountTracking
     ): List<BarEntry> = noteCountTracking.points.map { point ->
         BarEntry(
-            point.day.order().toFloat(),
+            point.days.order().toFloat(),
             point.noteCount.toFloat()
         )
     }
