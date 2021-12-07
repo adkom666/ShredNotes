@@ -124,14 +124,18 @@ class TrackingActivity : AppCompatActivity() {
         binding.trackingChart.xAxis.granularity = 1f
         binding.trackingChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
         binding.trackingChart.xAxis.valueFormatter = ChartAbscissaFormatter()
+
         binding.trackingChart.axisLeft.textColor = contentColor
         binding.trackingChart.axisLeft.axisLineColor = contentColor
         binding.trackingChart.axisLeft.gridColor = contentColor
         binding.trackingChart.axisLeft.axisMinimum = 0f
+        binding.trackingChart.axisLeft.granularity = 1f
+
         binding.trackingChart.axisRight.textColor = contentColor
         binding.trackingChart.axisRight.axisLineColor = contentColor
         binding.trackingChart.axisRight.gridColor = contentColor
         binding.trackingChart.axisRight.axisMinimum = 0f
+        binding.trackingChart.axisRight.granularity = 1f
 
         binding.trackingChart.description.isEnabled = false
         binding.trackingChart.legend.isEnabled = false
