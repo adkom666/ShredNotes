@@ -47,6 +47,16 @@ fun Days?.localTimestampOrNull(): Long? = this?.epochMillis?.localTimestamp()
 fun Minutes?.localTimestampOrNull(): Long? = this?.epochMillis?.localTimestamp()
 
 /**
+ * Getting the timestamp for local time zone.
+ *
+ * @return timestamp for local time zone.
+ */
+fun Long.localTimestamp(): Long {
+    val zoneOffset = TimeZone.getDefault().getOffset(this)
+    return this + zoneOffset
+}
+
+/**
  * Create the [Calendar] for local time zone with the current long value as time in UTC milliseconds
  * from the epoch.
  *
@@ -54,11 +64,6 @@ fun Minutes?.localTimestampOrNull(): Long? = this?.epochMillis?.localTimestamp()
  * from the epoch.
  */
 fun Long.toLocalCalendar(): Calendar = toCalendar(TimeZone.getDefault())
-
-private fun Long.localTimestamp(): Long {
-    val zoneOffset = TimeZone.getDefault().getOffset(this)
-    return this + zoneOffset
-}
 
 private fun Long.toCalendar(timeZone: TimeZone): Calendar {
     val calendar = Calendar.getInstance(timeZone)

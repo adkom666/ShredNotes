@@ -6,6 +6,7 @@ import com.adkom666.shrednotes.data.repository.ExerciseRepositoryTest
 import com.adkom666.shrednotes.data.repository.NoteRepositoryTest
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregatorTest
 import com.adkom666.shrednotes.statistics.RecordsAggregatorTest
+import com.adkom666.shrednotes.statistics.TrackingAggregatorTest
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregatorTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
@@ -20,6 +21,7 @@ import kotlin.time.ExperimentalTime
     NoteRepositoryTest::class,
     CommonStatisticsAggregatorTest::class,
     WeekdaysStatisticsAggregatorTest::class,
-    RecordsAggregatorTest::class
+    RecordsAggregatorTest::class,
+    TrackingAggregatorTest::class
 )
 class AllAndroidTestSuite

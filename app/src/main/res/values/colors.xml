@@ -15,6 +15,7 @@
     <color name="grey_darkest">#2E3436</color>
     <color name="black">#010709</color>
     <color name="red">#F53236</color>
+    <color name="sky">#8CEAFF</color>
 
     <color name="illustration_color">@color/yellow</color>
     <color name="background_color">@color/grey_dark</color>

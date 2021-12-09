@@ -61,12 +61,16 @@ interface NoteRepository {
     suspend fun listAllUnorderedSuspending(): List<Note>
 
     /**
-     * Getting a [List] of notes with a date in [dateRange].
+     * Getting a [List] of notes with a date in [dateRange] and for exercise with identifier
+     * [exerciseId] if it is not null.
      *
      * @param dateRange range of dates of the target notes.
-     * @return [List] of notes with a date in [dateRange].
+     * @param exerciseId identifier of the target notes' exercise. If value is null then notes for
+     * all exercises will be considered.
+     * @return [List] of notes with a date in [dateRange] and for exercise with identifier
+     * [exerciseId] if it is not null.
      */
-    suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note>
+    suspend fun listUnorderedSuspending(dateRange: DateRange, exerciseId: Id? = null): List<Note>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info whose dates are in
