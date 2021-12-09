@@ -142,6 +142,8 @@ class TrackingActivity : AppCompatActivity() {
         binding.trackingChart.setNoDataText(getString(R.string.message_no_data))
         binding.trackingChart.setNoDataTextColor(illustrationColor)
 
+        binding.trackingChart.isDoubleTapToZoomEnabled = false
+
         binding.trackingChart.animateY(CHART_ANIMATION_DURATION_MILLIS)
     }
 
