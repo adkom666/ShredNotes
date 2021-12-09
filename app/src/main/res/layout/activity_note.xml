@@ -81,6 +81,7 @@
                 android:importantForAutofill="no"
                 android:hint="@string/hint_note_exercise"
                 android:saveEnabled="true"
+                android:popupBackground="@color/dialog_background_color"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/note_exercise_title_text_view" />
 

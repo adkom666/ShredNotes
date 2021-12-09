@@ -77,7 +77,7 @@
                 android:layout_marginTop="@dimen/padding_m"
                 android:spinnerMode="dropdown"
                 android:background="@drawable/spinner_background_selector"
-                android:popupBackground="@drawable/spinner_popup_background"
+                android:popupBackground="@color/dialog_background_color"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/exercise_subtitle_text_view"
                 tools:listitem="@layout/item_exercise_name" />

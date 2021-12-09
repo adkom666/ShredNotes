@@ -246,7 +246,7 @@ class NoteActivity : AppCompatActivity() {
         Timber.d("exerciseList=$exerciseList")
         val adapter = ArrayAdapter(
             this@NoteActivity,
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.item_exercise_name_dropdown,
             exerciseList.map { it.name }
         )
         binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)

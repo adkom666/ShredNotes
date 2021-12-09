@@ -424,7 +424,7 @@ private class ExerciseSpinnerAdapter(
                 parent,
                 false
             )
-        val textView = view.findViewById<TextView>(R.id.exercise_name_text_view)
+        val textView = view.findViewById<TextView>(android.R.id.text1)
         textView.text = exercises[position]?.name ?: ""
         return view
     }
