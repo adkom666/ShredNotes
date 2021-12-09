@@ -23,7 +23,7 @@ class CommonStatisticsAggregatorTest : TestCase() {
         private const val EXERCISE_NAME_2 = "exercise 2"
         private const val EXERCISE_NAME_3 = "exercise 3"
 
-        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
     }
 
     @Inject
