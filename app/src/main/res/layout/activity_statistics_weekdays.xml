@@ -81,9 +81,11 @@
                     </FrameLayout>
 
                     <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/average_among_max_bpm_pie_chart"
+                        android:id="@+id/statistics_pie_chart"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/pie_chart_height"
+                        android:layout_marginTop="@dimen/padding_m"
+                        android:layout_marginBottom="@dimen/padding_m"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/date_range_container" />
 
@@ -92,9 +94,10 @@
                         style="@style/AppTheme.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/padding_m"
                         android:text="@string/button_title_ok"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/average_among_max_bpm_pie_chart" />
+                        app:layout_constraintTop_toBottomOf="@+id/statistics_pie_chart" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -14,7 +14,7 @@
     <dimen name="square_image_button_size_and_padding">56dp</dimen>
     <dimen name="square_image_button_size_x2_and_padding">96dp</dimen>
     <dimen name="spinner_padding_end">32dp</dimen>
-    <dimen name="pie_chart_height">384dp</dimen>
+    <dimen name="pie_chart_height">320dp</dimen>
 
     <!-- Permanent on all configurations -->
     <dimen name="fab_elevation">6dp</dimen>

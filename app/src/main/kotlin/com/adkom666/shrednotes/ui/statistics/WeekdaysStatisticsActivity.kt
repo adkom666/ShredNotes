@@ -60,6 +60,8 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             rgb("#9C8A82")
         )
 
+        private const val CHART_ANIMATION_DURATION_MILLIS = 1_000
+
         /**
          * Creating an intent to open the screen of statistics by days of week.
          *
@@ -122,16 +124,20 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         val blackColor = ContextCompat.getColor(this, R.color.black)
         val cardColor = ContextCompat.getColor(this, R.color.normal_card_color)
 
-        binding.averageAmongMaxBpmPieChart.setEntryLabelColor(blackColor)
-        binding.averageAmongMaxBpmPieChart.setHoleColor(cardColor)
-        binding.averageAmongMaxBpmPieChart.setTransparentCircleColor(cardColor)
-        binding.averageAmongMaxBpmPieChart.holeRadius = 45f
-        binding.averageAmongMaxBpmPieChart.transparentCircleRadius = 50f
+        binding.statisticsPieChart.setEntryLabelColor(blackColor)
+        binding.statisticsPieChart.setHoleColor(cardColor)
+        binding.statisticsPieChart.setTransparentCircleColor(cardColor)
+        binding.statisticsPieChart.holeRadius = 45f
+        binding.statisticsPieChart.transparentCircleRadius = 50f
 
-        binding.averageAmongMaxBpmPieChart.description.isEnabled = false
-        binding.averageAmongMaxBpmPieChart.legend.isEnabled = false
-        binding.averageAmongMaxBpmPieChart.setNoDataText(getString(R.string.message_no_data))
-        binding.averageAmongMaxBpmPieChart.setNoDataTextColor(illustrationColor)
+        binding.statisticsPieChart.description.isEnabled = false
+        binding.statisticsPieChart.legend.isEnabled = false
+        binding.statisticsPieChart.setNoDataText(getString(R.string.message_no_data))
+        binding.statisticsPieChart.setNoDataTextColor(illustrationColor)
+
+        binding.statisticsPieChart.isHighlightPerTapEnabled = false
+
+        binding.statisticsPieChart.animateY(CHART_ANIMATION_DURATION_MILLIS)
     }
 
     private fun setupButtonListeners() {
@@ -217,13 +223,13 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     }
 
     private fun setStatistics(statistics: WeekdaysStatistics) {
-        binding.averageAmongMaxBpmPieChart.clear()
+        binding.statisticsPieChart.clear()
         val entries = pieEntriesOf(statistics)
         if (entries.isNotEmpty()) {
             val dataSet = pieDataSetOf(entries)
-            binding.averageAmongMaxBpmPieChart.data = PieData(dataSet)
+            binding.statisticsPieChart.data = PieData(dataSet)
         }
-        binding.averageAmongMaxBpmPieChart.invalidate()
+        binding.statisticsPieChart.invalidate()
     }
 
     private fun pieEntriesOf(statistics: WeekdaysStatistics): List<PieEntry> {
@@ -243,8 +249,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     private fun pieDataSetOf(entries: List<PieEntry>): PieDataSet {
         val dataSet = PieDataSet(entries, "")
         dataSet.colors = PIE_COLORS
-        val blackColor = ContextCompat.getColor(this, R.color.black)
-        dataSet.valueTextColor = blackColor
+        dataSet.valueTextColor = ContextCompat.getColor(this, R.color.black)
         dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
         return dataSet
     }
