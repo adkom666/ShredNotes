@@ -43,6 +43,8 @@
     <string name="title_note_exercise">Упражнение:</string>
     <string name="hint_note_exercise">Название упражнения</string>
 
+    <string name="title_tracking_exercise">Упражнение:</string>
+
     <string name="item_statistics_common">Общая</string>
     <string name="item_statistics_weekdays_max_bpm">По дням недели (макс. BPM)</string>
     <string name="item_statistics_weekdays_note_count">По дням недели (кол-во заметок)</string>

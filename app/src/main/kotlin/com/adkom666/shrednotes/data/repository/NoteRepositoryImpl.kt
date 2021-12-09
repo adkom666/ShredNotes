@@ -75,9 +75,12 @@ class NoteRepositoryImpl(
         return noteList
     }
 
-    override suspend fun listUnorderedSuspending(dateRange: DateRange): List<Note> {
-        Timber.d("listUnorderedSuspending: dateRange=$dateRange")
-        val noteWithExerciseEntityList = entityListSuspending(dateRange)
+    override suspend fun listUnorderedSuspending(
+        dateRange: DateRange,
+        exerciseId: Id?
+    ): List<Note> {
+        Timber.d("listUnorderedSuspending: dateRange=$dateRange, exerciseId=$exerciseId")
+        val noteWithExerciseEntityList = entityListSuspending(dateRange, exerciseId)
         val noteList = noteWithExerciseEntityList.map(NoteWithExerciseInfo::toNote)
         Timber.d("noteList=$noteList")
         return noteList
@@ -320,6 +323,26 @@ class NoteRepositoryImpl(
         // All:
         else ->
             noteDao.countAllSuspending()
+    }
+
+    private suspend fun entityListSuspending(
+        dateRange: DateRange,
+        exerciseId: Id?
+    ): List<NoteWithExerciseInfo> = exerciseId?.let {
+        entityListSuspending(dateRange, it)
+    } ?: entityListSuspending(dateRange)
+
+    private suspend fun entityListSuspending(
+        dateRange: DateRange,
+        exerciseId: Id
+    ): List<NoteWithExerciseInfo> = if (dateRange != INFINITE_DATE_RANGE) {
+        noteDao.listByTimestampRangeAndExerciseIdUnorderedSuspending(
+            dateRange.fromInclusive.timestampOrMin(),
+            dateRange.toExclusive.timestampOrMax(),
+            exerciseId
+        )
+    } else {
+        noteDao.listByExerciseIdUnorderedSuspending(exerciseId)
     }
 
     private suspend fun entityListSuspending(

@@ -60,6 +60,28 @@
 
             </FrameLayout>
 
+            <TextView
+                android:id="@+id/exercise_subtitle_text_view"
+                style="@style/AppTheme.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/padding_m"
+                android:text="@string/title_tracking_exercise"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/date_range_container" />
+
+            <Spinner
+                android:id="@+id/exercise_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/padding_m"
+                android:spinnerMode="dropdown"
+                android:background="@drawable/spinner_background_selector"
+                android:popupBackground="@drawable/spinner_popup_background"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/exercise_subtitle_text_view"
+                tools:listitem="@layout/item_exercise_name" />
+
             <com.github.mikephil.charting.charts.HorizontalBarChart
                 android:id="@+id/tracking_chart"
                 android:layout_width="match_parent"
@@ -67,7 +89,7 @@
                 android:layout_marginTop="@dimen/padding_m"
                 android:layout_marginBottom="@dimen/padding_m"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/date_range_container"
+                app:layout_constraintTop_toBottomOf="@+id/exercise_spinner"
                 app:layout_constraintBottom_toTopOf="@+id/ok_button" />
 
             <Button

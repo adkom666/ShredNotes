@@ -3,6 +3,13 @@ package com.adkom666.shrednotes.ui.statistics
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.BaseAdapter
+import android.widget.TextView
+import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -12,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
+import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.databinding.ActivityTrackingBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.statistics.MaxBpmTracking
@@ -95,6 +103,7 @@ class TrackingActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        setupExerciseListener()
         prepareChart()
         setupButtonListeners()
         restoreFragmentListeners()
@@ -112,6 +121,10 @@ class TrackingActivity : AppCompatActivity() {
         lifecycleScope.launchWhenCreated {
             model.start()
         }
+    }
+
+    private fun setupExerciseListener() {
+        binding.exerciseSpinner.onItemSelectedListener = OnExerciseSelectedListener()
     }
 
     private fun prepareChart() {
@@ -215,6 +228,8 @@ class TrackingActivity : AppCompatActivity() {
                 setTitle(signal.value)
             is TrackingViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
+            is TrackingViewModel.Signal.ExerciseList ->
+                setExerciseList(signal.value)
             is TrackingViewModel.Signal.ActualStatistics ->
                 setStatistics(signal)
         }
@@ -227,6 +242,14 @@ class TrackingActivity : AppCompatActivity() {
 
     private fun setDateRange(dateRange: DateRange) {
         binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
+    }
+
+    private fun setExerciseList(exercises: List<Exercise?>) {
+        binding.exerciseSpinner.adapter = ExerciseSpinnerAdapter(exercises)
+        val position = exercises.indexOf(model.exercise)
+        if (position >= 0 && position < exercises.size) {
+            binding.exerciseSpinner.setSelection(position)
+        }
     }
 
     private fun setStatistics(
@@ -290,6 +313,20 @@ class TrackingActivity : AppCompatActivity() {
                 R.string.title_statistics_tracking_progress
         }
 
+    private inner class OnExerciseSelectedListener : AdapterView.OnItemSelectedListener {
+
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            Timber.d("Selected exercise: position=$position")
+            (parent?.adapter as? ExerciseSpinnerAdapter)?.let { adapter ->
+                model.exercise = adapter.getItem(position)
+            }
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+            Timber.d("Exercise not selected")
+        }
+    }
+
     private inner class StateObserver : Observer<TrackingViewModel.State> {
 
         override fun onChanged(state: TrackingViewModel.State?) {
@@ -309,7 +346,7 @@ class TrackingActivity : AppCompatActivity() {
 
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
-            binding.statisticsScroll.isVisible = isActive.not()
+            binding.statisticsCard.isVisible = isActive.not()
         }
     }
 }
@@ -338,5 +375,56 @@ private class ChartAbscissaFormatter : ValueFormatter() {
     override fun getAxisLabel(value: Float, axis: AxisBase?): String {
         val dayOrder = value.roundToOrder()
         return dateFormat.format(dayOrder.toDays().date)
+    }
+}
+
+private class ExerciseSpinnerAdapter(
+    private val exercises: List<Exercise?>
+) : BaseAdapter() {
+
+    override fun getCount(): Int = exercises.size
+
+    override fun getItem(position: Int): Exercise? = exercises[position]
+
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun getView(
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup?
+    ): View = getView(
+        R.layout.item_exercise_name,
+        position,
+        convertView,
+        parent
+    )
+
+    override fun getDropDownView(
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup?
+    ): View = getView(
+        R.layout.item_exercise_name_dropdown,
+        position,
+        convertView,
+        parent
+    )
+
+    private fun getView(
+        @LayoutRes
+        resId: Int,
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup?
+    ): View {
+        val view = convertView
+            ?: LayoutInflater.from(parent?.context).inflate(
+                resId,
+                parent,
+                false
+            )
+        val textView = view.findViewById<TextView>(R.id.exercise_name_text_view)
+        textView.text = exercises[position]?.name ?: ""
+        return view
     }
 }

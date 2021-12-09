@@ -51,7 +51,10 @@ class TrackingAggregatorTest : TestCase() {
     }
 
     fun testAggregateMaxBpmTrackingForInfiniteDateRange() = runBlocking {
-        val statistics = trackingAggregator.aggregateMaxBpmTracking(INFINITE_DATE_RANGE)
+        val statistics = trackingAggregator.aggregateMaxBpmTracking(
+            dateRange = INFINITE_DATE_RANGE,
+            exerciseId = null
+        )
         assertEquals(2, statistics.points.size)
         assertEquals(BPM[0], statistics.points[0].maxBpm)
         assertEquals(BPM[1], statistics.points[1].maxBpm)
@@ -59,13 +62,28 @@ class TrackingAggregatorTest : TestCase() {
 
     fun testAggregateMaxBpmTrackingForCustomDateRange() = runBlocking {
         val dateRange = DateRange(Days().yesterday, Days().tomorrow)
-        val statistics = trackingAggregator.aggregateMaxBpmTracking(dateRange)
+        val statistics = trackingAggregator.aggregateMaxBpmTracking(
+            dateRange = dateRange,
+            exerciseId = null
+        )
+        assertEquals(1, statistics.points.size)
+        assertEquals(BPM[1], statistics.points[0].maxBpm)
+    }
+
+    fun testAggregateMaxBpmTrackingForPredefinedExercise() = runBlocking {
+        val statistics = trackingAggregator.aggregateMaxBpmTracking(
+            dateRange = INFINITE_DATE_RANGE,
+            exerciseId = 1.toId()
+        )
         assertEquals(1, statistics.points.size)
         assertEquals(BPM[1], statistics.points[0].maxBpm)
     }
 
     fun testAggregateNoteCountTrackingForInfiniteDateRange() = runBlocking {
-        val statistics = trackingAggregator.aggregateNoteCountTracking(INFINITE_DATE_RANGE)
+        val statistics = trackingAggregator.aggregateNoteCountTracking(
+            dateRange = INFINITE_DATE_RANGE,
+            exerciseId = null
+        )
         assertEquals(2, statistics.points.size)
         assertEquals(1, statistics.points[0].noteCount)
         assertEquals(2, statistics.points[1].noteCount)
@@ -73,7 +91,19 @@ class TrackingAggregatorTest : TestCase() {
 
     fun testAggregateNoteCountTrackingForCustomDateRange() = runBlocking {
         val dateRange = DateRange(Days().yesterday, Days().tomorrow)
-        val statistics = trackingAggregator.aggregateNoteCountTracking(dateRange)
+        val statistics = trackingAggregator.aggregateNoteCountTracking(
+            dateRange = dateRange,
+            exerciseId = null
+        )
+        assertEquals(1, statistics.points.size)
+        assertEquals(2, statistics.points[0].noteCount)
+    }
+
+    fun testAggregateNoteCountTrackingForPredefinedExercise() = runBlocking {
+        val statistics = trackingAggregator.aggregateNoteCountTracking(
+            dateRange = INFINITE_DATE_RANGE,
+            exerciseId = 1.toId()
+        )
         assertEquals(1, statistics.points.size)
         assertEquals(2, statistics.points[0].noteCount)
     }

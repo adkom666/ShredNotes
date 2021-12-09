@@ -43,6 +43,9 @@ private const val CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE =
     ":timestampFromInclusive <= $TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP " +
             "AND $TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP < :timestampToExclusive"
 
+private const val CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID =
+    ":exerciseId = $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID"
+
 private const val CONDITION_NOTES_BY_BPM_RANGE =
     ":bpmFromInclusive <= $TABLE_NOTES_FIELD_BPM " +
             "AND $TABLE_NOTES_FIELD_BPM <= :bpmToInclusive"
@@ -135,6 +138,17 @@ private const val SELECT_BY_TIMESTAMP_RANGE_UNORDERED =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM $TABLE_NOTES_WITH_EXERCISES " +
             "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
+
+private const val SELECT_BY_EXERCISE_ID_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
+
+private const val SELECT_BY_TIMESTAMP_RANGE_AND_EXERCISE_ID_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
 
 private const val ORDER_TOP_BPM_NOTES_WITH_EXERCISES =
     "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM DESC, " +
@@ -677,6 +691,37 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun listByTimestampRangeUnorderedSuspending(
         timestampFromInclusive: Long,
         timestampToExclusive: Long
+    ): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of notes with their exercises' info whose exercise identifier is
+     * [exerciseId].
+     *
+     * @param exerciseId identifier of the target notes' exercise.
+     * @return [List] of notes with their exercises' info whose exercise identifier is
+     * [exerciseId].
+     */
+    @Query(SELECT_BY_EXERCISE_ID_UNORDERED)
+    suspend fun listByExerciseIdUnorderedSuspending(exerciseId: Id): List<NoteWithExerciseInfo>
+
+    /**
+     * Getting a [List] of notes with their exercises' info whose timestamp is greater than or equal
+     * to [timestampFromInclusive] and less than [timestampToExclusive] and exercise identifier is
+     * [exerciseId].
+     *
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes.
+     * @param exerciseId identifier of the target notes' exercise.
+     * @return [List] of notes with their exercises' info whose timestamp is greater than or equal
+     * to [timestampFromInclusive] and less than [timestampToExclusive] and exercise identifier is
+     * [exerciseId].
+     */
+    @Query(SELECT_BY_TIMESTAMP_RANGE_AND_EXERCISE_ID_UNORDERED)
+    suspend fun listByTimestampRangeAndExerciseIdUnorderedSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long,
+        exerciseId: Id
     ): List<NoteWithExerciseInfo>
 
     /**

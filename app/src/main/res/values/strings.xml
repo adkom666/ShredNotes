@@ -49,6 +49,8 @@
     <string name="title_note_bpm" translatable="false">BPM:</string>
     <string name="hint_note_bpm" translatable="false">BPM</string>
 
+    <string name="title_tracking_exercise">Exercise:</string>
+
     <string name="item_statistics_common">Common</string>
     <string name="item_statistics_weekdays_max_bpm">By Days Of Week (Max. BPM)</string>
     <string name="item_statistics_weekdays_note_count">By Days Of Week (Note Count)</string>

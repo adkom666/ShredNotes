@@ -123,6 +123,14 @@
         <item name="android:textColor">@color/content_color</item>
     </style>
 
+    <style name="AppTheme.LargeAccentableText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/accentable_content_color_selector</item>
+    </style>
+
+    <style name="AppTheme.LargeSelectableText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/selectable_content_color_selector</item>
+    </style>
+
     <style name="AppTheme.HeaderText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/illustration_color</item>
     </style>

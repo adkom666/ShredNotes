@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.statistics
 
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
@@ -13,24 +14,30 @@ import timber.log.Timber
 class TrackingAggregator(
     private val noteRepository: NoteRepository
 ) {
-    private var maxBpmTrackingPointsCache: MutableMap<DateRange, MaxBpmTrackingPoints> =
-        mutableMapOf()
+    private var maxBpmTrackingPointsCache:
+            MutableMap<TrackingPointsId, MaxBpmTrackingPoints> = mutableMapOf()
 
-    private var noteCountTrackingPointsCache: MutableMap<DateRange, NoteCountTrackingPoints> =
-        mutableMapOf()
+    private var noteCountTrackingPointsCache:
+            MutableMap<TrackingPointsId, NoteCountTrackingPoints> = mutableMapOf()
 
     /**
      * Aggregate statistics of the maximum BPM per day.
      *
      * @param dateRange the date range over which statistics should be aggregated.
+     * @param exerciseId the identifier of exercise for which statistics should be aggregated. If
+     * value is null then notes for all exercises will be processed.
      * @return aggregated statistics of the maximum BPM per day.
      */
-    suspend fun aggregateMaxBpmTracking(dateRange: DateRange): MaxBpmTracking {
+    suspend fun aggregateMaxBpmTracking(
+        dateRange: DateRange,
+        exerciseId: Id?
+    ): MaxBpmTracking {
         Timber.d("Aggregate statistics of the maximum BPM per day")
 
-        val points = maxBpmTrackingPointsCache[dateRange]
-            ?: aggregateMaxBpmTrackingPoints(dateRange)
-                .also { maxBpmTrackingPointsCache[dateRange] = it }
+        val trackingPointsId = TrackingPointsId(dateRange, exerciseId)
+        val points = maxBpmTrackingPointsCache[trackingPointsId]
+            ?: aggregateMaxBpmTrackingPoints(dateRange, exerciseId)
+                .also { maxBpmTrackingPointsCache[trackingPointsId] = it }
 
         return MaxBpmTracking(points = points)
     }
@@ -39,14 +46,20 @@ class TrackingAggregator(
      * Aggregate statistics of the note count per day.
      *
      * @param dateRange the date range over which statistics should be aggregated.
+     * @param exerciseId the identifier of exercise for which statistics should be aggregated. If
+     * value is null then notes for all exercises will be processed.
      * @return aggregated statistics of the note count per day.
      */
-    suspend fun aggregateNoteCountTracking(dateRange: DateRange): NoteCountTracking {
+    suspend fun aggregateNoteCountTracking(
+        dateRange: DateRange,
+        exerciseId: Id?
+    ): NoteCountTracking {
         Timber.d("Aggregate statistics of the note count per day")
 
-        val points = noteCountTrackingPointsCache[dateRange]
-            ?: aggregateNoteCountTrackingPoints(dateRange)
-                .also{ noteCountTrackingPointsCache[dateRange] = it }
+        val trackingPointsId = TrackingPointsId(dateRange, exerciseId)
+        val points = noteCountTrackingPointsCache[trackingPointsId]
+            ?: aggregateNoteCountTrackingPoints(dateRange, exerciseId)
+                .also{ noteCountTrackingPointsCache[trackingPointsId] = it }
 
         return NoteCountTracking(points = points)
     }
@@ -60,9 +73,10 @@ class TrackingAggregator(
     }
 
     private suspend fun aggregateMaxBpmTrackingPoints(
-        dateRange: DateRange
+        dateRange: DateRange,
+        exerciseId: Id?
     ): MaxBpmTrackingPoints {
-        val notes = noteRepository.listUnorderedSuspending(dateRange)
+        val notes = noteRepository.listUnorderedSuspending(dateRange, exerciseId)
         val bpmMap = mutableMapOf<Days, Int>()
         notes.forEach { note ->
             val days = Days(note.dateTime.epochMillis)
@@ -82,9 +96,10 @@ class TrackingAggregator(
     }
 
     private suspend fun aggregateNoteCountTrackingPoints(
-        dateRange: DateRange
+        dateRange: DateRange,
+        exerciseId: Id?
     ): NoteCountTrackingPoints {
-        val notes = noteRepository.listUnorderedSuspending(dateRange)
+        val notes = noteRepository.listUnorderedSuspending(dateRange, exerciseId)
         val noteCountMap = mutableMapOf<Days, Int>()
         notes.forEach { note ->
             val days = Days(note.dateTime.epochMillis)
@@ -100,4 +115,6 @@ class TrackingAggregator(
             )
         }
     }
+
+    private data class TrackingPointsId(val dateRange: DateRange, val exerciseId: Id?)
 }

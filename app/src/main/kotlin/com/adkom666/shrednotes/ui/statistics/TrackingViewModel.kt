@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adkom666.shrednotes.data.model.Exercise
+import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.statistics.MaxBpmTracking
 import com.adkom666.shrednotes.statistics.NoteCountTracking
 import com.adkom666.shrednotes.statistics.TrackingAggregator
@@ -31,7 +33,8 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 class TrackingViewModel @Inject constructor(
     private val trackingAggregator: TrackingAggregator,
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
+    private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
 
     private companion object {
@@ -137,6 +140,14 @@ class TrackingViewModel @Inject constructor(
         data class ActualDateRange(val value: DateRange) : Signal()
 
         /**
+         * Use exercise list.
+         *
+         * @property value [List] of all exercises to select by user. If selected exercise is null
+         * then notes for all exercises will be processed.
+         */
+        data class ExerciseList(val value: List<Exercise?>) : Signal()
+
+        /**
          * Show actual statistics tracking.
          */
         sealed class ActualStatistics : Signal() {
@@ -188,7 +199,25 @@ class TrackingViewModel @Inject constructor(
                 setState(State.Waiting)
                 give(Signal.ActualDateRange(value))
                 viewModelScope.launch {
-                    aggregateStatistics(value)
+                    aggregateStatistics(value, exercise)
+                    setState(State.Working)
+                }
+            }
+        }
+
+    /**
+     * The exercise for which statistics should be shown. If value is null then notes for all
+     * exercises will be processed.
+     */
+    var exercise: Exercise?
+        get() = _exercise
+        set(value) {
+            if (value != _exercise) {
+                Timber.d("Change exercise: old=$_exercise, new=$value")
+                _exercise = value
+                setState(State.Waiting)
+                viewModelScope.launch {
+                    aggregateStatistics(dateRange, value)
                     setState(State.Working)
                 }
             }
@@ -207,6 +236,9 @@ class TrackingViewModel @Inject constructor(
 
     private var _targetParameter: TrackingTargetParameter? = null
     private var _dateRange: DateRange? = null
+    private var _exercise: Exercise? = null
+
+    private var exerciseListCache: List<Exercise?>? = null
 
     /**
      * Prepare for working with the statistics tracking.
@@ -217,7 +249,7 @@ class TrackingViewModel @Inject constructor(
         Timber.d("Prepare: targetParameter=$targetParameter")
         _targetParameter = targetParameter
         _dateRange = loadDateRange(targetParameter)
-        setState(State.Waiting)
+        _exercise = null
         give(Signal.Title(targetParameter.toTitleValue()))
         give(Signal.ActualDateRange(dateRange))
         trackingAggregator.clearCache()
@@ -228,7 +260,16 @@ class TrackingViewModel @Inject constructor(
      */
     suspend fun start() {
         Timber.d("Start")
-        aggregateStatistics(dateRange)
+        setState(State.Waiting)
+        val exerciseList = exerciseListCache
+            ?: exerciseRepository.listAllSuspending().let { exercises ->
+                val nullableExercises = mutableListOf<Exercise?>()
+                nullableExercises.add(null)
+                nullableExercises.addAll(exercises)
+                nullableExercises
+            }.also { exerciseListCache = it }
+        give(Signal.ExerciseList(exerciseList))
+        aggregateStatistics(dateRange, exercise)
         setState(State.Working)
     }
 
@@ -263,17 +304,17 @@ class TrackingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun aggregateStatistics(dateRange: DateRange) {
+    private suspend fun aggregateStatistics(dateRange: DateRange, exercise: Exercise?) {
         @Suppress("TooGenericExceptionCaught")
         try {
             val recordsSignal = when (targetParameter) {
                 TrackingTargetParameter.MAX_BPM ->
                     Signal.ActualStatistics.Progress(
-                        trackingAggregator.aggregateMaxBpmTracking(dateRange)
+                        trackingAggregator.aggregateMaxBpmTracking(dateRange, exercise?.id)
                     )
                 TrackingTargetParameter.NOTE_COUNT ->
                     Signal.ActualStatistics.TrainingIntensity(
-                        trackingAggregator.aggregateNoteCountTracking(dateRange)
+                        trackingAggregator.aggregateNoteCountTracking(dateRange, exercise?.id)
                     )
             }
             give(recordsSignal)
