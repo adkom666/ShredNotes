@@ -300,6 +300,7 @@ class TrackingActivity : AppCompatActivity() {
     private fun barDataSetOf(entries: List<BarEntry>): BarDataSet {
         val dataSet = BarDataSet(entries, "")
         dataSet.setDrawValues(false)
+        dataSet.isHighlightEnabled = false
         dataSet.color = ContextCompat.getColor(this, R.color.sky)
         return dataSet
     }
