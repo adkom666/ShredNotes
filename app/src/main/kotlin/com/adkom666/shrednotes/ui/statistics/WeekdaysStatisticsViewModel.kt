@@ -203,7 +203,6 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         Timber.d("Prepare: targetParameter=$targetParameter")
         _targetParameter = targetParameter
         _dateRange = loadDateRange(targetParameter)
-        setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
         give(Signal.ActualDateRange(dateRange))
         statisticsAggregator.clearCache()
@@ -214,6 +213,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
      */
     suspend fun start() {
         Timber.d("Start")
+        setState(State.Waiting)
         aggregateStatistics(dateRange)
         setState(State.Working)
     }

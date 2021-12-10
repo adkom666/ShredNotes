@@ -170,7 +170,6 @@ class CommonStatisticsViewModel
      */
     fun prepare() {
         Timber.d("Prepare")
-        setState(State.Waiting)
         give(Signal.ActualDateRange(dateRange))
         statisticsAggregator.clearCache()
     }
@@ -180,6 +179,7 @@ class CommonStatisticsViewModel
      */
     suspend fun start() {
         Timber.d("Start")
+        setState(State.Waiting)
         aggregateStatistics(dateRange)
         setState(State.Working)
     }

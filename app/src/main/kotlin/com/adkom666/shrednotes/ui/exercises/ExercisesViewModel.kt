@@ -258,6 +258,7 @@ class ExercisesViewModel @Inject constructor(
     init {
         Timber.d("Init")
         _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
+        setState(State.Waiting)
         viewModelScope.launch {
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")

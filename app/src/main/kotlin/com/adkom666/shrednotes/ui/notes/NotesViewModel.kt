@@ -331,6 +331,7 @@ class NotesViewModel @Inject constructor(
     init {
         Timber.d("Init")
         _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
+        setState(State.Waiting)
         viewModelScope.launch {
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname, filterOrNull)
             Timber.d("noteInitialCount=$noteInitialCount")

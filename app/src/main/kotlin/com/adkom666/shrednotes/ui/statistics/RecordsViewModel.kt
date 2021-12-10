@@ -220,7 +220,6 @@ class RecordsViewModel @Inject constructor(
         Timber.d("Prepare: targetParameter=$targetParameter")
         _targetParameter = targetParameter
         _dateRange = loadDateRange(targetParameter)
-        setState(State.Waiting)
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
         give(Signal.ActualDateRange(dateRange))
         recordsAggregator.clearCache()
@@ -231,6 +230,7 @@ class RecordsViewModel @Inject constructor(
      */
     suspend fun start() {
         Timber.d("Start")
+        setState(State.Waiting)
         aggregateStatistics(dateRange)
         setState(State.Working)
     }
