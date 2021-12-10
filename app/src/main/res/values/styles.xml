@@ -127,12 +127,18 @@
         <item name="android:textColor">@color/accentable_content_color_selector</item>
     </style>
 
-    <style name="AppTheme.LargeSelectableText" parent="TextAppearance.AppCompat.Medium">
-        <item name="android:textColor">@color/selectable_content_color_selector</item>
-    </style>
-
     <style name="AppTheme.HeaderText" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/illustration_color</item>
+    </style>
+
+    <style name="AppTheme.DialogLikeHighlightTheme">
+        <item name="colorControlHighlight">@color/dialog_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.DialogLikeSelectableHeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:theme">@style/AppTheme.DialogLikeHighlightTheme</item>
+        <item name="android:textColor">@color/illustration_color</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
     <style name="AppTheme.SubHeaderText" parent="TextAppearance.AppCompat.Small">
