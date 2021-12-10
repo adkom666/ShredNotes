@@ -65,7 +65,7 @@
                 android:paddingBottom="@dimen/padding_m"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/date_range_container"
-                tools:text="<Common statistics>" />
+                tools:text="[Common statistics]" />
 
             <TextView
                 android:id="@+id/for_all_the_time_subtitle_text_view"
@@ -86,7 +86,7 @@
                 android:paddingBottom="@dimen/padding_m"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/for_all_the_time_subtitle_text_view"
-                tools:text="<Common statistics for all the time>" />
+                tools:text="[Common statistics for all the time]" />
 
             <Button
                 android:id="@+id/ok_button"
