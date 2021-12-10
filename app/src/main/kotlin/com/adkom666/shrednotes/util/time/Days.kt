@@ -19,6 +19,11 @@ class Days(private val initialEpochMillis: Long) : Time(), Parcelable {
     constructor(initialDate: Date = Date()) : this(initialDate.time)
 
     /**
+     * @param initialMinutes wrapped [Minutes].
+     */
+    constructor(initialMinutes: Minutes) : this(initialMinutes.epochMillis)
+
+    /**
      * The time truncated to days, in milliseconds, since January 1, 1970, 00: 00: 00 GMT.
      */
     override val epochMillis: Long

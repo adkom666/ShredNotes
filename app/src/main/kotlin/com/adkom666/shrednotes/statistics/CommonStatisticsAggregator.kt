@@ -78,7 +78,7 @@ class CommonStatisticsAggregator(
         }
         val activeDaysSet = mutableSetOf<Days>()
         notes.forEach { note ->
-            val days = Days(note.dateTime.date)
+            val days = Days(note.dateTime)
             activeDaysSet.add(days)
         }
         val activeDayCount = activeDaysSet.size

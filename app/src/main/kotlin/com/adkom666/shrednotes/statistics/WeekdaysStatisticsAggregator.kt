@@ -95,7 +95,7 @@ class WeekdaysStatisticsAggregator(
         val notes = noteRepository.listUnorderedSuspending(dateRange)
         val noteToDaysMap = mutableMapOf<Days, MutableList<Note>>()
         notes.forEach { note ->
-            val days = Days(note.dateTime.epochMillis)
+            val days = Days(note.dateTime)
             val noteList = noteToDaysMap[days]
                 ?: mutableListOf<Note>()
                     .also { noteToDaysMap[days] = it }

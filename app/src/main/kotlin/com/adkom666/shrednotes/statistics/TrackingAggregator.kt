@@ -79,7 +79,7 @@ class TrackingAggregator(
         val notes = noteRepository.listUnorderedSuspending(dateRange, exerciseId)
         val bpmMap = mutableMapOf<Days, Int>()
         notes.forEach { note ->
-            val days = Days(note.dateTime.epochMillis)
+            val days = Days(note.dateTime)
             val previousBpm = bpmMap[days]
             if (previousBpm == null || previousBpm < note.bpm) {
                 bpmMap[days] = note.bpm
@@ -102,7 +102,7 @@ class TrackingAggregator(
         val notes = noteRepository.listUnorderedSuspending(dateRange, exerciseId)
         val noteCountMap = mutableMapOf<Days, Int>()
         notes.forEach { note ->
-            val days = Days(note.dateTime.epochMillis)
+            val days = Days(note.dateTime)
             val previousNoteCount = noteCountMap[days] ?: 0
             noteCountMap[days] = previousNoteCount + 1
         }

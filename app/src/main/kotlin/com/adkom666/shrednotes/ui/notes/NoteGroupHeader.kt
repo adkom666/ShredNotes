@@ -138,7 +138,7 @@ class NoteGroupHeader(
     } else if (position in 1 until itemCount) {
         noteProvider(position)?.let { note ->
             noteProvider(position - 1)?.let { previousNote ->
-                Days(note.dateTime.epochMillis) != Days(previousNote.dateTime.epochMillis)
+                Days(note.dateTime) != Days(previousNote.dateTime)
             }
         } ?: false
     } else {
@@ -157,7 +157,7 @@ class NoteGroupHeader(
         position: Int
     ): Days? = if (position in 0 until itemCount) {
         noteProvider(position)?.let { note ->
-            Days(note.dateTime.epochMillis)
+            Days(note.dateTime)
         }
     } else {
         null
