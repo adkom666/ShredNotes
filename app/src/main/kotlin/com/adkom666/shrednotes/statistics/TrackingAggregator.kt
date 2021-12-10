@@ -32,7 +32,7 @@ class TrackingAggregator(
         dateRange: DateRange,
         exerciseId: Id?
     ): MaxBpmTracking {
-        Timber.d("Aggregate statistics of the maximum BPM per day")
+        Timber.d("aggregateMaxBpmTracking: dateRange=$dateRange, exerciseId=$exerciseId")
 
         val trackingPointsId = TrackingPointsId(dateRange, exerciseId)
         val points = maxBpmTrackingPointsCache[trackingPointsId]
@@ -54,7 +54,7 @@ class TrackingAggregator(
         dateRange: DateRange,
         exerciseId: Id?
     ): NoteCountTracking {
-        Timber.d("Aggregate statistics of the note count per day")
+        Timber.d("aggregateNoteCountTracking: dateRange=$dateRange, exerciseId=$exerciseId")
 
         val trackingPointsId = TrackingPointsId(dateRange, exerciseId)
         val points = noteCountTrackingPointsCache[trackingPointsId]
@@ -68,6 +68,7 @@ class TrackingAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
+        Timber.d("clearCache")
         maxBpmTrackingPointsCache.clear()
         noteCountTrackingPointsCache.clear()
     }

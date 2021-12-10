@@ -28,7 +28,7 @@ class WeekdaysStatisticsAggregator(
      * @return aggregated statistics of the average among maximum BPM by days of week.
      */
     suspend fun aggregateAverageAmongMaxBpm(dateRange: DateRange): WeekdaysStatistics {
-        Timber.d("Aggregate statistics of the average among max BPM by days of week")
+        Timber.d("aggregateAverageAmongMaxBpm: dateRange=$dateRange")
         val averageAmongMaxBpm = averageAmongMaxBpmCache[dateRange]
             ?: aggregateAverageQuantity(dateRange) { noteList ->
                 noteList.map { it.bpm }.maxOrNull()
@@ -43,7 +43,7 @@ class WeekdaysStatisticsAggregator(
      * @return aggregated statistics of the average note count by days of week.
      */
     suspend fun aggregateAverageNoteCount(dateRange: DateRange): WeekdaysStatistics {
-        Timber.d("Aggregate statistics of the average note count by days of week")
+        Timber.d("aggregateAverageNoteCount: dateRange=$dateRange")
         val averageAmongNoteCount = averageAmongNoteCountCache[dateRange]
             ?: aggregateAverageQuantity(dateRange) { noteList ->
                 noteList.count()
@@ -55,6 +55,7 @@ class WeekdaysStatisticsAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
+        Timber.d("clearCache")
         averageAmongMaxBpmCache.clear()
         averageAmongNoteCountCache.clear()
     }

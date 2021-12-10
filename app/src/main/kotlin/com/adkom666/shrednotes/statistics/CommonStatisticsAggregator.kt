@@ -8,6 +8,7 @@ import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.timestampOrMax
 import com.adkom666.shrednotes.util.time.timestampOrMin
+import timber.log.Timber
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -37,6 +38,8 @@ class CommonStatisticsAggregator(
      * @return aggregated common statistics.
      */
     suspend fun aggregate(dateRange: DateRange): CommonStatistics {
+
+        Timber.d("aggregate: dateRange=$dateRange")
 
         val filter = NoteFilter(
             dateFromInclusive = dateRange.fromInclusive,
@@ -104,6 +107,7 @@ class CommonStatisticsAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
+        Timber.d("clearCache")
         noteCountCache.clear()
         relatedExerciseCountCache.clear()
         allNotesCache = null

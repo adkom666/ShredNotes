@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.DateRange
+import timber.log.Timber
 
 /**
  * Get records here.
@@ -22,6 +23,8 @@ class RecordsAggregator(
      * @return aggregated BPM records.
      */
     suspend fun aggregateBpmRecords(dateRange: DateRange, limit: Int): BpmRecords {
+        Timber.d("aggregateBpmRecords: dateRange=$dateRange, limit=$limit")
+
         val topNotes = topNotesCache[dateRange]
             ?: noteRepository.listTopBpmSuspending(limit, dateRange)
                 .also { topNotesCache[dateRange] = it }
@@ -37,6 +40,8 @@ class RecordsAggregator(
      * @return aggregated records of the count of exercise-related notes.
      */
     suspend fun aggregateNoteCountRecords(dateRange: DateRange, limit: Int): NoteCountRecords {
+        Timber.d("aggregateNoteCountRecords: dateRange=$dateRange, limit=$limit")
+
         val topExerciseNames = topExerciseNamesCache[dateRange]
             ?: noteRepository.listTopPopularExercisesSuspending(limit, dateRange)
                 .map { NoteCountRecords.Record(it.exerciseName, it.noteCount) }
@@ -49,6 +54,7 @@ class RecordsAggregator(
      * Clear all cached values.
      */
     fun clearCache() {
+        Timber.d("clearCache")
         topNotesCache.clear()
         topExerciseNamesCache.clear()
     }
