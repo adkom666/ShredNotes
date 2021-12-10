@@ -26,9 +26,7 @@ class RecordsAggregator(
             ?: noteRepository.listTopBpmSuspending(limit, dateRange)
                 .also { topNotesCache[dateRange] = it }
 
-        return BpmRecords(
-            topNotes = topNotes
-        )
+        return BpmRecords(topNotes = topNotes)
     }
 
     /**
@@ -44,9 +42,7 @@ class RecordsAggregator(
                 .map { NoteCountRecords.Record(it.exerciseName, it.noteCount) }
                 .also { topExerciseNamesCache[dateRange] = it }
 
-        return NoteCountRecords(
-            topExerciseNames = topExerciseNames
-        )
+        return NoteCountRecords(topExerciseNames = topExerciseNames)
     }
 
     /**
