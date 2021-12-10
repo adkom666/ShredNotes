@@ -218,9 +218,9 @@ class RecordsActivity : AppCompatActivity() {
     @StringRes
     private fun RecordsViewModel.Signal.Subtitle.Value.getStringResId(): Int = when (this) {
         RecordsViewModel.Signal.Subtitle.Value.BPM ->
-            R.string.statistics_subtitle_bpm
+            R.string.title_statistics_bpm
         RecordsViewModel.Signal.Subtitle.Value.NOTE_COUNT ->
-            R.string.statistics_subtitle_note_count
+            R.string.title_statistics_note_count
     }
 
     private inner class StateObserver : Observer<RecordsViewModel.State> {

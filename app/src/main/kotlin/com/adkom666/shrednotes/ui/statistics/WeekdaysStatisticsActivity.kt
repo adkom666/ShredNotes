@@ -269,9 +269,9 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     private fun WeekdaysStatisticsViewModel.Signal.Subtitle.Value.getStringResId(): Int =
         when (this) {
             WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_AMONG_MAX_BPM ->
-                R.string.statistics_subtitle_average_among_max_bpm
+                R.string.title_statistics_average_among_max_bpm
             WeekdaysStatisticsViewModel.Signal.Subtitle.Value.AVERAGE_NOTE_COUNT ->
-                R.string.statistics_subtitle_average_note_count
+                R.string.title_statistics_average_note_count
         }
 
     private inner class StateObserver : Observer<WeekdaysStatisticsViewModel.State> {

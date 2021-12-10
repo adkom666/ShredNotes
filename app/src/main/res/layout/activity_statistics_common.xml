@@ -73,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/padding_m"
-                android:text="@string/statistics_subtitle_for_all_the_time"
+                android:text="@string/title_statistics_for_all_the_time"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/statistics_text_view" />
 

@@ -67,10 +67,10 @@
     <string name="text_statistics_common_all_notes">Заметок: %d</string>
     <string name="text_statistics_common_all_exercises">Упражнений: %d</string>
 
-    <string name="statistics_subtitle_for_all_the_time">Зарегистрировано за все время</string>
-    <string name="statistics_subtitle_average_among_max_bpm">Среднее среди максимальных BPM</string>
-    <string name="statistics_subtitle_average_note_count">Среднее количество заметок</string>
-    <string name="statistics_subtitle_note_count">Количество заметок</string>
+    <string name="title_statistics_for_all_the_time">Зарегистрировано за все время</string>
+    <string name="title_statistics_average_among_max_bpm">Среднее среди максимальных BPM</string>
+    <string name="title_statistics_average_note_count">Среднее количество заметок</string>
+    <string name="title_statistics_note_count">Количество заметок</string>
 
     <string name="title_sunday">Воскресенье</string>
     <string name="title_monday">Понедельник</string>
