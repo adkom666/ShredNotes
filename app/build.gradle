@@ -96,10 +96,6 @@ android {
         viewBinding true
     }
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-        kotlinOptions.freeCompilerArgs = ['-XXLanguage:+InlineClasses']
-    }
-
     packagingOptions {
         exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'
     }
