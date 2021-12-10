@@ -89,18 +89,7 @@ class AskViewModel @Inject constructor(
     private val _signalChannel: BroadcastChannel<Signal> =
         BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
 
-    private val onDonationFinishListener: OnDonationFinishListener =
-        object : OnDonationFinishListener {
-
-            override fun onDonationFinish(donationResult: DonationResult) {
-                Timber.d("Donation finished: donationResult=$donationResult")
-                if (donationResult == DonationResult.DISPOSED) {
-                    setState(State.UnknownDonationPrice)
-                } else {
-                    setState(State.Asking)
-                }
-            }
-        }
+    private val onDonationFinishListener: OnDonationFinishListener = DonationFinisher()
 
     override fun onCleared() {
         super.onCleared()
@@ -172,5 +161,17 @@ class AskViewModel @Inject constructor(
     private fun give(signal: Signal) {
         Timber.d("Give: signal=$signal")
         _signalChannel.offer(signal)
+    }
+
+    private inner class DonationFinisher : OnDonationFinishListener {
+
+        override fun onDonationFinish(donationResult: DonationResult) {
+            Timber.d("Donation finished: donationResult=$donationResult")
+            if (donationResult == DonationResult.DISPOSED) {
+                setState(State.UnknownDonationPrice)
+            } else {
+                setState(State.Asking)
+            }
+        }
     }
 }
