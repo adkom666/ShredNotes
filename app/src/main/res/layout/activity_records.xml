@@ -96,7 +96,10 @@
                     android:id="@+id/records_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_note"
+                    tools:itemCount="3"
+                    tools:paddingTop="@dimen/padding_m" />
 
                 <TextView
                     android:id="@+id/no_records_text_view"

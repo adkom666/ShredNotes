@@ -17,7 +17,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/exercises_recycler"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_exercise"
+            tools:paddingTop="@dimen/padding_m" />
 
         <include
             android:id="@+id/control"

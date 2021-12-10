@@ -24,11 +24,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            tools:text="18.02.2021 19:37"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/exercise_name_text_view" />
+            app:layout_constraintBottom_toTopOf="@+id/exercise_name_text_view"
+            tools:text="18.02.2021 19:37" />
 
         <TextView
             android:id="@+id/exercise_name_text_view"
@@ -36,11 +36,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            tools:text="Exercise name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/date_time_text_view"
-            app:layout_constraintBottom_toTopOf="@+id/bpm_text_view" />
+            app:layout_constraintBottom_toTopOf="@+id/bpm_text_view"
+            tools:text="Exercise name" />
 
         <TextView
             android:id="@+id/bpm_text_view"
@@ -48,11 +48,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            tools:text="666"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/exercise_name_text_view"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="666" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

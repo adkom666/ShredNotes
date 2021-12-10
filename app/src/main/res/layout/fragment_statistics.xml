@@ -11,6 +11,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/statistics_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_title"
+        tools:paddingTop="@dimen/padding_m" />
 
 </FrameLayout>
