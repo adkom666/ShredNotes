@@ -22,10 +22,10 @@ class WeekdaysStatisticsAggregator(
     private var averageAmongNoteCountCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
 
     /**
-     * Aggregate statistics of the average among max BPM by days of week.
+     * Aggregate statistics of the average among maximum BPM by days of week.
      *
      * @param dateRange the date range over which statistics should be aggregated.
-     * @return aggregated statistics of the average among max BPM by days of week.
+     * @return aggregated statistics of the average among maximum BPM by days of week.
      */
     suspend fun aggregateAverageAmongMaxBpm(dateRange: DateRange): WeekdaysStatistics {
         Timber.d("Aggregate statistics of the average among max BPM by days of week")

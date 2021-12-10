@@ -18,7 +18,7 @@ class RecordsAggregator(
      * Aggregate BPM records.
      *
      * @param dateRange the date range over which records should be aggregated.
-     * @param limit max count of records.
+     * @param limit maximum count of records.
      * @return aggregated BPM records.
      */
     suspend fun aggregateBpmRecords(dateRange: DateRange, limit: Int): BpmRecords {
@@ -35,7 +35,7 @@ class RecordsAggregator(
      * Aggregate records of the count of exercise-related notes.
      *
      * @param dateRange the date range over which records should be aggregated.
-     * @param limit max count of records.
+     * @param limit maximum count of records.
      * @return aggregated records of the count of exercise-related notes.
      */
     suspend fun aggregateNoteCountRecords(dateRange: DateRange, limit: Int): NoteCountRecords {
