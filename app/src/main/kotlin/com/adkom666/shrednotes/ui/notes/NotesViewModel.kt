@@ -592,7 +592,7 @@ class NotesViewModel @Inject constructor(
             params: LoadParams<Int>
         ): LoadResult<Int, Note> = withContext(Dispatchers.IO) {
             val key = params.key ?: 0
-            val (exerciseList, startPosition) = if (params.loadSize != PAGE_SIZE) {
+            val (noteList, startPosition) = if (params.loadSize != PAGE_SIZE) {
                 // Load initial
                 noteRepository.page(
                     size = params.loadSize,
@@ -609,13 +609,13 @@ class NotesViewModel @Inject constructor(
                 )
                 Page(exerciseList, key)
             }
-            val probableKey = if (exerciseList.size == params.loadSize) {
-                startPosition + exerciseList.size
+            val probableKey = if (noteList.size == params.loadSize) {
+                startPosition + noteList.size
             } else {
                 null
             }
             return@withContext LoadResult.Page(
-                data = exerciseList,
+                data = noteList,
                 prevKey = null,
                 nextKey = if (probableKey != key) probableKey else null
             )
