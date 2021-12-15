@@ -601,13 +601,13 @@ class NotesViewModel @Inject constructor(
                     filter = filter
                 )
             } else {
-                val exerciseList = noteRepository.list(
+                val noteList = noteRepository.list(
                     size = params.loadSize,
                     startPosition = key,
                     exerciseSubname = exerciseSubname,
                     filter = filter
                 )
-                Page(exerciseList, key)
+                Page(noteList, key)
             }
             val probableKey = if (noteList.size == params.loadSize) {
                 startPosition + noteList.size
