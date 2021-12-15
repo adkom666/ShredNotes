@@ -9,22 +9,20 @@ import timber.log.Timber
  * Observer for watching new item to scroll to it.
  *
  * @property recycler target recycler view.
+ * @property scrollDelayMillis delay before scroll in milliseconds.
  */
-class ScrollToNewItem(private val recycler: RecyclerView) {
-
-    private companion object {
-        private const val SCROLL_DELAY_MILLIS = 666L
-    }
-
+class ScrollToNewItem(
+    private val recycler: RecyclerView,
+    private val scrollDelayMillis: Long
+) {
     private val adapterDataObserver: RecyclerView.AdapterDataObserver = AdapterDataObserver()
     private var waitForNewItem: Boolean = false
-    private val handler = Handler(Looper.getMainLooper())
 
     /**
      * Waiting to scroll to the newly inserted element.
      */
     fun waitForNewItem() {
-        Timber.d("Wait for new item")
+        Timber.d("Wait for new item (now waitForNewItem=$waitForNewItem)")
         if (!waitForNewItem) {
             recycler.adapter?.registerAdapterDataObserver(adapterDataObserver)
             waitForNewItem = true
@@ -44,6 +42,8 @@ class ScrollToNewItem(private val recycler: RecyclerView) {
 
     private inner class AdapterDataObserver : RecyclerView.AdapterDataObserver() {
 
+        private val handler = Handler(Looper.getMainLooper())
+
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             Timber.d(
                 """On item range inserted:
@@ -56,8 +56,9 @@ class ScrollToNewItem(private val recycler: RecyclerView) {
                 recycler.adapter?.unregisterAdapterDataObserver(this)
                 waitForNewItem = false
                 handler.postDelayed({
-                    recycler.scrollToPosition(positionStart)
-                }, SCROLL_DELAY_MILLIS)
+                    Timber.d("Scroll to position: position=$positionStart")
+                    recycler.startLinearSmoothScrollToPosition(positionStart)
+                }, scrollDelayMillis)
             }
         }
     }

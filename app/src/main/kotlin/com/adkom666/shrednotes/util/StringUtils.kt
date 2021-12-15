@@ -21,6 +21,16 @@ infix fun String?.containsDifferentTrimmedTextIgnoreCaseThan(other: String?): Bo
 }
 
 /**
+ * Check whether the first string not contain the second one ignore case.
+ *
+ * @param other other string to compare.
+ * @return true if the first string is not contain the second one ignore case.
+ */
+infix fun String?.notContainsIgnoreCase(other: String?): Boolean {
+    return containsIgnoreCase(other).not()
+}
+
+/**
  * Parsing of the string as a signed decimal integer.
  *
  * @return the integer value represented by the argument in decimal or null if if the string does
@@ -31,4 +41,8 @@ fun String.numberOrNull(): Int? = try {
 } catch (e: NumberFormatException) {
     Timber.d(e)
     null
+}
+
+private fun String?.containsIgnoreCase(other: String?): Boolean {
+    return other?.let { this?.contains(it, ignoreCase = true) } ?: false
 }

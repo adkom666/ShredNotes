@@ -15,6 +15,7 @@ import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.pref.ExerciseToolPreferences
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.notContainsIgnoreCase
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
@@ -147,6 +148,11 @@ class ExercisesViewModel @Inject constructor(
          * Indicates that at least one selected note appears or no more selected notes.
          */
         object SelectionChanged : Signal()
+
+        /**
+         * Indicates that count of visible exercises could be increase.
+         */
+        object ContentCouldExpand : Signal()
     }
 
     /**
@@ -399,8 +405,15 @@ class ExercisesViewModel @Inject constructor(
     private fun process(signal: ExerciseToolPreferences.Signal) = when (signal) {
         ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged ->
             Unit
-        ExerciseToolPreferences.Signal.ExerciseSubnameChanged ->
-            resetExercises()
+        is ExerciseToolPreferences.Signal.ExerciseSubnameChanged ->
+            processExerciseSubnameChanged(signal.oldSubname, signal.newSubname)
+    }
+
+    private fun processExerciseSubnameChanged(oldSubname: String?, newSubname: String?) {
+        resetExercises()
+        if (newSubname notContainsIgnoreCase oldSubname) {
+            give(Signal.ContentCouldExpand)
+        }
     }
 
     private fun reportAbout(e: Exception) {

@@ -49,7 +49,7 @@ class ToolPreferences(
             preferences.edit {
                 putString(KEY_NOTE_EXERCISE_SUBNAME, finalExerciseSubname)
             }
-            give(NoteToolPreferences.Signal.NoteExerciseSubnameChanged)
+            give(NoteToolPreferences.Signal.NoteExerciseSubnameChanged(old, new))
         }
     }
 
@@ -61,7 +61,7 @@ class ToolPreferences(
             preferences.edit {
                 putBoolean(KEY_IS_NOTE_FILTER_ENABLED, new)
             }
-            give(NoteToolPreferences.Signal.NoteFilterEnablementChanged)
+            give(NoteToolPreferences.Signal.NoteFilterEnablementChanged(new))
         }
     }
 
@@ -87,7 +87,7 @@ class ToolPreferences(
             preferences.edit {
                 putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
             }
-            give(ExerciseToolPreferences.Signal.ExerciseSubnameChanged)
+            give(ExerciseToolPreferences.Signal.ExerciseSubnameChanged(old, new))
         }
     }
 

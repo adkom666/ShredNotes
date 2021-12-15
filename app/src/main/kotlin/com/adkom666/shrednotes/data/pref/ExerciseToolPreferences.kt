@@ -19,8 +19,14 @@ interface ExerciseToolPreferences {
 
         /**
          * Indicates that part of the target exercise name has been changed.
+         *
+         * @property oldSubname previous subname value.
+         * @property newSubname current subname value.
          */
-        object ExerciseSubnameChanged : Signal()
+        data class ExerciseSubnameChanged(
+            val oldSubname: String?,
+            val newSubname: String?
+        ) : Signal()
     }
 
     /**

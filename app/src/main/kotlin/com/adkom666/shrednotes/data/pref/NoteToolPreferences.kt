@@ -19,13 +19,21 @@ interface NoteToolPreferences {
 
         /**
          * Indicates that part of the exercise name of the target note has been changed.
+         *
+         * @property oldSubname previous subname value.
+         * @property newSubname current subname value.
          */
-        object NoteExerciseSubnameChanged : Signal()
+        data class NoteExerciseSubnameChanged(
+            val oldSubname: String?,
+            val newSubname: String?
+        ) : Signal()
 
         /**
          * Indicates that note filter enablement has been changed.
+         *
+         * @property isEnabled is filter enabled now.
          */
-        object NoteFilterEnablementChanged : Signal()
+        data class NoteFilterEnablementChanged(val isEnabled: Boolean) : Signal()
     }
 
     /**

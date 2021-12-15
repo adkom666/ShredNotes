@@ -34,6 +34,7 @@ import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.setOnSafeClickListener
+import com.adkom666.shrednotes.util.startLinearSmoothScrollToPosition
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
@@ -134,7 +135,7 @@ class NotesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initNoteRecycler()
         _fabDashboard = initFabDashboard(model.selection)
-        _scroller = ScrollToNewItem(binding.noteRecycler)
+        _scroller = ScrollToNewItem(binding.noteRecycler, SCROLL_DELAY_MILLIS)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -168,11 +169,7 @@ class NotesFragment :
         model.requestFilter()
     }
 
-    override fun scrollToBegin() {
-        view?.handler?.postDelayed({
-            binding.noteRecycler.scrollToPosition(0)
-        }, SCROLL_DELAY_MILLIS)
-    }
+    override fun scrollToBegin() = startSmoothScrollToBegin()
 
     private fun acquireActivityLaunchers() {
         _addNoteLauncher = registerForActivityResult(
@@ -334,12 +331,20 @@ class NotesFragment :
             adapter.notifyDataSetChanged()
         NotesViewModel.Signal.NoteChanged ->
             invalidateNoteDecorations()
+        NotesViewModel.Signal.ContentCouldExpand ->
+            startSmoothScrollToBegin()
     }
 
     private fun invalidateNoteDecorations() {
         view?.handler?.postDelayed({
             binding.noteRecycler.invalidateItemDecorations()
         }, INVALIDATION_DELAY_MILLIS)
+    }
+
+    private fun startSmoothScrollToBegin() {
+        view?.handler?.postDelayed({
+            binding.noteRecycler.startLinearSmoothScrollToPosition(0)
+        }, SCROLL_DELAY_MILLIS)
     }
 
     private fun ConfirmationDialogFragment.setDeletingListener() {

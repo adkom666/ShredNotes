@@ -31,6 +31,7 @@ import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
 import com.adkom666.shrednotes.util.ScrollToNewItem
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.setOnSafeClickListener
+import com.adkom666.shrednotes.util.startLinearSmoothScrollToPosition
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
@@ -121,7 +122,7 @@ class ExercisesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
-        _scroller = ScrollToNewItem(binding.exercisesRecycler)
+        _scroller = ScrollToNewItem(binding.exercisesRecycler, SCROLL_DELAY_MILLIS)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -151,11 +152,7 @@ class ExercisesFragment :
         return true
     }
 
-    override fun scrollToBegin() {
-        view?.handler?.postDelayed({
-            binding.exercisesRecycler.scrollToPosition(0)
-        }, SCROLL_DELAY_MILLIS)
-    }
+    override fun scrollToBegin() = startSmoothScrollToBegin()
 
     private fun acquireActivityLaunchers() {
         _addExerciseLauncher = registerForActivityResult(
@@ -300,6 +297,14 @@ class ExercisesFragment :
     private fun process(signal: ExercisesViewModel.Signal) = when (signal) {
         ExercisesViewModel.Signal.SelectionChanged ->
             adapter.notifyDataSetChanged()
+        ExercisesViewModel.Signal.ContentCouldExpand ->
+            startSmoothScrollToBegin()
+    }
+
+    private fun startSmoothScrollToBegin() {
+        view?.handler?.postDelayed({
+            binding.exercisesRecycler.startLinearSmoothScrollToPosition(0)
+        }, SCROLL_DELAY_MILLIS)
     }
 
     private fun ConfirmationDialogFragment.setDeletingListener() {

@@ -21,6 +21,7 @@ import com.adkom666.shrednotes.data.pref.NoteToolPreferences
 import com.adkom666.shrednotes.data.repository.NoteRepository
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
+import com.adkom666.shrednotes.util.notContainsIgnoreCase
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.putNullableDays
 import com.adkom666.shrednotes.util.putNullableInt
@@ -186,6 +187,11 @@ class NotesViewModel @Inject constructor(
          * Indicates that at least one note has been changed.
          */
         object NoteChanged : Signal()
+
+        /**
+         * Indicates that count of visible notes could be increase.
+         */
+        object ContentCouldExpand : Signal()
     }
 
     /**
@@ -461,6 +467,7 @@ class NotesViewModel @Inject constructor(
             )
             _manageableSelection.reset(noteCount)
             noteSource?.invalidate()
+            noteSource?.invalidate()
             setState(State.Working)
         }
     }
@@ -490,11 +497,24 @@ class NotesViewModel @Inject constructor(
     private fun process(signal: NoteToolPreferences.Signal) = when (signal) {
         NoteToolPreferences.Signal.NoteSearchActivenessChanged ->
             Unit
-        NoteToolPreferences.Signal.NoteExerciseSubnameChanged ->
-            resetNotes()
-        NoteToolPreferences.Signal.NoteFilterEnablementChanged -> {
-            resetNotes()
-            give(Signal.FilterEnablingChanged)
+        is NoteToolPreferences.Signal.NoteExerciseSubnameChanged ->
+            processNoteExerciseSubnameChanged(signal.oldSubname, signal.newSubname)
+        is NoteToolPreferences.Signal.NoteFilterEnablementChanged ->
+            processNoteFilterEnablementChanged(signal.isEnabled)
+    }
+
+    private fun processNoteExerciseSubnameChanged(oldSubname: String?, newSubname: String?) {
+        resetNotes()
+        if (newSubname notContainsIgnoreCase oldSubname) {
+            give(Signal.ContentCouldExpand)
+        }
+    }
+
+    private fun processNoteFilterEnablementChanged(isFilterEnabled: Boolean) {
+        resetNotes()
+        give(Signal.FilterEnablingChanged)
+        if (!isFilterEnabled) {
+            give(Signal.ContentCouldExpand)
         }
     }
 
@@ -590,7 +610,7 @@ class NotesViewModel @Inject constructor(
 
         override suspend fun load(
             params: LoadParams<Int>
-        ): LoadResult<Int, Note> = withContext(Dispatchers.IO) {
+            ): LoadResult<Int, Note> = withContext(Dispatchers.IO) {
             val key = params.key ?: 0
             val (noteList, startPosition) = if (params.loadSize != PAGE_SIZE) {
                 // Load initial
