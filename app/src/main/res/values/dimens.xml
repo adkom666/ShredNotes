@@ -20,6 +20,7 @@
     <dimen name="fab_elevation">6dp</dimen>
     <dimen name="child_fab_elevation">4dp</dimen>
 
+    <dimen name="button_horizontal_margin">@dimen/padding_s</dimen>
     <dimen name="card_vertical_margin">@dimen/padding_m</dimen>
     <dimen name="spinner_corner_radius">4dp</dimen>
     <dimen name="coin_size">156dp</dimen>
