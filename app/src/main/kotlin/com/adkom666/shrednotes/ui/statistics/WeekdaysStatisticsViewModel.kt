@@ -222,7 +222,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
      * Call this method to handle the OK button click.
      */
     fun onOkButtonClick() {
-        Timber.d("On OK button click")
+        Timber.d("On 'OK' button click")
         setState(State.Finishing)
     }
 
