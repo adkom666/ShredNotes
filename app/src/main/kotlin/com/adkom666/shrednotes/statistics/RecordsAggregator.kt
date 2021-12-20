@@ -12,8 +12,8 @@ import timber.log.Timber
 class RecordsAggregator(
     private val noteRepository: NoteRepository
 ) {
-    private var topNotesCache: MutableMap<DateRange, TopNotes> = mutableMapOf()
-    private var topExerciseNamesCache: MutableMap<DateRange, TopExerciseNames> = mutableMapOf()
+    private var topNotesCache: MutableMap<RecordsId, TopNotes> = mutableMapOf()
+    private var topExerciseNamesCache: MutableMap<RecordsId, TopExerciseNames> = mutableMapOf()
 
     /**
      * Aggregate BPM records.
@@ -25,9 +25,10 @@ class RecordsAggregator(
     suspend fun aggregateBpmRecords(dateRange: DateRange, limit: Int): BpmRecords {
         Timber.d("aggregateBpmRecords: dateRange=$dateRange, limit=$limit")
 
-        val topNotes = topNotesCache[dateRange]
+        val recordsId = RecordsId(dateRange, limit)
+        val topNotes = topNotesCache[recordsId]
             ?: noteRepository.listTopBpmSuspending(limit, dateRange)
-                .also { topNotesCache[dateRange] = it }
+                .also { topNotesCache[recordsId] = it }
 
         return BpmRecords(topNotes = topNotes)
     }
@@ -42,10 +43,11 @@ class RecordsAggregator(
     suspend fun aggregateNoteCountRecords(dateRange: DateRange, limit: Int): NoteCountRecords {
         Timber.d("aggregateNoteCountRecords: dateRange=$dateRange, limit=$limit")
 
-        val topExerciseNames = topExerciseNamesCache[dateRange]
+        val recordsId = RecordsId(dateRange, limit)
+        val topExerciseNames = topExerciseNamesCache[recordsId]
             ?: noteRepository.listTopPopularExercisesSuspending(limit, dateRange)
                 .map { NoteCountRecords.Record(it.exerciseName, it.noteCount) }
-                .also { topExerciseNamesCache[dateRange] = it }
+                .also { topExerciseNamesCache[recordsId] = it }
 
         return NoteCountRecords(topExerciseNames = topExerciseNames)
     }
@@ -58,4 +60,6 @@ class RecordsAggregator(
         topNotesCache.clear()
         topExerciseNamesCache.clear()
     }
+
+    private data class RecordsId(val dateRange: DateRange, val limit: Int)
 }
