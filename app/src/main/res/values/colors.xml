@@ -8,8 +8,8 @@
     <color name="yellow">#FFB300</color>
     <color name="white">#FAFAFA</color>
     <color name="whitish">#CDCDCD</color>
-    <color name="grey">#5B6163</color>
     <color name="grey_light">#788082</color>
+    <color name="grey">#5B6163</color>
     <color name="grey_darkish">#5A595B</color>
     <color name="grey_dark">#3F4547</color>
     <color name="grey_darkest">#2E3436</color>
