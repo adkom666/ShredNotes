@@ -247,7 +247,7 @@ class TrackingActivity : AppCompatActivity() {
     private fun setExerciseList(exercises: List<Exercise?>) {
         binding.exerciseSpinner.adapter = ExerciseSpinnerAdapter(exercises)
         val position = exercises.indexOf(model.exercise)
-        if (position >= 0 && position < exercises.size) {
+        if (0 <= position && position < exercises.size) {
             binding.exerciseSpinner.setSelection(position)
         }
     }
