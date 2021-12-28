@@ -2,6 +2,8 @@ package com.adkom666.shrednotes.ui.statistics
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.databinding.ItemNoteBinding
@@ -10,12 +12,24 @@ import java.util.Locale
 
 /**
  * Adapter for interacting with the note list.
- *
- * @property notes notes to show.
  */
-class NoteAdapter(
-    private val notes: List<Note>
-) : RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
+class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(
+    DIFF_UTIL_CALLBACK
+) {
+
+    private companion object {
+
+        private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Note>() {
+
+            override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 
     private val dateFormat: DateFormat = DateFormat.getDateTimeInstance(
         DateFormat.SHORT,
@@ -31,12 +45,10 @@ class NoteAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position != RecyclerView.NO_POSITION) {
-            holder.bind(notes[position])
+            getItem(position)?.let { note ->
+                holder.bind(note)
+            }
         }
-    }
-
-    override fun getItemCount(): Int {
-        return notes.size
     }
 
     /**

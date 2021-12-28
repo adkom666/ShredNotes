@@ -33,6 +33,7 @@
     <string name="button_title_disable">Disable</string>
     <string name="button_title_clear_all">Clear All</string>
     <string name="button_title_refresh">Refresh</string>
+    <string name="button_title_more">More</string>
 
     <string name="title_date_range">Date range:</string>
     <string name="title_bpm_range">BPM range:</string>

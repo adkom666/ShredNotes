@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.databinding.ActivityRecordsBinding
@@ -69,8 +70,18 @@ class RecordsActivity : AppCompatActivity() {
     private val model: RecordsViewModel
         get() = requireNotNull(_model)
 
+    private val recordAdapter: RecordAdapter
+        get() = requireNotNull(_recordAdapter)
+
+    private val adapter: ListAdapter<*, *>
+        get() = when (val currentRecordAdapter = recordAdapter) {
+            is RecordAdapter.TopExerciseAdapter -> currentRecordAdapter.value
+            is RecordAdapter.TopNoteAdapter -> currentRecordAdapter.value
+        }
+
     private var _binding: ActivityRecordsBinding? = null
     private var _model: RecordsViewModel? = null
+    private var _recordAdapter: RecordAdapter? = null
 
     private val dateRangeFormat: DateRangeFormat = DateRangeFormat()
 
@@ -81,7 +92,15 @@ class RecordsActivity : AppCompatActivity() {
         setContentView(binding.root)
         _model = viewModel(viewModelFactory)
 
+        val targetParameter =
+            intent?.extras?.getSerializable(EXTRA_TARGET_PARAMETER)
+                    as RecordsTargetParameter
+        Timber.d("Target parameter is $targetParameter")
+
+        _recordAdapter = createRecordAdapter(targetParameter)
+
         adjustRecordsRecycler()
+        prepareButtonMore()
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
@@ -89,15 +108,22 @@ class RecordsActivity : AppCompatActivity() {
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
-            val targetParameter =
-                intent?.extras?.getSerializable(EXTRA_TARGET_PARAMETER)
-                        as RecordsTargetParameter
-            Timber.d("Target parameter is $targetParameter")
             model.prepare(targetParameter)
+            lifecycleScope.launchWhenCreated {
+                model.launch()
+            }
+        } else {
+            model.proceed()
         }
-        lifecycleScope.launchWhenCreated {
-            model.start()
-        }
+    }
+
+    private fun createRecordAdapter(
+        targetParameter: RecordsTargetParameter
+    ): RecordAdapter = when (targetParameter) {
+        RecordsTargetParameter.BPM ->
+            RecordAdapter.TopNoteAdapter(NoteAdapter())
+        RecordsTargetParameter.NOTE_COUNT ->
+            RecordAdapter.TopExerciseAdapter(ExerciseInfoAdapter())
     }
 
     private fun adjustRecordsRecycler() {
@@ -107,6 +133,11 @@ class RecordsActivity : AppCompatActivity() {
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         val decoration = FirstItemDecoration(marginTop.toInt())
         binding.recordsRecycler.addItemDecoration(decoration)
+        binding.recordsRecycler.adapter = adapter
+    }
+
+    private fun prepareButtonMore() {
+        binding.moreButton.isVisible = model.areMoreRecordsPresent
     }
 
     private fun setupButtonListeners() {
@@ -126,6 +157,12 @@ class RecordsActivity : AppCompatActivity() {
         binding.okButton.setOnClickListener {
             Timber.d("Click: OK")
             model.onOkButtonClick()
+        }
+        binding.moreButton.setOnSafeClickListener {
+            Timber.d("Click: More")
+            lifecycleScope.launchWhenCreated {
+                model.onMoreButtonClick()
+            }
         }
     }
 
@@ -177,6 +214,8 @@ class RecordsActivity : AppCompatActivity() {
                 setSubtitle(signal.value)
             is RecordsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
+            is RecordsViewModel.Signal.HasMoreRecords ->
+                setButtonMoreVisibility(signal.value)
             is RecordsViewModel.Signal.ActualRecords ->
                 setRecords(signal)
         }
@@ -191,23 +230,34 @@ class RecordsActivity : AppCompatActivity() {
         binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
     }
 
+    private fun setButtonMoreVisibility(isVisible: Boolean) {
+        binding.moreButton.isVisible = isVisible
+    }
+
     private fun setRecords(records: RecordsViewModel.Signal.ActualRecords) {
-        val adapter = when (records) {
+        val areRecordsPresent = when (records) {
             is RecordsViewModel.Signal.ActualRecords.Bpm ->
-                records.value.topNotes.let {
-                    if (it.isNotEmpty()) NoteAdapter(it) else null
+                records.value.topNotes.let { topNotes ->
+                    if (topNotes.isNotEmpty()) {
+                        (adapter as NoteAdapter).submitList(topNotes)
+                        true
+                    } else {
+                        false
+                    }
                 }
             is RecordsViewModel.Signal.ActualRecords.NoteCount ->
                 records.value.topExerciseNames.map {
                     "${it.exerciseName} (${it.noteCount})"
-                }.let {
-                    if (it.isNotEmpty()) ExerciseInfoAdapter(it) else null
+                }.let { topExerciseNames ->
+                    if (topExerciseNames.isNotEmpty()) {
+                        (adapter as ExerciseInfoAdapter).submitList(topExerciseNames)
+                        true
+                    } else {
+                        false
+                    }
                 }
         }
-        adapter?.let {
-            setRecordsVisible(true)
-            binding.recordsRecycler.adapter = it
-        } ?: setRecordsVisible(false)
+        setRecordsVisible(areRecordsPresent)
     }
 
     private fun setRecordsVisible(isVisible: Boolean) {
@@ -230,19 +280,47 @@ class RecordsActivity : AppCompatActivity() {
             when (state) {
                 RecordsViewModel.State.Waiting ->
                     setWaiting()
-                RecordsViewModel.State.Working ->
-                    setWorking()
+                is RecordsViewModel.State.Working ->
+                    setWorking(state.isUiLocked)
                 RecordsViewModel.State.Finishing ->
                     finish()
             }
         }
 
         private fun setWaiting() = setProgressActive(true)
-        private fun setWorking() = setProgressActive(false)
+
+        private fun setWorking(isUiLocked: Boolean) {
+            setProgressActive(false)
+            val isUiUnlocked = isUiLocked.not()
+            binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.okButton.isEnabled = isUiUnlocked
+            binding.moreButton.isEnabled = isUiUnlocked
+        }
 
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.recordsScroll.isVisible = isActive.not()
         }
     }
+}
+
+/**
+ * Wrapped adapter for interacting with the records.
+ */
+private sealed class RecordAdapter {
+
+    /**
+     * [NoteAdapter] wrapper.
+     *
+     * @property value wrapped [NoteAdapter] instance.
+     */
+    data class TopNoteAdapter(val value: NoteAdapter) : RecordAdapter()
+
+    /**
+     * [ExerciseInfoAdapter] wrapper.
+     *
+     * @property value wrapped [ExerciseInfoAdapter] instance.
+     */
+    data class TopExerciseAdapter(val value: ExerciseInfoAdapter) : RecordAdapter()
 }

@@ -114,49 +114,6 @@ private const val SELECT_COUNT_OTHER_BY_EXERCISE_IDS =
             "FROM $TABLE_NOTES_WITH_EXISTENT_EXERCISES " +
             "WHERE $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID NOT IN (:exerciseIds)"
 
-private const val SELECT_FIRST_NOTE_TIMESTAMP =
-    "SELECT MIN($TABLE_NOTES_FIELD_TIMESTAMP) " +
-            "FROM $TABLE_NOTES"
-
-private const val NOTES_WITH_EXERCISES_FIELDS =
-    "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
-            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
-            "$TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP " +
-            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP, " +
-            "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_NAME " +
-            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME, " +
-            "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
-            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
-
-private const val SELECT_ALL_RAW_UNORDERED = "SELECT * FROM $TABLE_NOTES"
-
-private const val SELECT_ALL_UNORDERED =
-    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
-            "FROM $TABLE_NOTES_WITH_EXERCISES"
-
-private const val SELECT_BY_TIMESTAMP_RANGE_UNORDERED =
-    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
-            "FROM $TABLE_NOTES_WITH_EXERCISES " +
-            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
-
-private const val SELECT_BY_EXERCISE_ID_UNORDERED =
-    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
-            "FROM $TABLE_NOTES_WITH_EXERCISES " +
-            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
-
-private const val SELECT_BY_TIMESTAMP_RANGE_AND_EXERCISE_ID_UNORDERED =
-    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
-            "FROM $TABLE_NOTES_WITH_EXERCISES " +
-            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
-            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
-
-private const val ORDER_TOP_BPM_NOTES_WITH_EXERCISES =
-    "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM DESC, " +
-            "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
-            "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC"
-
-private const val TOP_PORTION = "LIMIT :size"
-
 private const val MAX_BPM_PER_EXERCISE_ID =
     "$TABLE_NOTES_FIELD_EXERCISE_ID, " +
             "IFNULL(MAX($TABLE_NOTES_FIELD_BPM), 0) " +
@@ -219,6 +176,82 @@ private const val JOIN_TOP_BPM_NOTES_TO_EXERCISES =
             "ON $TABLE_NOTES.$TABLE_NOTES_FIELD_EXERCISE_ID = " +
             "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID"
 
+private const val SELECT_COUNT_TOP_BPM =
+    "SELECT COUNT(*) " +
+            "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS) $TABLE_NOTES " +
+            JOIN_TOP_BPM_NOTES_TO_EXERCISES
+
+private const val SELECT_COUNT_TOP_BPM_BY_TIMESTAMP_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS_BY_TIMESTAMP_RANGE) $TABLE_NOTES " +
+            "$JOIN_TOP_BPM_NOTES_TO_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
+
+private const val GROUP_TOP_POPULAR_EXERCISES =
+    "GROUP BY $TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_ID"
+
+private const val SELECT_TOP_POPULAR_EXERCISES_RAW =
+    "SELECT * " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            GROUP_TOP_POPULAR_EXERCISES
+
+private const val SELECT_TOP_POPULAR_EXERCISES_BY_TIMESTAMP_RANGE_RAW =
+    "SELECT * " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            GROUP_TOP_POPULAR_EXERCISES
+
+private const val SELECT_COUNT_TOP_POPULAR_EXERCISES =
+    "SELECT COUNT(*) " +
+            "FROM ($SELECT_TOP_POPULAR_EXERCISES_RAW)"
+
+private const val SELECT_COUNT_TOP_POPULAR_EXERCISES_BY_TIMESTAMP_RANGE =
+    "SELECT COUNT(*) " +
+            "FROM ($SELECT_TOP_POPULAR_EXERCISES_BY_TIMESTAMP_RANGE_RAW)"
+
+private const val SELECT_FIRST_NOTE_TIMESTAMP =
+    "SELECT MIN($TABLE_NOTES_FIELD_TIMESTAMP) " +
+            "FROM $TABLE_NOTES"
+
+private const val NOTES_WITH_EXERCISES_FIELDS =
+    "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
+            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
+            "$TABLE_NOTES.$TABLE_NOTES_FIELD_TIMESTAMP " +
+            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP, " +
+            "$TABLE_EXERCISES.$TABLE_EXERCISES_FIELD_NAME " +
+            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME, " +
+            "$TABLE_NOTES.$TABLE_NOTES_FIELD_BPM " +
+            "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM"
+
+private const val SELECT_ALL_RAW_UNORDERED = "SELECT * FROM $TABLE_NOTES"
+
+private const val SELECT_ALL_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES"
+
+private const val SELECT_BY_TIMESTAMP_RANGE_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE"
+
+private const val SELECT_BY_EXERCISE_ID_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
+
+private const val SELECT_BY_TIMESTAMP_RANGE_AND_EXERCISE_ID_UNORDERED =
+    "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
+            "FROM $TABLE_NOTES_WITH_EXERCISES " +
+            "WHERE $CONDITION_NOTES_WITH_EXERCISES_BY_TIMESTAMP_RANGE " +
+            "AND $CONDITION_NOTES_WITH_EXERCISES_BY_EXERCISE_ID"
+
+private const val ORDER_TOP_BPM_NOTES_WITH_EXERCISES =
+    "ORDER BY $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_BPM DESC, " +
+            "$TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_TIMESTAMP DESC, " +
+            "$TABLE_NOTES_WITH_EXERCISES_FIELD_EXERCISE_NAME ASC"
+
+private const val TOP_PORTION = "LIMIT :size OFFSET :offset"
+
 private const val SELECT_TOP_BPM =
     "SELECT $NOTES_WITH_EXERCISES_FIELDS " +
             "FROM ($SELECT_TOP_BPM_WITH_EXERCISE_IDS) $TABLE_NOTES " +
@@ -245,9 +278,6 @@ private const val TOP_POPULAR_EXERCISES =
 private const val ORDER_TOP_POPULAR_EXERCISES =
     "ORDER BY $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_NOTE_COUNT DESC, " +
             "$TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_NAME ASC"
-
-private const val GROUP_TOP_POPULAR_EXERCISES =
-    "GROUP BY $TABLE_NOTE_COUNT_PER_EXERCISE_FIELD_EXERCISE_ID"
 
 private const val SELECT_TOP_POPULAR_EXERCISES =
     "SELECT $TOP_POPULAR_EXERCISES " +
@@ -654,6 +684,58 @@ interface NoteDao : BaseDao<NoteEntity> {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
+     * Getting the count of notes, grouped by exercise name, so that each group consists of one note
+     * with maximum BPM and maximum timestamp.
+     *
+     * @return count of notes, grouped by exercise name, so that each group consists of one note
+     * with maximum BPM and maximum timestamp.
+     */
+    @Query(SELECT_COUNT_TOP_BPM)
+    suspend fun countTopBpmSuspending(): Int
+
+    /**
+     * Getting the count of groups of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive]. Notes are grouped by exercise
+     * name, and each group consists of one note with maximum BPM and maximum timestamp.
+     *
+     * @param timestampFromInclusive minimum timestamp value of the target notes.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the target
+     * notes.
+     * @return count of groups of notes whose timestamp is greater than or equal to
+     * [timestampFromInclusive] and less than [timestampToExclusive]. Notes are grouped by exercise
+     * name, and each group consists of one note with maximum BPM and maximum timestamp.
+     */
+    @Query(SELECT_COUNT_TOP_BPM_BY_TIMESTAMP_RANGE)
+    suspend fun countTopBpmByTimestampRangeSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
+     * Getting the count of [NoteCountPerExerciseInfo] objects.
+     *
+     * @return count of [NoteCountPerExerciseInfo] objects.
+     */
+    @Query(SELECT_COUNT_TOP_POPULAR_EXERCISES)
+    suspend fun countTopPopularExercisesSuspending(): Int
+
+    /**
+     * Getting the count of [NoteCountPerExerciseInfo] objects whose related notes' timestamp is
+     * greater than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     *
+     * @param timestampFromInclusive minimum timestamp value of the related notes.
+     * @param timestampToExclusive value that should not be reached by the timestamp of the related
+     * notes.
+     * @return count of [NoteCountPerExerciseInfo] objects whose related notes' timestamp is greater
+     * than or equal to [timestampFromInclusive] and less than [timestampToExclusive].
+     */
+    @Query(SELECT_COUNT_TOP_POPULAR_EXERCISES_BY_TIMESTAMP_RANGE)
+    suspend fun countTopPopularExercisesByTimestampRangeSuspending(
+        timestampFromInclusive: Long,
+        timestampToExclusive: Long
+    ): Int
+
+    /**
      * Getting the timestamp of the first note or null if it does not exist.
      *
      * @return timestamp of the first note or null if it does not exist.
@@ -729,11 +811,16 @@ interface NoteDao : BaseDao<NoteEntity> {
      * by exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      *
      * @param size limit the count of notes.
+     * @param offset position of the first [NoteCountPerExerciseInfo] object in the list of target
+     * [NoteCountPerExerciseInfo] objects.
      * @return [List] of the [size] or fewer notes with their exercises' info. Notes are grouped by
      * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
      */
     @Query(SELECT_TOP_BPM)
-    suspend fun listTopBpmSuspending(size: Int): List<NoteWithExerciseInfo>
+    suspend fun listTopBpmSuspending(
+        size: Int,
+        offset: Int
+    ): List<NoteWithExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer notes with their exercises' info whose timestamp is
@@ -742,6 +829,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * maximum timestamp.
      *
      * @param size limit the count of notes.
+     * @param offset position of the first [NoteCountPerExerciseInfo] object in the list of target
+     * [NoteCountPerExerciseInfo] objects.
      * @param timestampFromInclusive minimum timestamp value of the target notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the target
      * notes.
@@ -753,6 +842,7 @@ interface NoteDao : BaseDao<NoteEntity> {
     @Query(SELECT_TOP_BPM_BY_TIMESTAMP_RANGE)
     suspend fun listTopBpmByTimestampRangeSuspending(
         size: Int,
+        offset: Int,
         timestampFromInclusive: Long,
         timestampToExclusive: Long
     ): List<NoteWithExerciseInfo>
@@ -762,11 +852,16 @@ interface NoteDao : BaseDao<NoteEntity> {
      * in descending order by note count and then ascending by exercise name.
      *
      * @param size limit the count of [NoteCountPerExerciseInfo] objects.
+     * @param offset position of the first [NoteCountPerExerciseInfo] object in the list of target
+     * [NoteCountPerExerciseInfo] objects.
      * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects. They are sorted in
      * descending order by note count and then ascending by exercise name.
      */
     @Query(SELECT_TOP_POPULAR_EXERCISES)
-    suspend fun listTopPopularExercisesSuspending(size: Int): List<NoteCountPerExerciseInfo>
+    suspend fun listTopPopularExercisesSuspending(
+        size: Int,
+        offset: Int
+    ): List<NoteCountPerExerciseInfo>
 
     /**
      * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related
@@ -775,6 +870,8 @@ interface NoteDao : BaseDao<NoteEntity> {
      * by exercise name.
      *
      * @param size limit the count of [NoteCountPerExerciseInfo] objects.
+     * @param offset position of the first [NoteCountPerExerciseInfo] object in the list of target
+     * [NoteCountPerExerciseInfo] objects.
      * @param timestampFromInclusive minimum timestamp value of the related notes.
      * @param timestampToExclusive value that should not be reached by the timestamp of the related
      * notes.
@@ -786,6 +883,7 @@ interface NoteDao : BaseDao<NoteEntity> {
     @Query(SELECT_TOP_POPULAR_EXERCISES_BY_TIMESTAMP_RANGE)
     suspend fun listTopPopularExercisesByTimestampRangeSuspending(
         size: Int,
+        offset: Int,
         timestampFromInclusive: Long,
         timestampToExclusive: Long
     ): List<NoteCountPerExerciseInfo>

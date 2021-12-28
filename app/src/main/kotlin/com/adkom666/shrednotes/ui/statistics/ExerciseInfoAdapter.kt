@@ -2,17 +2,31 @@ package com.adkom666.shrednotes.ui.statistics
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.adkom666.shrednotes.databinding.ItemExerciseBinding
 
 /**
  * Adapter for interacting with the exercise information list.
- *
- * @property exerciseNames exercise name list to show.
  */
-class ExerciseInfoAdapter(
-    private val exerciseNames: List<String>
-) : RecyclerView.Adapter<ExerciseInfoAdapter.ViewHolder>() {
+class ExerciseInfoAdapter : ListAdapter<String, ExerciseInfoAdapter.ViewHolder>(
+    DIFF_UTIL_CALLBACK
+) {
+
+    private companion object {
+
+        private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<String>() {
+
+            override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
+                return oldItem.hashCode() == newItem.hashCode()
+            }
+
+            override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -22,12 +36,10 @@ class ExerciseInfoAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position != RecyclerView.NO_POSITION) {
-            holder.bind(exerciseNames[position])
+            getItem(position)?.let { exerciseName ->
+                holder.bind(exerciseName)
+            }
         }
-    }
-
-    override fun getItemCount(): Int {
-        return exerciseNames.size
     }
 
     /**

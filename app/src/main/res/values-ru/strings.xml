@@ -30,6 +30,7 @@
     <string name="button_title_disable">Выключить</string>
     <string name="button_title_clear_all">Очистить все</string>
     <string name="button_title_refresh">Обновить</string>
+    <string name="button_title_more">Еще</string>
 
     <string name="title_date_range">Диапазон дат:</string>
     <string name="title_bpm_range">Диапазон BPM:</string>

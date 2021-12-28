@@ -47,6 +47,27 @@ interface NoteRepository {
     suspend fun countOtherByExerciseIdsSuspending(exerciseIds: List<Id>): Int
 
     /**
+     * Getting the count notes' groups whose dates are in the [dateRange]. Notes are grouped by
+     * exercise name, and each group consists of one note with maximum BPM and maximum timestamp.
+     *
+     * @param dateRange range of dates of the target notes.
+     * @return count notes' groups whose dates are in the [dateRange]. Notes are grouped by exercise
+     * name, and each group consists of one note with maximum BPM and maximum timestamp.
+     */
+    suspend fun countTopBpmSuspending(dateRange: DateRange): Int
+
+    /**
+     * Getting the count of [NoteCountPerExerciseInfo] objects whose related notes' dates are in the
+     * [dateRange].
+     *
+     * @param dateRange range of dates of the target [NoteCountPerExerciseInfo] objects' related
+     * notes.
+     * @return count of [NoteCountPerExerciseInfo] objects whose related notes' dates are in the
+     * [dateRange].
+     */
+    suspend fun countTopPopularExercisesSuspending(dateRange: DateRange): Int
+
+    /**
      * Getting the date of the first note or null if it does not exist.
      *
      * @return date of the first note or null if it does not exist.
@@ -78,12 +99,17 @@ interface NoteRepository {
      * maximum BPM and maximum timestamp.
      *
      * @param size limit the count of notes.
+     * @param startPosition position of the first note in the list of target notes.
      * @param dateRange range of dates of the target notes.
      * @return [List] of the [size] or fewer notes with their exercises' info whose dates are in the
      * [dateRange]. Notes are grouped by exercise name, and each group consists of one note with
      * maximum BPM and maximum timestamp.
      */
-    suspend fun listTopBpmSuspending(size: Int, dateRange: DateRange): List<Note>
+    suspend fun listTopBpmSuspending(
+        size: Int,
+        startPosition: Int,
+        dateRange: DateRange
+    ): List<Note>
 
     /**
      * Getting a [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related
@@ -91,6 +117,8 @@ interface NoteRepository {
      * and then ascending by exercise name.
      *
      * @param size limit the count of [NoteCountPerExerciseInfo] objects.
+     * @param startPosition position of the first [NoteCountPerExerciseInfo] object in the list of
+     * target [NoteCountPerExerciseInfo] objects.
      * @param dateRange range of dates of the target [NoteCountPerExerciseInfo] objects' related
      * notes.
      * @return [List] of the [size] or fewer [NoteCountPerExerciseInfo] objects whose related notes'
@@ -99,6 +127,7 @@ interface NoteRepository {
      */
     suspend fun listTopPopularExercisesSuspending(
         size: Int,
+        startPosition: Int,
         dateRange: DateRange,
     ): List<NoteCountPerExerciseInfo>
 

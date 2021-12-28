@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.properties.Delegates.observable
 
 /**
  * Records screen model.
@@ -38,8 +39,7 @@ class RecordsViewModel @Inject constructor(
         private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
         private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
-        private const val BPM_RECORDS_LIMIT = 5
-        private const val NOTE_COUNT_RECORDS_LIMIT = 5
+        private const val RECORDS_PORTION = 3
 
         private const val KEY_DOES_BPM_DATE_RANGE_HAVE_DATE_FROM =
             "statistics.records.does_bpm_date_range_have_date_from"
@@ -78,8 +78,10 @@ class RecordsViewModel @Inject constructor(
 
         /**
          * Interacting with the user.
+         *
+         * @property isUiLocked true if the user interface should be locked.
          */
-        object Working : State()
+        data class Working(val isUiLocked: Boolean) : State()
 
         /**
          * Finishing work with the records.
@@ -140,6 +142,13 @@ class RecordsViewModel @Inject constructor(
         data class ActualDateRange(val value: DateRange) : Signal()
 
         /**
+         * Show if there are more records.
+         *
+         * @property value true if more records are present.
+         */
+        data class HasMoreRecords(val value: Boolean) : Signal()
+
+        /**
          * Show actual records.
          */
         sealed class ActualRecords : Signal() {
@@ -188,12 +197,33 @@ class RecordsViewModel @Inject constructor(
                 Timber.d("Change date range: old=$_dateRange, new=$value")
                 _dateRange = value
                 saveDateRange(value, targetParameter)
-                setState(State.Waiting)
+                setState(State.Working(isUiLocked = true))
                 give(Signal.ActualDateRange(value))
                 viewModelScope.launch {
-                    aggregateStatistics(value)
-                    setState(State.Working)
+                    accumulatedBpmRecords = BpmRecords(emptyList())
+                    accumulatedNoteCountRecords = NoteCountRecords(emptyList())
+                    readRecordCount(value)
+                    val isSuccess = accumulateRecords(
+                        dateRange = value,
+                        startPosition = 0,
+                        limit = recordPosition
+                    )
+                    if (isSuccess) {
+                        publishRecords()
+                    }
+                    setState(State.Working(isUiLocked = false))
                 }
+            }
+        }
+
+    /**
+     * True if not all records have been loaded.
+     */
+    var areMoreRecordsPresent: Boolean = false
+        private set(value) {
+            if (field != value) {
+                field = value
+                give(Signal.HasMoreRecords(value))
             }
         }
 
@@ -211,6 +241,23 @@ class RecordsViewModel @Inject constructor(
     private var _targetParameter: RecordsTargetParameter? = null
     private var _dateRange: DateRange? = null
 
+    private var recordPosition: Int by observable(0) { _, old, new ->
+        Timber.d("Change recordPosition: old=$old, new=$new")
+        if (new != old) {
+            invalidateMoreRecordsPresence()
+        }
+    }
+
+    private var recordCount: Int? by observable(null) { _, old, new ->
+        Timber.d("Change recordCount: old=$old, new=$new")
+        if (new != old) {
+            invalidateMoreRecordsPresence()
+        }
+    }
+
+    private var accumulatedBpmRecords: BpmRecords = BpmRecords(emptyList())
+    private var accumulatedNoteCountRecords: NoteCountRecords = NoteCountRecords(emptyList())
+
     /**
      * Prepare for working with the records.
      *
@@ -226,13 +273,37 @@ class RecordsViewModel @Inject constructor(
     }
 
     /**
-     * Start working.
+     * Launch records aggregating.
      */
-    suspend fun start() {
-        Timber.d("Start")
+    suspend fun launch() {
+        Timber.d("Launch")
         setState(State.Waiting)
-        aggregateStatistics(dateRange)
-        setState(State.Working)
+        recordPosition = 0
+        readRecordCount(dateRange)
+        val isSuccess = accumulateRecords(
+            dateRange = dateRange,
+            startPosition = recordPosition,
+            limit = RECORDS_PORTION
+        )
+        if (isSuccess) {
+            publishRecords()
+            recordPosition += RECORDS_PORTION
+        }
+        setState(State.Working(isUiLocked = false))
+    }
+
+    /**
+     * Proceed working.
+     */
+    fun proceed() {
+        Timber.d("Proceed")
+        val recordsSignal = when (targetParameter) {
+            RecordsTargetParameter.BPM ->
+                Signal.ActualRecords.Bpm(accumulatedBpmRecords)
+            RecordsTargetParameter.NOTE_COUNT ->
+                Signal.ActualRecords.NoteCount(accumulatedNoteCountRecords)
+        }
+        give(recordsSignal)
     }
 
     /**
@@ -241,6 +312,24 @@ class RecordsViewModel @Inject constructor(
     fun onOkButtonClick() {
         Timber.d("On 'OK' button click")
         setState(State.Finishing)
+    }
+
+    /**
+     * Call this method to handle the 'More' button click.
+     */
+    suspend fun onMoreButtonClick() {
+        Timber.d("On 'More' button click")
+        setState(State.Working(isUiLocked = true))
+        val isSuccess = accumulateRecords(
+            dateRange = dateRange,
+            startPosition = recordPosition,
+            limit = RECORDS_PORTION
+        )
+        if (isSuccess) {
+            publishRecords()
+            recordPosition += RECORDS_PORTION
+        }
+        setState(State.Working(isUiLocked = false))
     }
 
     private fun loadDateRange(
@@ -266,30 +355,73 @@ class RecordsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun aggregateStatistics(dateRange: DateRange) {
+    private suspend fun readRecordCount(dateRange: DateRange) {
         @Suppress("TooGenericExceptionCaught")
         try {
-            val recordsSignal = when (targetParameter) {
+            recordCount = when (targetParameter) {
                 RecordsTargetParameter.BPM ->
-                    Signal.ActualRecords.Bpm(
-                        recordsAggregator.aggregateBpmRecords(
-                            dateRange,
-                            BPM_RECORDS_LIMIT
-                        )
-                    )
+                    recordsAggregator.bpmRecordCount(dateRange)
                 RecordsTargetParameter.NOTE_COUNT ->
-                    Signal.ActualRecords.NoteCount(
-                        recordsAggregator.aggregateNoteCountRecords(
-                            dateRange,
-                            NOTE_COUNT_RECORDS_LIMIT
-                        )
-                    )
+                    recordsAggregator.noteCountRecordCount(dateRange)
             }
-            give(recordsSignal)
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+    private suspend fun accumulateRecords(
+        dateRange: DateRange,
+        startPosition: Int,
+        limit: Int
+    ): Boolean {
+        @Suppress("TooGenericExceptionCaught")
+        return try {
+            accumulateRecordsUnsafe(
+                dateRange = dateRange,
+                startPosition = startPosition,
+                limit = limit
+            )
+            true
         } catch (e: Exception) {
             Timber.e(e)
             reportAbout(e)
+            false
         }
+    }
+
+    private suspend fun accumulateRecordsUnsafe(
+        dateRange: DateRange,
+        startPosition: Int,
+        limit: Int
+    ) {
+        when (targetParameter) {
+            RecordsTargetParameter.BPM ->
+                accumulatedBpmRecords += recordsAggregator.aggregateBpmRecords(
+                    dateRange = dateRange,
+                    startPosition = startPosition,
+                    limit = limit
+                )
+            RecordsTargetParameter.NOTE_COUNT ->
+                accumulatedNoteCountRecords += recordsAggregator.aggregateNoteCountRecords(
+                    dateRange = dateRange,
+                    startPosition = startPosition,
+                    limit = limit
+                )
+        }
+    }
+
+    private fun publishRecords() {
+        val recordsSignal = when (targetParameter) {
+            RecordsTargetParameter.BPM ->
+                Signal.ActualRecords.Bpm(accumulatedBpmRecords)
+            RecordsTargetParameter.NOTE_COUNT ->
+                Signal.ActualRecords.NoteCount(accumulatedNoteCountRecords)
+        }
+        give(recordsSignal)
+    }
+
+    private fun invalidateMoreRecordsPresence() {
+        areMoreRecordsPresent = recordCount?.let { recordPosition < it } ?: false
     }
 
     private fun reportAbout(e: Exception) {
@@ -318,6 +450,14 @@ class RecordsViewModel @Inject constructor(
             Signal.Subtitle.Value.BPM
         RecordsTargetParameter.NOTE_COUNT ->
             Signal.Subtitle.Value.NOTE_COUNT
+    }
+
+    private operator fun BpmRecords.plus(other: BpmRecords): BpmRecords {
+        return BpmRecords(topNotes = this.topNotes + other.topNotes)
+    }
+
+    private operator fun NoteCountRecords.plus(other: NoteCountRecords): NoteCountRecords {
+        return NoteCountRecords(topExerciseNames = this.topExerciseNames + other.topExerciseNames)
     }
 
     private fun SharedPreferences.getBpmDateRange(): DateRange {

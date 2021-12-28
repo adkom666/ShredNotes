@@ -53,6 +53,7 @@ class RecordsAggregatorTest : TestCase() {
     fun testAggregateBpmRecordsForInfiniteDateRange() = runBlocking {
         val records = recordsAggregator.aggregateBpmRecords(
             dateRange = INFINITE_DATE_RANGE,
+            startPosition = 0,
             limit = RECORDS_LIMIT
         )
         assertEquals(2, records.topNotes.size)
@@ -64,15 +65,28 @@ class RecordsAggregatorTest : TestCase() {
         val dateRange = DateRange(Days().yesterday, Days().tomorrow)
         val records = recordsAggregator.aggregateBpmRecords(
             dateRange = dateRange,
+            startPosition = 0,
             limit = RECORDS_LIMIT
         )
         assertEquals(1, records.topNotes.size)
         assertEquals(BPM[2], records.topNotes[0].bpm)
     }
 
+    fun testBpmRecordCountForInfiniteDateRange() = runBlocking {
+        val count = recordsAggregator.bpmRecordCount(INFINITE_DATE_RANGE)
+        assertEquals(2, count)
+    }
+
+    fun testBpmRecordCountForCustomDateRange() = runBlocking {
+        val dateRange = DateRange(Days().yesterday, Days().tomorrow)
+        val count = recordsAggregator.bpmRecordCount(dateRange)
+        assertEquals(1, count)
+    }
+
     fun testAggregateNoteCountRecordsForInfiniteDateRange() = runBlocking {
         val records = recordsAggregator.aggregateNoteCountRecords(
             dateRange = INFINITE_DATE_RANGE,
+            startPosition = 0,
             limit = RECORDS_LIMIT
         )
         assertEquals(2, records.topExerciseNames.size)
@@ -96,6 +110,7 @@ class RecordsAggregatorTest : TestCase() {
         val dateRange = DateRange(Days().yesterday, Days().tomorrow)
         val records = recordsAggregator.aggregateNoteCountRecords(
             dateRange = dateRange,
+            startPosition = 0,
             limit = RECORDS_LIMIT
         )
         assertEquals(1, records.topExerciseNames.size)
@@ -106,6 +121,17 @@ class RecordsAggregatorTest : TestCase() {
             ),
             records.topExerciseNames[0]
         )
+    }
+
+    fun testNoteCountRecordCountForInfiniteDateRange() = runBlocking {
+        val count = recordsAggregator.noteCountRecordCount(INFINITE_DATE_RANGE)
+        assertEquals(2, count)
+    }
+
+    fun testNoteCountRecordCountForCustomDateRange() = runBlocking {
+        val dateRange = DateRange(Days().yesterday, Days().tomorrow)
+        val count = recordsAggregator.noteCountRecordCount(dateRange)
+        assertEquals(1, count)
     }
 
     private fun fillDatabase() {
