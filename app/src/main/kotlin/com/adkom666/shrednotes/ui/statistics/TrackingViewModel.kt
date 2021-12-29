@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.data.model.Exercise
@@ -172,7 +172,7 @@ class TrackingViewModel @Inject constructor(
      * Subscribe to the current state in the UI thread.
      */
     val stateAsLiveData: LiveData<State>
-        get() = Transformations.distinctUntilChanged(_stateAsLiveData)
+        get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
      * Consume information messages from this channel in the UI thread.
