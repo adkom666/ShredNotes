@@ -467,7 +467,6 @@ class NotesViewModel @Inject constructor(
             )
             _manageableSelection.reset(noteCount)
             noteSource?.invalidate()
-            noteSource?.invalidate()
             setState(State.Working)
         }
     }
