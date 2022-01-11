@@ -4,6 +4,8 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.statistics.util.endDateInclusive
+import com.adkom666.shrednotes.statistics.util.startDateInclusive
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.timestampOrMax
@@ -28,6 +30,7 @@ class CommonStatisticsAggregator(
     private val relatedExerciseCountCache: MutableMap<DateRange, Int?> = mutableMapOf()
     private var allNotesCache: List<Note>? = null
     private var firstNoteDateCache: Array<Days?>? = null
+    private var lastNoteDateCache: Array<Days?>? = null
     private var allNoteCountCache: Int? = null
     private var allExerciseCountCache: Int? = null
 
@@ -62,6 +65,10 @@ class CommonStatisticsAggregator(
             ?: noteRepository.firstNoteDateSuspending()
                 .also { firstNoteDateCache = arrayOf(it) }
 
+        val lastNoteDate = lastNoteDateCache?.first()
+            ?: noteRepository.lastNoteDateSuspending()
+                .also { lastNoteDateCache = arrayOf(it) }
+
         val allNoteCount = allNoteCountCache
             ?: noteRepository.countSuspending()
                 .also { allNoteCountCache = it }
@@ -70,9 +77,11 @@ class CommonStatisticsAggregator(
             ?: exerciseRepository.countSuspending()
                 .also { allExerciseCountCache = it }
 
-        val dayCount = firstNoteDate?.let {
-            daysInRange(dateRange, it)
-        } ?: 0
+        val dayCount = if (firstNoteDate != null && lastNoteDate != null) {
+            daysInRange(dateRange, firstNoteDate, lastNoteDate)
+        } else {
+            0
+        }
 
         val fromEpochMillisInclusive = dateRange.fromInclusive.timestampOrMin()
         val toEpochMillisExclusive = dateRange.toExclusive.timestampOrMax()
@@ -112,32 +121,21 @@ class CommonStatisticsAggregator(
         relatedExerciseCountCache.clear()
         allNotesCache = null
         firstNoteDateCache = null
+        lastNoteDateCache = null
         allNoteCountCache = null
         allExerciseCountCache = null
     }
 
-    private fun daysInRange(dateRange: DateRange, firstDate: Days): Int {
-        val startDate = if (
-            dateRange.fromInclusive == null ||
-            dateRange.fromInclusive < firstDate
-        ) {
-            firstDate
-        } else {
-            dateRange.fromInclusive
-        }
-        val nowDate = Days()
-        val toDateInclusive = dateRange.toExclusive?.yesterday
-        val endDate = if (
-            toDateInclusive == null ||
-            toDateInclusive > nowDate
-        ) {
-            nowDate
-        } else {
-            toDateInclusive
-        }
+    private fun daysInRange(dateRange: DateRange, firstDate: Days, lastDate: Days): Int {
+        val startDate = startDateInclusive(dateRange.fromInclusive, firstDate)
+        val endDate = endDateInclusive(dateRange.toExclusive, lastDate)
         val start = startDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)
         val end = endDate.epochMillis.toDuration(DurationUnit.MILLISECONDS)
-        val totalDuration = end - start
-        return totalDuration.inWholeDays.toInt() + 1
+        return if (end >= start) {
+            val totalDuration = end - start
+            totalDuration.inWholeDays.toInt() + 1
+        } else {
+            0
+        }
     }
 }

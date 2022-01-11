@@ -213,6 +213,10 @@ private const val SELECT_FIRST_NOTE_TIMESTAMP =
     "SELECT MIN($TABLE_NOTES_FIELD_TIMESTAMP) " +
             "FROM $TABLE_NOTES"
 
+private const val SELECT_LAST_NOTE_TIMESTAMP =
+    "SELECT MAX($TABLE_NOTES_FIELD_TIMESTAMP) " +
+            "FROM $TABLE_NOTES"
+
 private const val NOTES_WITH_EXERCISES_FIELDS =
     "$TABLE_NOTES.$TABLE_NOTES_FIELD_ID " +
             "AS $TABLE_NOTES_WITH_EXERCISES_FIELD_NOTE_ID, " +
@@ -742,6 +746,14 @@ interface NoteDao : BaseDao<NoteEntity> {
      */
     @Query(SELECT_FIRST_NOTE_TIMESTAMP)
     suspend fun firstNoteTimestampSuspending(): Long?
+
+    /**
+     * Getting the timestamp of the last note or null if it does not exist.
+     *
+     * @return timestamp of the last note or null if it does not exist.
+     */
+    @Query(SELECT_LAST_NOTE_TIMESTAMP)
+    suspend fun lastNoteTimestampSuspending(): Long?
 
     /**
      * Getting a [List] of all note entities.

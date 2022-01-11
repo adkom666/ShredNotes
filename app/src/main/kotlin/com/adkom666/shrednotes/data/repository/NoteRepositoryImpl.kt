@@ -81,6 +81,15 @@ class NoteRepositoryImpl(
         return firstNoteDate
     }
 
+    override suspend fun lastNoteDateSuspending(): Days? {
+        Timber.d("lsstNoteDateSuspending")
+        val lastNoteTimestamp = noteDao.lastNoteTimestampSuspending()
+        Timber.d("lastNoteTimestamp=$lastNoteTimestamp")
+        val lastNoteDate = lastNoteTimestamp?.let { Days(it) }
+        Timber.d("lastNoteDate=$lastNoteDate")
+        return lastNoteDate
+    }
+
     override suspend fun listAllUnorderedSuspending(): List<Note> {
         Timber.d("listAllUnorderedSuspending")
         val noteWithExerciseEntityList = noteDao.listAllUnorderedSuspending()

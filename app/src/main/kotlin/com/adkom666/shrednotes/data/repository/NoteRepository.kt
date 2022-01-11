@@ -75,6 +75,13 @@ interface NoteRepository {
     suspend fun firstNoteDateSuspending(): Days?
 
     /**
+     * Getting the date of the last note or null if it does not exist.
+     *
+     * @return date of the last note or null if it does not exist.
+     */
+    suspend fun lastNoteDateSuspending(): Days?
+
+    /**
      * Getting a [List] of all notes.
      *
      * @return [List] of all notes.
