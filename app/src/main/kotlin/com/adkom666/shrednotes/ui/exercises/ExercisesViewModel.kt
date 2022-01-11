@@ -3,7 +3,6 @@ package com.adkom666.shrednotes.ui.exercises
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.liveData
 import androidx.paging.Pager
@@ -15,6 +14,7 @@ import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.pref.ExerciseToolPreferences
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.notContainsIgnoreCase
 import com.adkom666.shrednotes.util.paging.Page
 import com.adkom666.shrednotes.util.selection.ManageableSelection
@@ -23,13 +23,11 @@ import com.adkom666.shrednotes.util.selection.SelectableItems
 import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -42,19 +40,14 @@ import javax.inject.Inject
  * @property noteRepository note storage management.
  * @property exerciseToolPreferences to manage exercise search.
  */
-@ExperimentalCoroutinesApi
 class ExercisesViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val noteRepository: NoteRepository,
     private val exerciseToolPreferences: ExerciseToolPreferences
-) : ViewModel() {
+) : ExecutiveViewModel() {
 
     private companion object {
         private const val PAGE_SIZE = 20
-
-        private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
     }
 
     /**
@@ -174,22 +167,22 @@ class ExercisesViewModel @Inject constructor(
         get() = pager.liveData
 
     /**
-     * Consume navigation directions from this channel in the UI thread.
+     * Collect navigation directions from this flow in the UI thread.
      */
-    val navigationChannel: ReceiveChannel<NavDirection>
-        get() = _navigationChannel.openSubscription()
+    val navigationFlow: Flow<NavDirection>
+        get() = _navigationChannel.receiveAsFlow()
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     /**
      * Exercises to select.
@@ -251,21 +244,15 @@ class ExercisesViewModel @Inject constructor(
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
     private val _exerciseExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
-
-    private val _navigationChannel: BroadcastChannel<NavDirection> =
-        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _navigationChannel: Channel<NavDirection> = Channel(1)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     init {
         Timber.d("Init")
         _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
-        setState(State.Waiting)
         viewModelScope.launch {
+            setState(State.Waiting)
             val exerciseInitialCount = exerciseRepository.countSuspending(subname)
             Timber.d("exerciseInitialCount=$exerciseInitialCount")
             _manageableSelection.init(exerciseInitialCount)
@@ -277,7 +264,7 @@ class ExercisesViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            exerciseToolPreferences.exerciseToolSignalChannel.consumeEach(::process)
+            exerciseToolPreferences.exerciseToolSignalFlow.collect(::process)
         }
     }
 
@@ -295,8 +282,8 @@ class ExercisesViewModel @Inject constructor(
      */
     fun requestAssociatedNoteCount() {
         Timber.d("Request associated notes count")
-        setState(State.Waiting)
-        viewModelScope.launch {
+        execute {
+            setState(State.Waiting)
             @Suppress("TooGenericExceptionCaught")
             try {
                 val noteCount = requestAssociatedNoteCount(_manageableSelection.state)
@@ -314,8 +301,8 @@ class ExercisesViewModel @Inject constructor(
      */
     fun deleteSelectedExercises() {
         Timber.d("Delete selected exercises")
-        setState(State.Waiting)
-        viewModelScope.launch {
+        execute {
+            setState(State.Waiting)
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedExercises(_manageableSelection.state)
@@ -365,8 +352,8 @@ class ExercisesViewModel @Inject constructor(
     }
 
     private fun resetExercises() {
-        setState(State.Waiting)
-        viewModelScope.launch {
+        execute {
+            setState(State.Waiting)
             val exerciseCount = exerciseRepository.countSuspending(subname)
             _manageableSelection.reset(exerciseCount)
             exerciseSource?.invalidate()

@@ -16,16 +16,13 @@ import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Exercise screen.
  */
-@ExperimentalCoroutinesApi
 class ExerciseActivity : AppCompatActivity() {
 
     companion object {
@@ -71,7 +68,7 @@ class ExerciseActivity : AppCompatActivity() {
 
         setupButtonListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
@@ -98,12 +95,12 @@ class ExerciseActivity : AppCompatActivity() {
         model.stateAsLiveData.observe(this, StateObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 

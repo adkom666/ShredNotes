@@ -15,13 +15,11 @@ import dagger.android.support.DaggerFragment
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 
 /**
  * Statistics section sub screen.
  */
-@ExperimentalCoroutinesApi
 @ExperimentalTime
 class StatisticsFragment : DaggerFragment() {
 
@@ -60,7 +58,7 @@ class StatisticsFragment : DaggerFragment() {
         _model = viewModel(viewModelFactory)
 
         initStatisticsRecycler()
-        listenChannels()
+        listenFlows()
     }
 
     override fun onDestroyView() {
@@ -82,9 +80,9 @@ class StatisticsFragment : DaggerFragment() {
         binding.statisticsRecycler.adapter = adapter
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
+            model.navigationFlow.collect(::goToScreen)
         }
     }
 

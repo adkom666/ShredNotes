@@ -3,21 +3,18 @@ package com.adkom666.shrednotes.ui.notes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MAX
 import com.adkom666.shrednotes.data.model.NOTE_BPM_MIN
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.numberOrNull
 import com.adkom666.shrednotes.util.time.Minutes
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,16 +24,10 @@ import javax.inject.Inject
  * @property noteRepository note storage management.
  * @property exerciseRepository exercise storage management.
  */
-@ExperimentalCoroutinesApi
 class NoteViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val exerciseRepository: ExerciseRepository
-) : ViewModel() {
-
-    private companion object {
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-    }
+) : ExecutiveViewModel() {
 
     /**
      * Note state.
@@ -122,13 +113,6 @@ class NoteViewModel @Inject constructor(
     sealed class Signal {
 
         /**
-         * Use exercise list.
-         *
-         * @property value [List] of all exercises.
-         */
-        data class ExerciseList(val value: List<Exercise>) : Signal()
-
-        /**
          * Show actual date and time of training.
          *
          * @property value date and time of training.
@@ -170,16 +154,22 @@ class NoteViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Subscribe to the current exercises list in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val exercisesAsLiveData: LiveData<List<Exercise>?>
+        get() = distinctUntilChanged(_exercisesAsLiveData)
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
+
+    /**
+     * Collect information signals from this flow in the UI thread.
+     */
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     private val initialNote: Note?
         get() = _initialNote
@@ -187,12 +177,9 @@ class NoteViewModel @Inject constructor(
     private var _initialNote: Note? = null
     private var _noteDateTime: Minutes? = null
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _exercisesAsLiveData: MutableLiveData<List<Exercise>?> = MutableLiveData(null)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     /**
      * All the necessary information to create a note along with the exercise.
@@ -220,14 +207,16 @@ class NoteViewModel @Inject constructor(
     /**
      * Start working.
      */
-    suspend fun start() {
-        Timber.d("Start")
-        setState(State.Waiting)
-        val exerciseList = exerciseListCache
-            ?: exerciseRepository.listAllSuspending()
-                .also { exerciseListCache = it }
-        give(Signal.ExerciseList(exerciseList))
-        setState(State.Working)
+    fun start() {
+        execute {
+            Timber.d("Start")
+            setState(State.Waiting)
+            val exerciseList = exerciseListCache
+                ?: exerciseRepository.listAllSuspending()
+                    .also { exerciseListCache = it }
+            setExercises(exerciseList)
+            setState(State.Working)
+        }
     }
 
     /**
@@ -283,12 +272,11 @@ class NoteViewModel @Inject constructor(
     private fun save(note: Note) = when (note) {
         initialNote ->
             setState(State.Finishing.Declined)
-        else -> {
-            setState(State.Waiting)
-            viewModelScope.launch {
+        else ->
+            execute {
+                setState(State.Waiting)
                 tryToSave(note)
             }
-        }
     }
 
     @Suppress("IMPLICIT_CAST_TO_ANY")
@@ -299,12 +287,11 @@ class NoteViewModel @Inject constructor(
             report(Message.Error.WrongNoteBpm)
         note == initialNote ->
             setState(State.Finishing.Declined)
-        else -> {
-            setState(State.Waiting)
-            viewModelScope.launch {
+        else ->
+            execute {
+                setState(State.Waiting)
                 tryToSaveWithExercise(note)
             }
-        }
     }
 
     private suspend fun tryToSave(note: Note) {
@@ -362,6 +349,11 @@ class NoteViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun setExercises(exercises: List<Exercise>) {
+        Timber.d("Set exercises: exercises=$exercises")
+        _exercisesAsLiveData.postValue(exercises)
     }
 
     private fun report(message: Message) {

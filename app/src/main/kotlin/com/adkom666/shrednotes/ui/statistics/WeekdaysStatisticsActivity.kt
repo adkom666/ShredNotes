@@ -30,16 +30,13 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate.rgb
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Statistics by days of week screen.
  */
-@ExperimentalCoroutinesApi
 class WeekdaysStatisticsActivity : AppCompatActivity() {
 
     companion object {
@@ -104,7 +101,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
@@ -114,9 +111,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             Timber.d("Target parameter is $targetParameter")
             model.prepare(targetParameter)
         }
-        lifecycleScope.launchWhenCreated {
-            model.start()
-        }
+        model.start()
     }
 
     private fun prepareChart() {
@@ -174,14 +169,15 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
     private fun observeLiveData() {
         model.stateAsLiveData.observe(this, StateObserver())
+        model.statisticsAsLiveData.observe(this, StatisticsObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 
@@ -208,8 +204,6 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
                 setSubtitle(signal.value)
             is WeekdaysStatisticsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
-            is WeekdaysStatisticsViewModel.Signal.ActualStatistics ->
-                setStatistics(signal.value)
         }
     }
 
@@ -220,49 +214,6 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
     private fun setDateRange(dateRange: DateRange) {
         binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
-    }
-
-    private fun setStatistics(statistics: WeekdaysStatistics) {
-        binding.statisticsPieChart.clear()
-        val entries = pieEntriesOf(statistics)
-        if (entries.isNotEmpty()) {
-            val dataSet = pieDataSetOf(entries)
-            binding.statisticsPieChart.data = PieData(dataSet)
-        }
-        binding.statisticsPieChart.invalidate()
-    }
-
-    private fun pieEntriesOf(statistics: WeekdaysStatistics): List<PieEntry> {
-        val entries = mutableListOf<PieEntry>()
-        Weekday.values().forEach { weekday ->
-            statistics.valueMap[weekday]?.let { value ->
-                if (value > 0f) {
-                    val weekdayLabel = getString(weekday.labelResId())
-                    val entry = PieEntry(value, weekdayLabel)
-                    entries.add(entry)
-                }
-            }
-        }
-        return entries
-    }
-
-    private fun pieDataSetOf(entries: List<PieEntry>): PieDataSet {
-        val dataSet = PieDataSet(entries, "")
-        dataSet.colors = PIE_COLORS
-        dataSet.valueTextColor = ContextCompat.getColor(this, R.color.black)
-        dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
-        return dataSet
-    }
-
-    private fun PieDataSet.setValueTextSize(@DimenRes resId: Int) {
-        val density = resources.displayMetrics.density
-        if (density > 0f) {
-            val textSizeInPixels = resources.getDimension(resId)
-            val textSizeInDp = textSizeInPixels / density
-            valueTextSize = textSizeInDp
-        } else if (BuildConfig.DEBUG) {
-            error("Illegal display density: density=$density")
-        }
     }
 
     @StringRes
@@ -294,6 +245,57 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.statisticsScroll.isVisible = isActive.not()
+        }
+    }
+
+    private inner class StatisticsObserver : Observer<WeekdaysStatistics?> {
+
+        override fun onChanged(statistics: WeekdaysStatistics?) {
+            statistics?.let { setStatistics(it) }
+        }
+
+        private fun setStatistics(statistics: WeekdaysStatistics) {
+            binding.statisticsPieChart.clear()
+            val entries = pieEntriesOf(statistics)
+            if (entries.isNotEmpty()) {
+                val dataSet = pieDataSetOf(entries)
+                binding.statisticsPieChart.data = PieData(dataSet)
+            }
+            binding.statisticsPieChart.invalidate()
+        }
+
+        private fun pieEntriesOf(statistics: WeekdaysStatistics): List<PieEntry> {
+            val entries = mutableListOf<PieEntry>()
+            Weekday.values().forEach { weekday ->
+                statistics.valueMap[weekday]?.let { value ->
+                    if (value > 0f) {
+                        val weekdayLabel = getString(weekday.labelResId())
+                        val entry = PieEntry(value, weekdayLabel)
+                        entries.add(entry)
+                    }
+                }
+            }
+            return entries
+        }
+
+        private fun pieDataSetOf(entries: List<PieEntry>): PieDataSet {
+            val blackColor = ContextCompat.getColor(this@WeekdaysStatisticsActivity, R.color.black)
+            val dataSet = PieDataSet(entries, "")
+            dataSet.colors = PIE_COLORS
+            dataSet.valueTextColor = blackColor
+            dataSet.setValueTextSize(R.dimen.pie_chart_value_text_size)
+            return dataSet
+        }
+
+        private fun PieDataSet.setValueTextSize(@DimenRes resId: Int) {
+            val density = resources.displayMetrics.density
+            if (density > 0f) {
+                val textSizeInPixels = resources.getDimension(resId)
+                val textSizeInDp = textSizeInPixels / density
+                valueTextSize = textSizeInDp
+            } else if (BuildConfig.DEBUG) {
+                error("Illegal display density: density=$density")
+            }
         }
     }
 }

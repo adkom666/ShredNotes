@@ -10,10 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.ask.DonationResult
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.ask.OnDonationFinishListener
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,14 +22,9 @@ import javax.inject.Inject
  *
  * @property donor donor of money.
  */
-@ExperimentalCoroutinesApi
 class AskViewModel @Inject constructor(
     private val donor: Donor
 ) : ViewModel() {
-
-    private companion object {
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-    }
 
     /**
      * Ask state.
@@ -79,15 +73,13 @@ class AskViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Loading)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     private val onDonationFinishListener: OnDonationFinishListener = DonationFinisher()
 

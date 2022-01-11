@@ -30,9 +30,7 @@ import com.adkom666.shrednotes.util.toast
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import java.text.DateFormat
 import java.util.Calendar
@@ -42,7 +40,6 @@ import javax.inject.Inject
 /**
  * Note screen.
  */
-@ExperimentalCoroutinesApi
 class NoteActivity : AppCompatActivity() {
 
     companion object {
@@ -105,7 +102,7 @@ class NoteActivity : AppCompatActivity() {
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
@@ -113,9 +110,7 @@ class NoteActivity : AppCompatActivity() {
             Timber.d("Initial note is $note")
             model.prepare(note)
         }
-        lifecycleScope.launchWhenCreated {
-            model.start()
-        }
+        model.start()
     }
 
     private fun setupButtonListeners() {
@@ -152,14 +147,15 @@ class NoteActivity : AppCompatActivity() {
 
     private fun observeLiveData() {
         model.stateAsLiveData.observe(this, StateObserver())
+        model.exercisesAsLiveData.observe(this, ExercisesObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 
@@ -231,8 +227,6 @@ class NoteActivity : AppCompatActivity() {
     private fun process(signal: NoteViewModel.Signal) {
         Timber.d("Signal is $signal")
         when (signal) {
-            is NoteViewModel.Signal.ExerciseList ->
-                setExerciseList(signal.value)
             is NoteViewModel.Signal.ActualNoteDateTime ->
                 setNoteDateTime(signal.value)
             is NoteViewModel.Signal.NoteExerciseName ->
@@ -240,16 +234,6 @@ class NoteActivity : AppCompatActivity() {
             is NoteViewModel.Signal.NoteBpmString ->
                 setBpm(signal.value)
         }
-    }
-
-    private fun setExerciseList(exerciseList: List<Exercise>) {
-        Timber.d("exerciseList=$exerciseList")
-        val adapter = ArrayAdapter(
-            this@NoteActivity,
-            R.layout.item_exercise_name_dropdown,
-            exerciseList.map { it.name }
-        )
-        binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)
     }
 
     private fun setNoteDateTime(dateTime: Minutes) {
@@ -337,6 +321,23 @@ class NoteActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.noteCard.isVisible = isActive.not()
+        }
+    }
+
+    private inner class ExercisesObserver : Observer<List<Exercise>?> {
+
+        override fun onChanged(exercises: List<Exercise>?) {
+            exercises?.let { setExercises(it) }
+        }
+
+        private fun setExercises(exerciseList: List<Exercise>) {
+            Timber.d("exerciseList=$exerciseList")
+            val adapter = ArrayAdapter(
+                this@NoteActivity,
+                R.layout.item_exercise_name_dropdown,
+                exerciseList.map { it.name }
+            )
+            binding.noteExerciseAutoCompleteTextView.setAdapter(adapter)
         }
     }
 }

@@ -23,15 +23,12 @@ import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 
 /**
  * Common statistics screen.
  */
-@ExperimentalCoroutinesApi
 @ExperimentalTime
 class CommonStatisticsActivity : AppCompatActivity() {
 
@@ -77,15 +74,13 @@ class CommonStatisticsActivity : AppCompatActivity() {
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
             model.prepare()
         }
-        lifecycleScope.launchWhenCreated {
-            model.start()
-        }
+        model.start()
     }
 
     private fun setupButtonListeners() {
@@ -122,14 +117,15 @@ class CommonStatisticsActivity : AppCompatActivity() {
 
     private fun observeLiveData() {
         model.stateAsLiveData.observe(this, StateObserver())
+        model.statisticsAsLiveData.observe(this, StatisticsObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 
@@ -154,58 +150,11 @@ class CommonStatisticsActivity : AppCompatActivity() {
         when (signal) {
             is CommonStatisticsViewModel.Signal.ActualDateRange ->
                 setDateRange(signal.value)
-            is CommonStatisticsViewModel.Signal.ActualStatistics ->
-                setStatistics(signal.value)
         }
     }
 
     private fun setDateRange(dateRange: DateRange) {
         binding.dateRange.dateRangeTextView.text = dateRangeFormat.format(dateRange)
-    }
-
-    private fun setStatistics(statistics: CommonStatistics) {
-        val lineNotes = getString(
-            R.string.text_statistics_common_notes,
-            statistics.notes
-        )
-        val lineRelatedExercises = getString(
-            R.string.text_statistics_common_related_exercises,
-            statistics.relatedExercises
-        )
-        val lineDays = getString(
-            R.string.text_statistics_common_days,
-            statistics.days
-        )
-        val lineActiveDays = getString(
-            R.string.text_statistics_common_active_days,
-            statistics.activeDays
-        )
-        var text = lineNotes + LINE_SEPARATOR +
-                lineRelatedExercises + LINE_SEPARATOR +
-                lineDays + LINE_SEPARATOR +
-                lineActiveDays
-
-        statistics.activeDaysShare?.let { share ->
-            val lineActiveDaysShare = getString(
-                R.string.text_statistics_common_active_days_share,
-                share * 100
-            )
-            text += LINE_SEPARATOR
-            text += lineActiveDaysShare
-        }
-
-        binding.statisticsTextView.text = text
-
-        val lineAllNotes = getString(
-            R.string.text_statistics_common_all_notes,
-            statistics.allNotes
-        )
-        val lineAllExercises = getString(
-            R.string.text_statistics_common_all_exercises,
-            statistics.allExercises
-        )
-        val textForAllTheTime = lineAllNotes + LINE_SEPARATOR + lineAllExercises
-        binding.statisticsForAllTheTimeTextView.text = textForAllTheTime
     }
 
     private inner class StateObserver : Observer<CommonStatisticsViewModel.State> {
@@ -228,6 +177,58 @@ class CommonStatisticsActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.statisticsCard.isVisible = isActive.not()
+        }
+    }
+
+    private inner class StatisticsObserver : Observer<CommonStatistics?> {
+
+        override fun onChanged(statistics: CommonStatistics?) {
+            statistics?.let { setStatistics(it) }
+        }
+
+        private fun setStatistics(statistics: CommonStatistics) {
+            val lineNotes = getString(
+                R.string.text_statistics_common_notes,
+                statistics.notes
+            )
+            val lineRelatedExercises = getString(
+                R.string.text_statistics_common_related_exercises,
+                statistics.relatedExercises
+            )
+            val lineDays = getString(
+                R.string.text_statistics_common_days,
+                statistics.days
+            )
+            val lineActiveDays = getString(
+                R.string.text_statistics_common_active_days,
+                statistics.activeDays
+            )
+            var text = lineNotes + LINE_SEPARATOR +
+                    lineRelatedExercises + LINE_SEPARATOR +
+                    lineDays + LINE_SEPARATOR +
+                    lineActiveDays
+
+            statistics.activeDaysShare?.let { share ->
+                val lineActiveDaysShare = getString(
+                    R.string.text_statistics_common_active_days_share,
+                    share * 100
+                )
+                text += LINE_SEPARATOR
+                text += lineActiveDaysShare
+            }
+
+            binding.statisticsTextView.text = text
+
+            val lineAllNotes = getString(
+                R.string.text_statistics_common_all_notes,
+                statistics.allNotes
+            )
+            val lineAllExercises = getString(
+                R.string.text_statistics_common_all_exercises,
+                statistics.allExercises
+            )
+            val textForAllTheTime = lineAllNotes + LINE_SEPARATOR + lineAllExercises
+            binding.statisticsForAllTheTimeTextView.text = textForAllTheTime
         }
     }
 }

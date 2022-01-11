@@ -1,6 +1,6 @@
 package com.adkom666.shrednotes.data.pref
 
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Managing exercise search.
@@ -41,7 +41,7 @@ interface ExerciseToolPreferences {
     var exerciseSubname: String?
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val exerciseToolSignalChannel: ReceiveChannel<Signal>
+    val exerciseToolSignalFlow: Flow<Signal>
 }

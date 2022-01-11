@@ -3,25 +3,21 @@ package com.adkom666.shrednotes.data.pref
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.adkom666.shrednotes.util.containsDifferentTrimmedTextIgnoreCaseThan
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import kotlin.properties.Delegates
 
 /**
  * Managing tools such as filter and search.
  */
-@ExperimentalCoroutinesApi
 class ToolPreferences(
     private val preferences: SharedPreferences
 ) : NoteToolPreferences,
     ExerciseToolPreferences {
 
     private companion object {
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-
         private const val KEY_IS_NOTE_SEARCH_ACTIVE = "notes.is_search_active"
         private const val KEY_NOTE_EXERCISE_SUBNAME = "notes.exercise_subname"
         private const val KEY_IS_NOTE_FILTER_ENABLED = "notes.is_filter_enabled"
@@ -65,8 +61,8 @@ class ToolPreferences(
         }
     }
 
-    override val noteToolSignalChannel: ReceiveChannel<NoteToolPreferences.Signal>
-        get() = _noteToolSignalChannel.openSubscription()
+    override val noteToolSignalFlow: Flow<NoteToolPreferences.Signal>
+        get() = _noteToolSignalChannel.receiveAsFlow()
 
     override var isExcerciseSearchActive: Boolean by Delegates.observable(
         preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
@@ -91,14 +87,14 @@ class ToolPreferences(
         }
     }
 
-    override val exerciseToolSignalChannel: ReceiveChannel<ExerciseToolPreferences.Signal>
-        get() = _exerciseToolSignalChannel.openSubscription()
+    override val exerciseToolSignalFlow: Flow<ExerciseToolPreferences.Signal>
+        get() = _exerciseToolSignalChannel.receiveAsFlow()
 
-    private val _noteToolSignalChannel: BroadcastChannel<NoteToolPreferences.Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _noteToolSignalChannel: Channel<NoteToolPreferences.Signal> =
+        Channel(Channel.UNLIMITED)
 
-    private val _exerciseToolSignalChannel: BroadcastChannel<ExerciseToolPreferences.Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _exerciseToolSignalChannel: Channel<ExerciseToolPreferences.Signal> =
+        Channel(Channel.UNLIMITED)
 
     /**
      * Reset all tools.

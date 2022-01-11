@@ -7,10 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
 import com.adkom666.shrednotes.data.model.Exercise
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -20,15 +19,9 @@ import javax.inject.Inject
  *
  * @property exerciseRepository exercise storage management.
  */
-@ExperimentalCoroutinesApi
 class ExerciseViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
-
-    private companion object {
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-    }
 
     /**
      * Exercise state.
@@ -118,28 +111,24 @@ class ExerciseViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     private val initialExercise: Exercise?
         get() = _initialExercise
 
     private var _initialExercise: Exercise? = null
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     /**
      * Prepare for working with the [exercise].

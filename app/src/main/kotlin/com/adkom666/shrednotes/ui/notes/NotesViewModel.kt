@@ -5,7 +5,6 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.liveData
 import androidx.paging.Pager
@@ -19,6 +18,7 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.pref.NoteToolPreferences
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
 import com.adkom666.shrednotes.util.notContainsIgnoreCase
@@ -32,13 +32,11 @@ import com.adkom666.shrednotes.util.selection.Selection
 import com.adkom666.shrednotes.util.selection.SelectionDashboard
 import com.adkom666.shrednotes.util.time.Days
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -52,19 +50,14 @@ import kotlin.properties.Delegates.observable
  * @property noteToolPreferences to manage note filter and search.
  * @property preferences project's [SharedPreferences].
  */
-@ExperimentalCoroutinesApi
 class NotesViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val noteToolPreferences: NoteToolPreferences,
     private val preferences: SharedPreferences
-) : ViewModel() {
+) : ExecutiveViewModel() {
 
     private companion object {
         private const val PAGE_SIZE = 20
-
-        private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_DOES_FILTER_HAVE_DATE_FROM = "notes.does_filter_have_date_from"
         private const val KEY_FILTER_DATE_FROM_INCLUSIVE = "notes.filter_date_from_inclusive"
@@ -222,22 +215,22 @@ class NotesViewModel @Inject constructor(
         get() = pager.liveData
 
     /**
-     * Consume navigation directions from this channel in the UI thread.
+     * Collect navigation directions from this flow in the UI thread.
      */
-    val navigationChannel: ReceiveChannel<NavDirection>
-        get() = _navigationChannel.openSubscription()
+    val navigationFlow: Flow<NavDirection>
+        get() = _navigationChannel.receiveAsFlow()
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     /**
      * Notes to select.
@@ -324,21 +317,15 @@ class NotesViewModel @Inject constructor(
     private val _manageableSelection: ManageableSelection = ManageableSelection()
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
     private val _noteExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
-
-    private val _navigationChannel: BroadcastChannel<NavDirection> =
-        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _navigationChannel: Channel<NavDirection> = Channel(1)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     init {
         Timber.d("Init")
         _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
-        setState(State.Waiting)
         viewModelScope.launch {
+            setState(State.Waiting)
             val noteInitialCount = noteRepository.countSuspending(exerciseSubname, filterOrNull)
             Timber.d("noteInitialCount=$noteInitialCount")
             _manageableSelection.init(noteInitialCount)
@@ -350,7 +337,7 @@ class NotesViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            noteToolPreferences.noteToolSignalChannel.consumeEach(::process)
+            noteToolPreferences.noteToolSignalFlow.collect(::process)
         }
     }
 
@@ -368,8 +355,8 @@ class NotesViewModel @Inject constructor(
      */
     fun deleteSelectedNotes() {
         Timber.d("Delete selected notes")
-        setState(State.Waiting)
-        viewModelScope.launch {
+        execute {
+            setState(State.Waiting)
             @Suppress("TooGenericExceptionCaught")
             try {
                 val deletionCount = deleteSelectedNotes(_manageableSelection.state)
@@ -459,8 +446,8 @@ class NotesViewModel @Inject constructor(
     }
 
     private fun resetNotes() {
-        setState(State.Waiting)
-        viewModelScope.launch {
+        execute {
+            setState(State.Waiting)
             val noteCount = noteRepository.countSuspending(
                 exerciseSubname,
                 filterOrNull

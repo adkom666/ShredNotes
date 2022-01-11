@@ -11,15 +11,13 @@ import androidx.lifecycle.lifecycleScope
 import com.adkom666.shrednotes.databinding.FragmentAskBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import dagger.android.support.DaggerFragment
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Ask section sub screen.
  */
-@ExperimentalCoroutinesApi
 class AskFragment : DaggerFragment() {
 
     companion object {
@@ -58,7 +56,7 @@ class AskFragment : DaggerFragment() {
 
         setupListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         context?.let {
             model.prepareDonor(it)
@@ -88,9 +86,9 @@ class AskFragment : DaggerFragment() {
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenCreated {
-            model.signalChannel.consumeEach(::process)
+            model.signalFlow.collect(::process)
         }
     }
 

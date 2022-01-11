@@ -15,10 +15,9 @@ import com.adkom666.shrednotes.data.UnsupportedDataException
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.google.gson.JsonSyntaxException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,7 +29,6 @@ import javax.inject.Inject
  * @property donor donor of money.
  * @property toolPreferences project's [ToolPreferences] to manage, for example, filter and search.
  */
-@ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val dataManager: DataManager,
     private val donor: Donor,
@@ -39,11 +37,6 @@ class MainViewModel @Inject constructor(
 
     private companion object {
         private val DEFAULT_SECTION = Section.NOTES
-
-        private const val NAVIGATION_CHANNEL_CAPACITY = 1
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
-
         private const val KEY_JSON = "json"
     }
 
@@ -235,22 +228,22 @@ class MainViewModel @Inject constructor(
         get() = distinctUntilChanged(_sectionAsLiveData)
 
     /**
-     * Consume navigation directions from this channel in the UI thread.
+     * Collect navigation directions from this flow in the UI thread.
      */
-    val navigationChannel: ReceiveChannel<NavDirection>
-        get() = _navigationChannel.openSubscription()
+    val navigationFlow: Flow<NavDirection>
+        get() = _navigationChannel.receiveAsFlow()
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     /**
      * Read visibility of the menu items that allow you to work with 'Google Drive'.
@@ -278,14 +271,9 @@ class MainViewModel @Inject constructor(
     private val _sectionAsLiveData: MutableLiveData<Section> =
         MutableLiveData(DEFAULT_SECTION)
 
-    private val _navigationChannel: BroadcastChannel<NavDirection> =
-        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _navigationChannel: Channel<NavDirection> = Channel(1)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     private var readyJson: String? = null
 

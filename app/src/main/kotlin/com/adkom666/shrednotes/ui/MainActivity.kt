@@ -37,14 +37,12 @@ import dagger.android.AndroidInjection
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 
 /**
  * Main screen.
  */
-@ExperimentalCoroutinesApi
 @ExperimentalTime
 class MainActivity :
     AppCompatActivity(),
@@ -109,7 +107,7 @@ class MainActivity :
         invalidateOptionsMenuOnFragmentChange()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
     }
 
     override fun onDestroy() {
@@ -234,15 +232,15 @@ class MainActivity :
         model.stateAsLiveData.observe(this, StateObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
+            model.navigationFlow.collect(::goToScreen)
         }
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
         lifecycleScope.launchWhenStarted {
-            model.signalChannel.consumeEach(::process)
+            model.signalFlow.collect(::process)
         }
     }
 

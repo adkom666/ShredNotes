@@ -40,9 +40,7 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import java.text.DateFormat
 import java.util.Locale
@@ -52,7 +50,6 @@ import kotlin.math.roundToLong
 /**
  * Statistics tracking screen.
  */
-@ExperimentalCoroutinesApi
 class TrackingActivity : AppCompatActivity() {
 
     companion object {
@@ -108,7 +105,7 @@ class TrackingActivity : AppCompatActivity() {
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
@@ -118,9 +115,7 @@ class TrackingActivity : AppCompatActivity() {
             Timber.d("Target parameter is $targetParameter")
             model.prepare(targetParameter)
         }
-        lifecycleScope.launchWhenCreated {
-            model.start()
-        }
+        model.start()
     }
 
     private fun setupExerciseListener() {
@@ -194,14 +189,15 @@ class TrackingActivity : AppCompatActivity() {
 
     private fun observeLiveData() {
         model.stateAsLiveData.observe(this, StateObserver())
+        model.statisticsAsLiveData.observe(this, StatisticsObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 
@@ -230,8 +226,6 @@ class TrackingActivity : AppCompatActivity() {
                 setDateRange(signal.value)
             is TrackingViewModel.Signal.ExerciseList ->
                 setExerciseList(signal.value)
-            is TrackingViewModel.Signal.ActualStatistics ->
-                setStatistics(signal)
         }
     }
 
@@ -250,59 +244,6 @@ class TrackingActivity : AppCompatActivity() {
         if (0 <= position && position < exercises.size) {
             binding.exerciseSpinner.setSelection(position)
         }
-    }
-
-    private fun setStatistics(
-        statistics: TrackingViewModel.Signal.ActualStatistics
-    ) = when (statistics) {
-        is TrackingViewModel.Signal.ActualStatistics.Progress ->
-            setProgress(statistics.value)
-        is TrackingViewModel.Signal.ActualStatistics.TrainingIntensity ->
-            setTrainingIntensity(statistics.value)
-    }
-
-    private fun setTrainingIntensity(noteCountTracking: NoteCountTracking) = setTracking {
-        barEntriesOf(noteCountTracking)
-    }
-
-    private fun setProgress(maxBpmTracking: MaxBpmTracking) = setTracking {
-        barEntriesOf(maxBpmTracking)
-    }
-
-    private fun setTracking(barEntryEmitter: () -> List<BarEntry>) {
-        binding.trackingChart.clear()
-        val entries = barEntryEmitter()
-        if (entries.isNotEmpty()) {
-            val dataSet = barDataSetOf(entries)
-            binding.trackingChart.data = BarData(dataSet)
-        }
-        binding.trackingChart.invalidate()
-    }
-
-    private fun barEntriesOf(
-        maxBpmTracking: MaxBpmTracking
-    ): List<BarEntry> = maxBpmTracking.points.map { point ->
-        BarEntry(
-            point.days.order().toFloat(),
-            point.maxBpm.toFloat()
-        )
-    }
-
-    private fun barEntriesOf(
-        noteCountTracking: NoteCountTracking
-    ): List<BarEntry> = noteCountTracking.points.map { point ->
-        BarEntry(
-            point.days.order().toFloat(),
-            point.noteCount.toFloat()
-        )
-    }
-
-    private fun barDataSetOf(entries: List<BarEntry>): BarDataSet {
-        val dataSet = BarDataSet(entries, "")
-        dataSet.setDrawValues(false)
-        dataSet.isHighlightEnabled = false
-        dataSet.color = ContextCompat.getColor(this, R.color.sky)
-        return dataSet
     }
 
     @StringRes
@@ -348,6 +289,67 @@ class TrackingActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.statisticsCard.isVisible = isActive.not()
+        }
+    }
+
+    private inner class StatisticsObserver : Observer<TrackingViewModel.StatisticsTracking?> {
+
+        override fun onChanged(statistics: TrackingViewModel.StatisticsTracking?) {
+            statistics?.let { setStatistics(it) }
+        }
+
+        private fun setStatistics(
+            statistics: TrackingViewModel.StatisticsTracking
+        ) = when (statistics) {
+            is TrackingViewModel.StatisticsTracking.Progress ->
+                setProgress(statistics.value)
+            is TrackingViewModel.StatisticsTracking.TrainingIntensity ->
+                setTrainingIntensity(statistics.value)
+        }
+
+        private fun setProgress(maxBpmTracking: MaxBpmTracking) = setTracking {
+            barEntriesOf(maxBpmTracking)
+        }
+
+        private fun setTrainingIntensity(noteCountTracking: NoteCountTracking) = setTracking {
+            barEntriesOf(noteCountTracking)
+        }
+
+        private fun setTracking(barEntryEmitter: () -> List<BarEntry>) {
+            binding.trackingChart.clear()
+            val entries = barEntryEmitter()
+            if (entries.isNotEmpty()) {
+                val dataSet = barDataSetOf(entries)
+                binding.trackingChart.data = BarData(dataSet)
+            }
+            binding.trackingChart.invalidate()
+        }
+
+        private fun barEntriesOf(
+            maxBpmTracking: MaxBpmTracking
+        ): List<BarEntry> = maxBpmTracking.points.map { point ->
+            BarEntry(
+                point.days.order().toFloat(),
+                point.maxBpm.toFloat()
+            )
+        }
+
+        private fun barEntriesOf(
+            noteCountTracking: NoteCountTracking
+        ): List<BarEntry> = noteCountTracking.points.map { point ->
+            BarEntry(
+                point.days.order().toFloat(),
+                point.noteCount.toFloat()
+            )
+        }
+
+        private fun barDataSetOf(entries: List<BarEntry>): BarDataSet {
+            val skyColor = ContextCompat.getColor(this@TrackingActivity, R.color.sky)
+            val dataSet = BarDataSet(entries, "")
+            dataSet.setDrawValues(false)
+            dataSet.isHighlightEnabled = false
+            dataSet.color = skyColor
+            return dataSet
         }
     }
 }

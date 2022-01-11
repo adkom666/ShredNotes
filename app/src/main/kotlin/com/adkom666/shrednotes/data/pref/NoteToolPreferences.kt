@@ -1,6 +1,6 @@
 package com.adkom666.shrednotes.data.pref
 
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Managing tools such as note filter and search.
@@ -53,7 +53,7 @@ interface NoteToolPreferences {
     var isNoteFilterEnabled: Boolean
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information signals from this flow in the UI thread.
      */
-    val noteToolSignalChannel: ReceiveChannel<Signal>
+    val noteToolSignalFlow: Flow<Signal>
 }

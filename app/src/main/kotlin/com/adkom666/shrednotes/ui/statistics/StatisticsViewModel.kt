@@ -2,21 +2,16 @@ package com.adkom666.shrednotes.ui.statistics
 
 import androidx.lifecycle.ViewModel
 import com.adkom666.shrednotes.R
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Statistics section model.
  */
-@ExperimentalCoroutinesApi
 class StatisticsViewModel @Inject constructor() : ViewModel() {
-
-    private companion object {
-        private const val NAVIGATION_CHANNEL_CAPACITY = 1
-    }
 
     /**
      * Navigation direction.
@@ -66,13 +61,12 @@ class StatisticsViewModel @Inject constructor() : ViewModel() {
     )
 
     /**
-     * Consume navigation directions from this channel in the UI thread.
+     * Collect navigation directions from this flow in the UI thread.
      */
-    val navigationChannel: ReceiveChannel<NavDirection>
-        get() = _navigationChannel.openSubscription()
+    val navigationFlow: Flow<NavDirection>
+        get() = _navigationChannel.receiveAsFlow()
 
-    private val _navigationChannel: BroadcastChannel<NavDirection> =
-        BroadcastChannel(NAVIGATION_CHANNEL_CAPACITY)
+    private val _navigationChannel: Channel<NavDirection> = Channel(1)
 
     /**
      * Call to handle the statistics item when it clicked.

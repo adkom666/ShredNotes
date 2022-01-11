@@ -24,16 +24,13 @@ import com.adkom666.shrednotes.util.setOnSafeClickListener
 import com.adkom666.shrednotes.util.showDateRangePicker
 import com.adkom666.shrednotes.util.toast
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Records screen.
  */
-@ExperimentalCoroutinesApi
 class RecordsActivity : AppCompatActivity() {
 
     companion object {
@@ -104,16 +101,11 @@ class RecordsActivity : AppCompatActivity() {
         setupButtonListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
 
         val isFirstStart = savedInstanceState == null
         if (isFirstStart) {
             model.prepare(targetParameter)
-            lifecycleScope.launchWhenCreated {
-                model.launch()
-            }
-        } else {
-            model.proceed()
         }
     }
 
@@ -160,9 +152,7 @@ class RecordsActivity : AppCompatActivity() {
         }
         binding.moreButton.setOnSafeClickListener {
             Timber.d("Click: More")
-            lifecycleScope.launchWhenCreated {
-                model.onMoreButtonClick()
-            }
+            model.onMoreButtonClick()
         }
     }
 
@@ -180,14 +170,15 @@ class RecordsActivity : AppCompatActivity() {
 
     private fun observeLiveData() {
         model.stateAsLiveData.observe(this, StateObserver())
+        model.recordsAsLiveData.observe(this, RecordsObserver())
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launch {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 
@@ -216,8 +207,6 @@ class RecordsActivity : AppCompatActivity() {
                 setDateRange(signal.value)
             is RecordsViewModel.Signal.HasMoreRecords ->
                 setButtonMoreVisibility(signal.value)
-            is RecordsViewModel.Signal.ActualRecords ->
-                setRecords(signal)
         }
     }
 
@@ -232,37 +221,6 @@ class RecordsActivity : AppCompatActivity() {
 
     private fun setButtonMoreVisibility(isVisible: Boolean) {
         binding.moreButton.isVisible = isVisible
-    }
-
-    private fun setRecords(records: RecordsViewModel.Signal.ActualRecords) {
-        val areRecordsPresent = when (records) {
-            is RecordsViewModel.Signal.ActualRecords.Bpm ->
-                records.value.topNotes.let { topNotes ->
-                    if (topNotes.isNotEmpty()) {
-                        (adapter as NoteAdapter).submitList(topNotes)
-                        true
-                    } else {
-                        false
-                    }
-                }
-            is RecordsViewModel.Signal.ActualRecords.NoteCount ->
-                records.value.topExerciseNames.map {
-                    "${it.exerciseName} (${it.noteCount})"
-                }.let { topExerciseNames ->
-                    if (topExerciseNames.isNotEmpty()) {
-                        (adapter as ExerciseInfoAdapter).submitList(topExerciseNames)
-                        true
-                    } else {
-                        false
-                    }
-                }
-        }
-        setRecordsVisible(areRecordsPresent)
-    }
-
-    private fun setRecordsVisible(isVisible: Boolean) {
-        binding.noRecordsTextView.isVisible = isVisible.not()
-        binding.recordsRecycler.isVisible = isVisible
     }
 
     @StringRes
@@ -301,6 +259,44 @@ class RecordsActivity : AppCompatActivity() {
         private fun setProgressActive(isActive: Boolean) {
             binding.progressBar.isVisible = isActive
             binding.recordsScroll.isVisible = isActive.not()
+        }
+    }
+
+    private inner class RecordsObserver : Observer<RecordsViewModel.Records?> {
+
+        override fun onChanged(records: RecordsViewModel.Records?) {
+            records?.let { setRecords(it) }
+        }
+
+        private fun setRecords(records: RecordsViewModel.Records) {
+            val areRecordsPresent = when (records) {
+                is RecordsViewModel.Records.Bpm ->
+                    records.value.topNotes.let { topNotes ->
+                        if (topNotes.isNotEmpty()) {
+                            (adapter as NoteAdapter).submitList(topNotes)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                is RecordsViewModel.Records.NoteCount ->
+                    records.value.topExerciseNames.map {
+                        "${it.exerciseName} (${it.noteCount})"
+                    }.let { topExerciseNames ->
+                        if (topExerciseNames.isNotEmpty()) {
+                            (adapter as ExerciseInfoAdapter).submitList(topExerciseNames)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+            }
+            setRecordsVisible(areRecordsPresent)
+        }
+
+        private fun setRecordsVisible(isVisible: Boolean) {
+            binding.noRecordsTextView.isVisible = isVisible.not()
+            binding.recordsRecycler.isVisible = isVisible
         }
     }
 }

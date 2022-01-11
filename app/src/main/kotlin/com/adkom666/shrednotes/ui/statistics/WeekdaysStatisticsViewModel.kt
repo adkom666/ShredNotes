@@ -5,19 +5,16 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
 import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.putNullableDays
 import com.adkom666.shrednotes.util.time.Days
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,15 +24,12 @@ import javax.inject.Inject
  * @property statisticsAggregator source of statistics by days of week.
  * @property preferences project's [SharedPreferences].
  */
-@ExperimentalCoroutinesApi
 class WeekdaysStatisticsViewModel @Inject constructor(
     private val statisticsAggregator: WeekdaysStatisticsAggregator,
     private val preferences: SharedPreferences
-) : ViewModel() {
+) : ExecutiveViewModel() {
 
     private companion object {
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_FROM =
             "statistics.weekdays.does_max_bpm_date_range_have_date_from"
@@ -134,13 +128,6 @@ class WeekdaysStatisticsViewModel @Inject constructor(
          * @property value date range.
          */
         data class ActualDateRange(val value: DateRange) : Signal()
-
-        /**
-         * Show actual statistics by days of week.
-         *
-         * @property value ready-made statistics by days of week.
-         */
-        data class ActualStatistics(val value: WeekdaysStatistics) : Signal()
     }
 
     /**
@@ -150,16 +137,22 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Subscribe to the current statistics in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val statisticsAsLiveData: LiveData<WeekdaysStatistics?>
+        get() = distinctUntilChanged(_statisticsAsLiveData)
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
+
+    /**
+     * Collect information signals from this flow in the UI thread.
+     */
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     /**
      * The date range over which statistics should be shown.
@@ -171,9 +164,9 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                 Timber.d("Change date range: old=$_dateRange, new=$value")
                 _dateRange = value
                 saveDateRange(value, targetParameter)
-                setState(State.Waiting)
-                give(Signal.ActualDateRange(value))
-                viewModelScope.launch {
+                execute {
+                    setState(State.Waiting)
+                    give(Signal.ActualDateRange(value))
                     aggregateStatistics(value)
                     setState(State.Working)
                 }
@@ -184,12 +177,9 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         get() = requireNotNull(_targetParameter)
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _statisticsAsLiveData: MutableLiveData<WeekdaysStatistics?> = MutableLiveData(null)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     private var _targetParameter: WeekdaysStatisticsTargetParameter? = null
     private var _dateRange: DateRange? = null
@@ -211,11 +201,13 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     /**
      * Start working.
      */
-    suspend fun start() {
+    fun start() {
         Timber.d("Start")
-        setState(State.Waiting)
-        aggregateStatistics(dateRange)
-        setState(State.Working)
+        execute {
+            setState(State.Waiting)
+            aggregateStatistics(dateRange)
+            setState(State.Working)
+        }
     }
 
     /**
@@ -258,7 +250,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                 WeekdaysStatisticsTargetParameter.NOTE_COUNT ->
                     statisticsAggregator.aggregateAverageNoteCount(dateRange)
             }
-            give(Signal.ActualStatistics(statistics))
+            setStatistics(statistics)
         } catch (e: Exception) {
             Timber.e(e)
             reportAbout(e)
@@ -274,6 +266,11 @@ class WeekdaysStatisticsViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun setStatistics(statistics: WeekdaysStatistics) {
+        Timber.d("Set statistics: statistics=$statistics")
+        _statisticsAsLiveData.postValue(statistics)
     }
 
     private fun report(message: Message) {

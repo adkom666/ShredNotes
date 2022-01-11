@@ -38,14 +38,12 @@ import com.adkom666.shrednotes.util.startLinearSmoothScrollToPosition
 import com.adkom666.shrednotes.util.toast
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 
 /**
  * Notes section sub screen.
  */
-@ExperimentalCoroutinesApi
 class NotesFragment :
     DaggerFragment(),
     Searchable,
@@ -140,7 +138,7 @@ class NotesFragment :
         setupFabListeners()
         restoreFragmentListeners()
         observeLiveData()
-        listenChannels()
+        listenFlows()
     }
 
     override fun onDestroyView() {
@@ -251,15 +249,15 @@ class NotesFragment :
         model.notePagingAsLiveData.observe(viewLifecycleOwner, notePagingDataObserver)
     }
 
-    private fun listenChannels() {
+    private fun listenFlows() {
         lifecycleScope.launchWhenResumed {
-            model.navigationChannel.consumeEach(::goToScreen)
+            model.navigationFlow.collect(::goToScreen)
         }
         lifecycleScope.launchWhenStarted {
-            model.messageChannel.consumeEach(::show)
+            model.messageFlow.collect(::show)
         }
-        lifecycleScope.launchWhenStarted {
-            model.signalChannel.consumeEach(::process)
+        lifecycleScope.launchWhenCreated {
+            model.signalFlow.collect(::process)
         }
     }
 

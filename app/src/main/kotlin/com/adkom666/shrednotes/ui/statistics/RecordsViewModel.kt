@@ -5,20 +5,17 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.statistics.BpmRecords
 import com.adkom666.shrednotes.statistics.NoteCountRecords
 import com.adkom666.shrednotes.statistics.RecordsAggregator
 import com.adkom666.shrednotes.util.DateRange
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.putNullableDays
 import com.adkom666.shrednotes.util.time.Days
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.properties.Delegates.observable
@@ -29,15 +26,12 @@ import kotlin.properties.Delegates.observable
  * @property recordsAggregator source of records.
  * @property preferences project's [SharedPreferences].
  */
-@ExperimentalCoroutinesApi
 class RecordsViewModel @Inject constructor(
     private val recordsAggregator: RecordsAggregator,
     private val preferences: SharedPreferences
-) : ViewModel() {
+) : ExecutiveViewModel() {
 
     private companion object {
-        private const val MESSAGE_CHANNEL_CAPACITY = Channel.BUFFERED
-        private const val SIGNAL_CHANNEL_CAPACITY = Channel.BUFFERED
 
         private const val RECORDS_PORTION = 3
 
@@ -87,6 +81,26 @@ class RecordsViewModel @Inject constructor(
          * Finishing work with the records.
          */
         object Finishing : State()
+    }
+
+    /**
+     * Wrapped records.
+     */
+    sealed class Records {
+
+        /**
+         * BPM records.
+         *
+         * @property value ready-made BPM records.
+         */
+        data class Bpm(val value: BpmRecords) : Records()
+
+        /**
+         * Note count records.
+         *
+         * @property value ready-made note count records.
+         */
+        data class NoteCount(val value: NoteCountRecords) : Records()
     }
 
     /**
@@ -147,26 +161,6 @@ class RecordsViewModel @Inject constructor(
          * @property value true if more records are present.
          */
         data class HasMoreRecords(val value: Boolean) : Signal()
-
-        /**
-         * Show actual records.
-         */
-        sealed class ActualRecords : Signal() {
-
-            /**
-             * BPM records.
-             *
-             * @property value ready-made BPM records.
-             */
-            data class Bpm(val value: BpmRecords) : ActualRecords()
-
-            /**
-             * Note count records.
-             *
-             * @property value ready-made note count records.
-             */
-            data class NoteCount(val value: NoteCountRecords) : ActualRecords()
-        }
     }
 
     /**
@@ -176,16 +170,22 @@ class RecordsViewModel @Inject constructor(
         get() = distinctUntilChanged(_stateAsLiveData)
 
     /**
-     * Consume information messages from this channel in the UI thread.
+     * Subscribe to the current records in the UI thread.
      */
-    val messageChannel: ReceiveChannel<Message>
-        get() = _messageChannel.openSubscription()
+    val recordsAsLiveData: LiveData<Records?>
+        get() = distinctUntilChanged(_recordsAsLiveData)
 
     /**
-     * Consume information signals from this channel in the UI thread.
+     * Collect information messages from this flow in the UI thread.
      */
-    val signalChannel: ReceiveChannel<Signal>
-        get() = _signalChannel.openSubscription()
+    val messageFlow: Flow<Message>
+        get() = _messageChannel.receiveAsFlow()
+
+    /**
+     * Collect information signals from this flow in the UI thread.
+     */
+    val signalFlow: Flow<Signal>
+        get() = _signalChannel.receiveAsFlow()
 
     /**
      * The date range over which records should be shown.
@@ -197,9 +197,9 @@ class RecordsViewModel @Inject constructor(
                 Timber.d("Change date range: old=$_dateRange, new=$value")
                 _dateRange = value
                 saveDateRange(value, targetParameter)
-                setState(State.Working(isUiLocked = true))
-                give(Signal.ActualDateRange(value))
-                viewModelScope.launch {
+                execute {
+                    setState(State.Working(isUiLocked = true))
+                    give(Signal.ActualDateRange(value))
                     accumulatedBpmRecords = BpmRecords(emptyList())
                     accumulatedNoteCountRecords = NoteCountRecords(emptyList())
                     readRecordCount(value)
@@ -231,12 +231,9 @@ class RecordsViewModel @Inject constructor(
         get() = requireNotNull(_targetParameter)
 
     private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
-
-    private val _messageChannel: BroadcastChannel<Message> =
-        BroadcastChannel(MESSAGE_CHANNEL_CAPACITY)
-
-    private val _signalChannel: BroadcastChannel<Signal> =
-        BroadcastChannel(SIGNAL_CHANNEL_CAPACITY)
+    private val _recordsAsLiveData: MutableLiveData<Records?> = MutableLiveData(null)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     private var _targetParameter: RecordsTargetParameter? = null
     private var _dateRange: DateRange? = null
@@ -270,40 +267,21 @@ class RecordsViewModel @Inject constructor(
         give(Signal.Subtitle(targetParameter.toSubtitleValue()))
         give(Signal.ActualDateRange(dateRange))
         recordsAggregator.clearCache()
-    }
-
-    /**
-     * Launch records aggregating.
-     */
-    suspend fun launch() {
-        Timber.d("Launch")
-        setState(State.Waiting)
-        recordPosition = 0
-        readRecordCount(dateRange)
-        val isSuccess = accumulateRecords(
-            dateRange = dateRange,
-            startPosition = recordPosition,
-            limit = RECORDS_PORTION
-        )
-        if (isSuccess) {
-            publishRecords()
-            recordPosition += RECORDS_PORTION
+        execute {
+            setState(State.Waiting)
+            recordPosition = 0
+            readRecordCount(dateRange)
+            val isSuccess = accumulateRecords(
+                dateRange = dateRange,
+                startPosition = recordPosition,
+                limit = RECORDS_PORTION
+            )
+            if (isSuccess) {
+                publishRecords()
+                recordPosition += RECORDS_PORTION
+            }
+            setState(State.Working(isUiLocked = false))
         }
-        setState(State.Working(isUiLocked = false))
-    }
-
-    /**
-     * Proceed working.
-     */
-    fun proceed() {
-        Timber.d("Proceed")
-        val recordsSignal = when (targetParameter) {
-            RecordsTargetParameter.BPM ->
-                Signal.ActualRecords.Bpm(accumulatedBpmRecords)
-            RecordsTargetParameter.NOTE_COUNT ->
-                Signal.ActualRecords.NoteCount(accumulatedNoteCountRecords)
-        }
-        give(recordsSignal)
     }
 
     /**
@@ -317,19 +295,21 @@ class RecordsViewModel @Inject constructor(
     /**
      * Call this method to handle the 'More' button click.
      */
-    suspend fun onMoreButtonClick() {
+    fun onMoreButtonClick() {
         Timber.d("On 'More' button click")
-        setState(State.Working(isUiLocked = true))
-        val isSuccess = accumulateRecords(
-            dateRange = dateRange,
-            startPosition = recordPosition,
-            limit = RECORDS_PORTION
-        )
-        if (isSuccess) {
-            publishRecords()
-            recordPosition += RECORDS_PORTION
+        execute {
+            setState(State.Working(isUiLocked = true))
+            val isSuccess = accumulateRecords(
+                dateRange = dateRange,
+                startPosition = recordPosition,
+                limit = RECORDS_PORTION
+            )
+            if (isSuccess) {
+                publishRecords()
+                recordPosition += RECORDS_PORTION
+            }
+            setState(State.Working(isUiLocked = false))
         }
-        setState(State.Working(isUiLocked = false))
     }
 
     private fun loadDateRange(
@@ -411,13 +391,13 @@ class RecordsViewModel @Inject constructor(
     }
 
     private fun publishRecords() {
-        val recordsSignal = when (targetParameter) {
+        val records = when (targetParameter) {
             RecordsTargetParameter.BPM ->
-                Signal.ActualRecords.Bpm(accumulatedBpmRecords)
+                Records.Bpm(accumulatedBpmRecords)
             RecordsTargetParameter.NOTE_COUNT ->
-                Signal.ActualRecords.NoteCount(accumulatedNoteCountRecords)
+                Records.NoteCount(accumulatedNoteCountRecords)
         }
-        give(recordsSignal)
+        setRecords(records)
     }
 
     private fun invalidateMoreRecordsPresence() {
@@ -433,6 +413,11 @@ class RecordsViewModel @Inject constructor(
     private fun setState(state: State) {
         Timber.d("Set state: state=$state")
         _stateAsLiveData.postValue(state)
+    }
+
+    private fun setRecords(records: Records) {
+        Timber.d("Set records: records=$records")
+        _recordsAsLiveData.postValue(records)
     }
 
     private fun report(message: Message) {
