@@ -2,6 +2,8 @@ package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.statistics.util.endDateInclusive
+import com.adkom666.shrednotes.statistics.util.startDateInclusive
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.time.Days
 import timber.log.Timber
@@ -14,6 +16,9 @@ import timber.log.Timber
 class TrackingAggregator(
     private val noteRepository: NoteRepository
 ) {
+    private var firstNoteDateCache: Array<Days?>? = null
+    private var lastNoteDateCache: Array<Days?>? = null
+
     private var maxBpmTrackingPointsCache:
             MutableMap<TrackingPointsId, MaxBpmTrackingPoints> = mutableMapOf()
 
@@ -69,6 +74,8 @@ class TrackingAggregator(
      */
     fun clearCache() {
         Timber.d("clearCache")
+        firstNoteDateCache = null
+        lastNoteDateCache = null
         maxBpmTrackingPointsCache.clear()
         noteCountTrackingPointsCache.clear()
     }
@@ -88,6 +95,7 @@ class TrackingAggregator(
         }
         val daysList = bpmMap.keys.toMutableList()
         daysList.sortBy { it.epochMillis }
+        daysList.ensureEdges(dateRange)
         return daysList.map { days ->
             MaxBpmTracking.Point(
                 days = days,
@@ -109,11 +117,45 @@ class TrackingAggregator(
         }
         val daysList = noteCountMap.keys.toMutableList()
         daysList.sortBy { it.epochMillis }
+        daysList.ensureEdges(dateRange)
         return daysList.map { days ->
             NoteCountTracking.Point(
                 days = days,
                 noteCount = noteCountMap[days] ?: 0
             )
+        }
+    }
+
+    private suspend fun firstDate(): Days? {
+        return firstNoteDateCache?.first()
+            ?: noteRepository.firstNoteDateSuspending()
+                .also { firstNoteDateCache = arrayOf(it) }
+    }
+
+    private suspend fun lastDate(): Days? {
+        return lastNoteDateCache?.first()
+            ?: noteRepository.lastNoteDateSuspending()
+                .also { lastNoteDateCache = arrayOf(it) }
+    }
+
+    private suspend fun MutableList<Days>.ensureEdges(dateRange: DateRange) {
+        if (isNotEmpty()) {
+            val startDate = firstDate()?.let {
+                startDateInclusive(dateRange.fromInclusive, it)
+            }
+            startDate?.let { date ->
+                if (date != firstOrNull()) {
+                    add(0, date)
+                }
+            }
+            val endDate = lastDate()?.let {
+                endDateInclusive(dateRange.toExclusive, it)
+            }
+            endDate?.let { date ->
+                if (date != lastOrNull()) {
+                    add(date)
+                }
+            }
         }
     }
 
