@@ -30,6 +30,13 @@ abstract class Time {
         return epochMillis.toString()
     }
 
+    /**
+     * Compares this object with the specified object for order.
+     *
+     * @param other the object to compare.
+     * @return zero if this object is equal to the specified other object, a negative number if it's
+     * less than other, or a positive number if it's greater than other.
+     */
     operator fun compareTo(other: Time): Int {
         val difference = epochMillis - other.epochMillis
         return when {
