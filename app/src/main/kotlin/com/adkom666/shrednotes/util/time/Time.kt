@@ -31,6 +31,12 @@ abstract class Time {
     }
 
     operator fun compareTo(other: Time): Int {
-        return (epochMillis - other.epochMillis).toInt()
+        val difference = epochMillis - other.epochMillis
+        return when {
+            difference in Int.MIN_VALUE..Int.MAX_VALUE -> difference.toInt()
+            difference < Int.MIN_VALUE -> Int.MIN_VALUE
+            difference > Int.MAX_VALUE -> Int.MAX_VALUE
+            else -> 0
+        }
     }
 }
