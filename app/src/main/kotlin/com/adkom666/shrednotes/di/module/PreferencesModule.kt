@@ -41,7 +41,7 @@ class PreferencesModule {
 
     @Provides
     @Singleton
-    fun excerciseToolPreferences(toolPreferences: ToolPreferences): ExerciseToolPreferences {
+    fun exerciseToolPreferences(toolPreferences: ToolPreferences): ExerciseToolPreferences {
         return toolPreferences
     }
 }
