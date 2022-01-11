@@ -29,4 +29,8 @@ abstract class Time {
     override fun toString(): String {
         return epochMillis.toString()
     }
+
+    operator fun compareTo(other: Time): Int {
+        return (epochMillis - other.epochMillis).toInt()
+    }
 }

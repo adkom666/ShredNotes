@@ -119,7 +119,7 @@ class CommonStatisticsAggregator(
     private fun daysInRange(dateRange: DateRange, firstDate: Days): Int {
         val startDate = if (
             dateRange.fromInclusive == null ||
-            dateRange.fromInclusive.epochMillis < firstDate.epochMillis
+            dateRange.fromInclusive < firstDate
         ) {
             firstDate
         } else {
@@ -129,7 +129,7 @@ class CommonStatisticsAggregator(
         val toDateInclusive = dateRange.toExclusive?.yesterday
         val endDate = if (
             toDateInclusive == null ||
-            toDateInclusive.epochMillis > nowDate.epochMillis
+            toDateInclusive > nowDate
         ) {
             nowDate
         } else {

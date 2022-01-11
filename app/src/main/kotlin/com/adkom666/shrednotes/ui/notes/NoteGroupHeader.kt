@@ -106,7 +106,7 @@ class NoteGroupHeader(
             val view = viewHolder.itemView
             val position = getChildAdapterPosition(view)
             daysForPosition(position)?.let { days ->
-                days.epochMillis < firstHeaderDays.epochMillis
+                days < firstHeaderDays
             } ?: false
         }
 
