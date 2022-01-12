@@ -252,7 +252,6 @@ class RecordsActivity : AppCompatActivity() {
             val isUiUnlocked = isUiLocked.not()
             binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
             binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
-            binding.okButton.isEnabled = isUiUnlocked
             binding.moreButton.isEnabled = isUiUnlocked
         }
 
