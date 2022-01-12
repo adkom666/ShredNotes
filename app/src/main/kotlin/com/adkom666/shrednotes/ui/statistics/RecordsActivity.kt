@@ -245,19 +245,18 @@ class RecordsActivity : AppCompatActivity() {
             }
         }
 
-        private fun setWaiting() = setProgressActive(true)
+        private fun setWaiting() {
+            binding.progressBar.isVisible = true
+            binding.recordsScroll.isVisible = false
+        }
 
         private fun setWorking(isUiLocked: Boolean) {
-            setProgressActive(false)
+            binding.progressBar.isVisible = isUiLocked
+            binding.recordsScroll.isVisible = true
             val isUiUnlocked = isUiLocked.not()
             binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
             binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
             binding.moreButton.isEnabled = isUiUnlocked
-        }
-
-        private fun setProgressActive(isActive: Boolean) {
-            binding.progressBar.isVisible = isActive
-            binding.recordsScroll.isVisible = isActive.not()
         }
     }
 

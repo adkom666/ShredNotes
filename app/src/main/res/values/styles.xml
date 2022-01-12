@@ -152,6 +152,11 @@
 
     <style name="AppTheme.EditText" parent="AppTheme.EditableText" />
 
+    <style name="AppTheme.ProgressBar">
+        <item name="android:padding">@dimen/padding_l</item>
+        <item name="android:background">@drawable/progress_background</item>
+    </style>
+
     <style name="AppTheme.Button">
         <item name="android:backgroundTint">@color/grey_darkish</item>
         <item name="android:textColor">@color/white</item>
