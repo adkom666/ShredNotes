@@ -164,19 +164,24 @@ class CommonStatisticsActivity : AppCompatActivity() {
             when (state) {
                 CommonStatisticsViewModel.State.Waiting ->
                     setWaiting()
-                CommonStatisticsViewModel.State.Working ->
-                    setWorking()
+                is CommonStatisticsViewModel.State.Working ->
+                    setWorking(state.isUiLocked)
                 CommonStatisticsViewModel.State.Finishing ->
                     finish()
             }
         }
 
-        private fun setWaiting() = setProgressActive(true)
-        private fun setWorking() = setProgressActive(false)
+        private fun setWaiting() {
+            binding.progressBar.isVisible = true
+            binding.statisticsCard.isVisible = false
+        }
 
-        private fun setProgressActive(isActive: Boolean) {
-            binding.progressBar.isVisible = isActive
-            binding.statisticsCard.isVisible = isActive.not()
+        private fun setWorking(isUiLocked: Boolean) {
+            binding.progressBar.isVisible = isUiLocked
+            binding.statisticsCard.isVisible = true
+            val isUiUnlocked = isUiLocked.not()
+            binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
         }
     }
 

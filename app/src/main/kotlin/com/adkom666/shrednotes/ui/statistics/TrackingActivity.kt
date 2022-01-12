@@ -276,19 +276,26 @@ class TrackingActivity : AppCompatActivity() {
             when (state) {
                 TrackingViewModel.State.Waiting ->
                     setWaiting()
-                TrackingViewModel.State.Working ->
-                    setWorking()
+                is TrackingViewModel.State.Working ->
+                    setWorking(state.isUiLocked)
                 TrackingViewModel.State.Finishing ->
                     finish()
             }
         }
 
-        private fun setWaiting() = setProgressActive(true)
-        private fun setWorking() = setProgressActive(false)
+        private fun setWaiting() {
+            binding.progressBar.isVisible = true
+            binding.statisticsCard.isVisible = false
+        }
 
-        private fun setProgressActive(isActive: Boolean) {
-            binding.progressBar.isVisible = isActive
-            binding.statisticsCard.isVisible = isActive.not()
+        private fun setWorking(isUiLocked: Boolean) {
+            binding.progressBar.isVisible = isUiLocked
+            binding.statisticsCard.isVisible = true
+            val isUiUnlocked = isUiLocked.not()
+            binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.exerciseSpinner.isEnabled = isUiUnlocked
+            binding.trackingChart.setTouchEnabled(isUiUnlocked)
         }
     }
 

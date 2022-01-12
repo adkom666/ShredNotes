@@ -72,8 +72,10 @@ class TrackingViewModel @Inject constructor(
 
         /**
          * Interacting with the user.
+         *
+         * @property isUiLocked true if the user interface should be locked.
          */
-        object Working : State()
+        data class Working(val isUiLocked: Boolean) : State()
 
         /**
          * Finishing work with the statistics tracking.
@@ -197,10 +199,10 @@ class TrackingViewModel @Inject constructor(
                 _dateRange = value
                 saveDateRange(value, targetParameter)
                 execute {
-                    setState(State.Waiting)
+                    setState(State.Working(isUiLocked = true))
                     give(Signal.ActualDateRange(value))
                     aggregateStatistics(value, exercise)
-                    setState(State.Working)
+                    setState(State.Working(isUiLocked = false))
                 }
             }
         }
@@ -216,9 +218,9 @@ class TrackingViewModel @Inject constructor(
                 Timber.d("Change exercise: old=$_exercise, new=$value")
                 _exercise = value
                 execute {
-                    setState(State.Waiting)
+                    setState(State.Working(isUiLocked = true))
                     aggregateStatistics(dateRange, value)
-                    setState(State.Working)
+                    setState(State.Working(isUiLocked = false))
                 }
             }
         }
@@ -268,7 +270,7 @@ class TrackingViewModel @Inject constructor(
                 }.also { exerciseListCache = it }
             give(Signal.ExerciseList(exerciseList))
             aggregateStatistics(dateRange, exercise)
-            setState(State.Working)
+            setState(State.Working(isUiLocked = false))
         }
     }
 

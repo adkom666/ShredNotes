@@ -60,8 +60,11 @@ class CommonStatisticsViewModel
 
         /**
          * Interacting with the user.
+         *
+         * @property isUiLocked true if the user interface should be locked.
          */
-        object Working : State()
+        data class Working(val isUiLocked: Boolean) : State()
+
 
         /**
          * Finishing work with the common statistics.
@@ -142,10 +145,10 @@ class CommonStatisticsViewModel
                 putDateRange(new)
             }
             execute {
-                setState(State.Waiting)
+                setState(State.Working(isUiLocked = true))
                 give(Signal.ActualDateRange(new))
                 aggregateStatistics(new)
-                setState(State.Working)
+                setState(State.Working(isUiLocked = false))
             }
         }
     }
@@ -172,7 +175,7 @@ class CommonStatisticsViewModel
         execute {
             setState(State.Waiting)
             aggregateStatistics(dateRange)
-            setState(State.Working)
+            setState(State.Working(isUiLocked = false))
         }
     }
 

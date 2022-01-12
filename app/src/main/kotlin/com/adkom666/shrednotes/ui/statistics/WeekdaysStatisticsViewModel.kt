@@ -68,8 +68,10 @@ class WeekdaysStatisticsViewModel @Inject constructor(
 
         /**
          * Interacting with the user.
+         *
+         * @property isUiLocked true if the user interface should be locked.
          */
-        object Working : State()
+        data class Working(val isUiLocked: Boolean) : State()
 
         /**
          * Finishing work with the statistics by days of week.
@@ -165,10 +167,10 @@ class WeekdaysStatisticsViewModel @Inject constructor(
                 _dateRange = value
                 saveDateRange(value, targetParameter)
                 execute {
-                    setState(State.Waiting)
+                    setState(State.Working(isUiLocked = true))
                     give(Signal.ActualDateRange(value))
                     aggregateStatistics(value)
-                    setState(State.Working)
+                    setState(State.Working(isUiLocked = false))
                 }
             }
         }
@@ -206,7 +208,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         execute {
             setState(State.Waiting)
             aggregateStatistics(dateRange)
-            setState(State.Working)
+            setState(State.Working(isUiLocked = false))
         }
     }
 

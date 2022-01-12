@@ -232,19 +232,25 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             when (state) {
                 WeekdaysStatisticsViewModel.State.Waiting ->
                     setWaiting()
-                WeekdaysStatisticsViewModel.State.Working ->
-                    setWorking()
+                is WeekdaysStatisticsViewModel.State.Working ->
+                    setWorking(state.isUiLocked)
                 WeekdaysStatisticsViewModel.State.Finishing ->
                     finish()
             }
         }
 
-        private fun setWaiting() = setProgressActive(true)
-        private fun setWorking() = setProgressActive(false)
+        private fun setWaiting() {
+            binding.progressBar.isVisible = true
+            binding.statisticsScroll.isVisible = false
+        }
 
-        private fun setProgressActive(isActive: Boolean) {
-            binding.progressBar.isVisible = isActive
-            binding.statisticsScroll.isVisible = isActive.not()
+        private fun setWorking(isUiLocked: Boolean) {
+            binding.progressBar.isVisible = isUiLocked
+            binding.statisticsScroll.isVisible = true
+            val isUiUnlocked = isUiLocked.not()
+            binding.dateRange.pickDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.dateRange.clearDateRangeImageButton.isEnabled = isUiUnlocked
+            binding.statisticsPieChart.setTouchEnabled(isUiUnlocked)
         }
     }
 
