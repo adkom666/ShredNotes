@@ -62,7 +62,7 @@
 
     <string name="text_statistics_common_notes">Заметок: %d</string>
     <string name="text_statistics_common_related_exercises">Связанных упражнений: %d</string>
-    <string name="text_statistics_common_days">Дней: %d</string>
+    <string name="text_statistics_common_days_ideally">Дней в идеале: %d</string>
     <string name="text_statistics_common_active_days">Активных дней: %d</string>
     <string name="text_statistics_common_active_days_share">Доля активных дней: %.1f%%</string>
     <string name="text_statistics_common_all_notes">Заметок: %d</string>

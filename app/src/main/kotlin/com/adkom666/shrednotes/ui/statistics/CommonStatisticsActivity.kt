@@ -200,9 +200,9 @@ class CommonStatisticsActivity : AppCompatActivity() {
                 R.string.text_statistics_common_related_exercises,
                 statistics.relatedExercises
             )
-            val lineDays = getString(
-                R.string.text_statistics_common_days,
-                statistics.days
+            val lineDaysIdeally = getString(
+                R.string.text_statistics_common_days_ideally,
+                statistics.daysIdeally
             )
             val lineActiveDays = getString(
                 R.string.text_statistics_common_active_days,
@@ -210,7 +210,7 @@ class CommonStatisticsActivity : AppCompatActivity() {
             )
             var text = lineNotes + LINE_SEPARATOR +
                     lineRelatedExercises + LINE_SEPARATOR +
-                    lineDays + LINE_SEPARATOR +
+                    lineDaysIdeally + LINE_SEPARATOR +
                     lineActiveDays
 
             statistics.activeDaysShare?.let { share ->

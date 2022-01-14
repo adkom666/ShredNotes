@@ -104,7 +104,7 @@ class CommonStatisticsAggregator(
         return CommonStatistics(
             notes = noteCount,
             relatedExercises = relatedExerciseCount,
-            days = dayCount,
+            daysIdeally = dayCount,
             activeDays = activeDayCount,
             activeDaysShare = activeDaysShare,
             allNotes = allNoteCount,

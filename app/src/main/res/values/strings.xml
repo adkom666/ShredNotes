@@ -68,7 +68,7 @@
 
     <string name="text_statistics_common_notes">Notes: %d</string>
     <string name="text_statistics_common_related_exercises">Related exercises: %d</string>
-    <string name="text_statistics_common_days">Days: %d</string>
+    <string name="text_statistics_common_days_ideally">Days ideally: %d</string>
     <string name="text_statistics_common_active_days">Active days: %d</string>
     <string name="text_statistics_common_active_days_share">Active days share: %.1f%%</string>
     <string name="text_statistics_common_all_notes">Notes: %d</string>
