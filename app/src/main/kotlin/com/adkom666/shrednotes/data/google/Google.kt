@@ -81,7 +81,7 @@ class Google(
     }
 
     override fun writeJson(fileName: String, json: String, jsonKey: String) {
-        Timber.d("Write JSON: fileName=$fileName, json=$json")
+        Timber.d("Write JSON: fileName=$fileName, json=$json, jsonKey=$jsonKey")
         when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
             else -> tryToWriteJson(
