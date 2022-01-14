@@ -44,8 +44,7 @@ class DataManager(
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
      * user interaction to recover his rights.
      * @throws JsonSyntaxException when the syntax of the JSON from Google Drive is incorrect.
-     * @throws UnsupportedDataException when the suggested shred notes version is not
-     * supported.
+     * @throws UnsupportedDataException when the suggested shred notes version is not supported.
      */
     @Throws(
         GoogleAuthException::class,
