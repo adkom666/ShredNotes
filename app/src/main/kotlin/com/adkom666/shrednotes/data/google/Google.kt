@@ -19,7 +19,8 @@ import timber.log.Timber
  */
 class Google(
     context: Context,
-    @StringRes private val appNameResId: Int
+    @StringRes
+    private val appNameResId: Int
 ) : GoogleAuth,
     GoogleDrive {
 
