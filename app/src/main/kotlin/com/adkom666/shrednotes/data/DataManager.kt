@@ -26,18 +26,36 @@ class DataManager(
     private val google: Google,
     private val gson: Gson
 ) {
-    private companion object {
-        private const val GOOGLE_DRIVE_FILE_NAME = "shrednotes.json"
-    }
-
     /**
      * Use it to authorization in Google before [read] or [write].
      */
     val googleAuth: GoogleAuth = google
 
     /**
+     * Reading a list of JSON file names stored in Google Drive.
+     *
+     * @return list of the JSON file names stored on Google Drive.
+     * @throws GoogleAuthException when user is signed out of the Google account.
+     * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights.
+     */
+    @Throws(
+        GoogleAuthException::class,
+        GoogleRecoverableAuthException::class
+    )
+    suspend fun readJsonFileNames(): List<String> = withContext(Dispatchers.IO) {
+        Timber.d("Read JSON file names")
+        google.readJsonFileNames()
+    }
+
+    /**
      * Reading all content from Google Drive.
      *
+     * @param fileName name of the target JSON file.
+     * @param fileNameKey key for storing information to be read from Google Drive as text in the
+     * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
+     * thrown. This text should be used as [fileName] after the rights are recovered.
      * @return true if the content was read, false if there is no information on Google Drive.
      * @throws GoogleAuthException when the user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
@@ -53,9 +71,12 @@ class DataManager(
         JsonSyntaxException::class,
         UnsupportedDataException::class
     )
-    suspend fun read(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun read(
+        fileName: String,
+        fileNameKey: String
+    ): Boolean = withContext(Dispatchers.IO) {
         Timber.d("Read")
-        val json = google.readJson(fileName = GOOGLE_DRIVE_FILE_NAME)
+        val json = google.readJson(fileName = fileName, fileNameKey = fileNameKey)
         Timber.d("json=$json")
         json?.let {
             parseAsShredNotes(it)
@@ -66,10 +87,14 @@ class DataManager(
     /**
      * Writing all content to Google Drive.
      *
+     * @param fileName name of the target JSON file.
+     * @param fileNameKey key for storing information to be written on Google Drive as text in the
+     * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
+     * thrown. This text should be used as [fileName] after the rights are recovered.
+     * @param readyJson information to be written on Google Drive as JSON.
      * @param jsonKey key for storing information to be written on Google Drive as JSON in the map
      * [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
      * thrown. This JSON should be used as [readyJson] after the rights are recovered.
-     * @param readyJson information to be written on Google Drive as JSON.
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
@@ -82,7 +107,12 @@ class DataManager(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun write(jsonKey: String, readyJson: String? = null) = withContext(Dispatchers.IO) {
+    suspend fun write(
+        fileName: String,
+        fileNameKey: String,
+        readyJson: String? = null,
+        jsonKey: String
+    ) = withContext(Dispatchers.IO) {
         Timber.d("Write: readyJson=$readyJson")
         val shredNotesJson = readyJson ?: run {
             val version = BuildConfig.SHRED_NOTES_VERSION
@@ -90,7 +120,8 @@ class DataManager(
         }
         Timber.d("shredNotesJson=$shredNotesJson")
         google.writeJson(
-            fileName = GOOGLE_DRIVE_FILE_NAME,
+            fileName = fileName,
+            fileNameKey = fileNameKey,
             json = shredNotesJson,
             jsonKey = jsonKey
         )

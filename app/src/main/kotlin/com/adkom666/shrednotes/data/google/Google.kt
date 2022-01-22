@@ -69,24 +69,40 @@ class Google(
         invalidateDriveHelper(context)
     }
 
-    override fun readJson(fileName: String): String? {
+    override fun readJsonFileNames(): List<String> {
+        Timber.d("Read JSON file names")
+        return when (val helper = driveHelper) {
+            null -> throw GoogleAuthException()
+            else -> tryToReadJsonFileNames(driveHelper = helper)
+        }
+    }
+
+    override fun readJson(fileName: String, fileNameKey: String): String? {
         Timber.d("Read JSON: fileName=$fileName")
         return when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
             else -> tryToReadJson(
                 driveHelper = helper,
-                fileName = fileName
+                fileName = fileName,
+                fileNameKey = fileNameKey
             )
         }
     }
 
-    override fun writeJson(fileName: String, json: String, jsonKey: String) {
-        Timber.d("Write JSON: fileName=$fileName, json=$json, jsonKey=$jsonKey")
+    override fun writeJson(fileName: String, fileNameKey: String, json: String, jsonKey: String) {
+        Timber.d(
+            """Write JSON:
+                |fileName=$fileName,
+                |fileNameKey=$fileNameKey,
+                |json=$json,
+                |jsonKey=$jsonKey""".trimMargin()
+        )
         when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
             else -> tryToWriteJson(
                 driveHelper = helper,
                 fileName = fileName,
+                fileNameKey = fileNameKey,
                 json = json,
                 jsonKey = jsonKey
             )
@@ -94,9 +110,11 @@ class Google(
     }
 
     @Throws(GoogleRecoverableAuthException::class)
-    private fun tryToReadJson(driveHelper: GoogleDriveHelper, fileName: String): String? {
+    private fun tryToReadJsonFileNames(
+        driveHelper: GoogleDriveHelper
+    ): List<String> {
         try {
-            return readJson(driveHelper = driveHelper, fileName = fileName)
+            return driveHelper.listJsonFileName()
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             throw GoogleRecoverableAuthException(e)
@@ -104,9 +122,26 @@ class Google(
     }
 
     @Throws(GoogleRecoverableAuthException::class)
+    private fun tryToReadJson(
+        driveHelper: GoogleDriveHelper,
+        fileName: String,
+        fileNameKey: String
+    ): String? {
+        try {
+            return readJson(driveHelper = driveHelper, fileName = fileName)
+        } catch (e: UserRecoverableAuthIOException) {
+            Timber.d(e)
+            val authIOException = GoogleRecoverableAuthException(e)
+            authIOException.additionalData[fileNameKey] = fileName
+            throw authIOException
+        }
+    }
+
+    @Throws(GoogleRecoverableAuthException::class)
     private fun tryToWriteJson(
         driveHelper: GoogleDriveHelper,
         fileName: String,
+        fileNameKey: String,
         json: String,
         jsonKey: String
     ) {
@@ -115,6 +150,7 @@ class Google(
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
+            authIOException.additionalData[fileNameKey] = fileName
             authIOException.additionalData[jsonKey] = json
             throw authIOException
         }
