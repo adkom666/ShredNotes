@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.pref.ToolPreferences
@@ -37,6 +38,7 @@ class MainViewModel @Inject constructor(
 
     private companion object {
         private val DEFAULT_SECTION = Section.NOTES
+        private const val KEY_FILE_NAME = "file_name"
         private const val KEY_JSON = "json"
     }
 
@@ -275,6 +277,7 @@ class MainViewModel @Inject constructor(
     private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
     private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
+    private var readyFileName: String? = null
     private var readyJson: String? = null
 
     override fun onCleared() {
@@ -315,18 +318,22 @@ class MainViewModel @Inject constructor(
 
     /**
      * Reading all content from Google Drive.
+     *
+     * @param fileName name of the target JSON file.
      */
-    fun read() {
-        Timber.d("Read")
-        launchRead()
+    fun read(fileName: String) {
+        Timber.d("Read: fileName=$fileName")
+        launchRead(fileName)
     }
 
     /**
      * Writing all content to Google Drive.
+     *
+     * @param fileName name of the target JSON file.
      */
-    fun write() {
-        Timber.d("Write")
-        launchWrite()
+    fun write(fileName: String) {
+        Timber.d("Write: fileName=$fileName")
+        launchWrite(fileName)
     }
 
     /**
@@ -380,12 +387,17 @@ class MainViewModel @Inject constructor(
         toolPreferences.reset()
     }
 
-    private fun launchRead() {
+    private fun launchRead(fileName: String? = null) {
         setState(State.Waiting(State.Waiting.Operation.READING))
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             val isForceUnsearchAndUnfilter = try {
-                val isShredNotesUpdate = dataManager.read()
+                val finalFileName = finalFileName(fileName, readyFileName)
+                readyFileName = null
+                val isShredNotesUpdate = dataManager.read(
+                    fileName = finalFileName,
+                    fileNameKey = KEY_FILE_NAME
+                )
                 if (isShredNotesUpdate) {
                     give(Signal.ContentUpdated)
                 }
@@ -402,6 +414,7 @@ class MainViewModel @Inject constructor(
                 false
             } catch (e: GoogleRecoverableAuthException) {
                 Timber.e(e)
+                readyFileName = e.additionalData[KEY_FILE_NAME] as? String
                 e.intent?.let {
                     navigateTo(NavDirection.ToAuthOnRead(it))
                 } ?: report(Message.Error.Unknown)
@@ -423,20 +436,28 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun launchWrite() {
+    private fun launchWrite(fileName: String? = null) {
         setState(State.Waiting(State.Waiting.Operation.WRITING))
         viewModelScope.launch {
             @Suppress("TooGenericExceptionCaught")
             try {
+                val finalFileName = finalFileName(fileName, readyFileName)
+                readyFileName = null
                 val json = readyJson
                 readyJson = null
-                dataManager.write(jsonKey = KEY_JSON, readyJson = json)
+                dataManager.write(
+                    fileName = finalFileName,
+                    fileNameKey = KEY_FILE_NAME,
+                    readyJson = json,
+                    jsonKey = KEY_JSON,
+                )
                 report(Message.GoogleDriveUpdate)
             } catch (e: GoogleAuthException) {
                 Timber.e(e)
                 report(Message.Error.UnauthorizedUser)
             } catch (e: GoogleRecoverableAuthException) {
                 Timber.e(e)
+                readyFileName = e.additionalData[KEY_FILE_NAME] as? String
                 readyJson = e.additionalData[KEY_JSON] as? String
                 e.intent?.let {
                     navigateTo(NavDirection.ToAuthOnWrite(it))
@@ -448,6 +469,17 @@ class MainViewModel @Inject constructor(
             setState(State.Preparation.Continuing(isForceResetTools = false))
         }
     }
+
+    private fun finalFileName(
+        fileName: String?,
+        readyFileName: String?
+    ): String = fileName
+        ?: readyFileName
+        ?: if (BuildConfig.DEBUG) {
+            error("Missing file name and ready file name!")
+        } else {
+            ""
+        }
 
     private fun reportAbout(e: Exception) {
         e.localizedMessage?.let {

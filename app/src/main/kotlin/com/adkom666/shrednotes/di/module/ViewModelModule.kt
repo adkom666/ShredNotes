@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.adkom666.shrednotes.di.viewmodel.ViewModelFactory
 import com.adkom666.shrednotes.di.viewmodel.ViewModelKey
+import com.adkom666.shrednotes.ui.gdrivedialog.GoogleDriveViewModel
 import com.adkom666.shrednotes.ui.MainViewModel
 import com.adkom666.shrednotes.ui.ask.AskViewModel
 import com.adkom666.shrednotes.ui.exercises.ExerciseViewModel
@@ -92,4 +93,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(TrackingViewModel::class)
     abstract fun trackingViewModel(viewModel: TrackingViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(GoogleDriveViewModel::class)
+    abstract fun googleDriveViewModel(viewModel: GoogleDriveViewModel): ViewModel
 }

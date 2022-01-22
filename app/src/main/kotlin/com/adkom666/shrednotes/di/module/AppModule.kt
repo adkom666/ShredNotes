@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.di.module
 
+import com.adkom666.shrednotes.ui.gdrivedialog.GoogleDriveDialogFragment
 import com.adkom666.shrednotes.ui.MainActivity
 import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExerciseActivity
@@ -54,4 +55,7 @@ abstract class AppModule {
 
     @ContributesAndroidInjector
     abstract fun trackingActivity(): TrackingActivity
+
+    @ContributesAndroidInjector
+    abstract fun googleDriveDialogFragment(): GoogleDriveDialogFragment
 }

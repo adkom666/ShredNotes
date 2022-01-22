@@ -31,6 +31,8 @@
     <string name="button_title_clear_all">Очистить все</string>
     <string name="button_title_refresh">Обновить</string>
     <string name="button_title_more">Еще</string>
+    <string name="button_title_read">Прочитать</string>
+    <string name="button_title_write">Записать</string>
 
     <string name="title_date_range">Диапазон дат:</string>
     <string name="title_bpm_range">Диапазон BPM:</string>
@@ -43,6 +45,9 @@
 
     <string name="title_note_exercise">Упражнение:</string>
     <string name="hint_note_exercise">Название упражнения</string>
+
+    <string name="title_file_name_">Файл:</string>
+    <string name="hint_file_name_">Имя файла</string>
 
     <string name="title_tracking_exercise">Упражнение:</string>
 
@@ -111,6 +116,9 @@
 
     <string name="dialog_filter_notes_title">Фильтр заметок</string>
 
+    <string name="dialog_google_drive_title">Google Диск</string>
+    <string name="dialog_google_drive_no_files">Файлов нет</string>
+
     <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
     <string name="message_shred_notes_has_not_been_updated">Информация не обновлена, потому что ее нет на Google Диске</string>
     <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
@@ -131,6 +139,8 @@
     <string name="message_ask">На еду и на творчество</string>
 
     <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
+    <string name="error_unselected_file">Файл не выбран</string>
+    <string name="error_missing_file_name">Нет имени файла</string>
     <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>
     <string name="error_unsupported_data_version">Неподдерживаемая версия данных: %d</string>
 

@@ -34,6 +34,8 @@
     <string name="button_title_clear_all">Clear All</string>
     <string name="button_title_refresh">Refresh</string>
     <string name="button_title_more">More</string>
+    <string name="button_title_read">Read</string>
+    <string name="button_title_write">Write</string>
 
     <string name="title_date_range">Date range:</string>
     <string name="title_bpm_range">BPM range:</string>
@@ -49,6 +51,9 @@
 
     <string name="title_note_bpm" translatable="false">BPM:</string>
     <string name="hint_note_bpm" translatable="false">BPM</string>
+
+    <string name="title_file_name_">File:</string>
+    <string name="hint_file_name_">File name</string>
 
     <string name="title_tracking_exercise">Exercise:</string>
 
@@ -118,6 +123,9 @@
 
     <string name="dialog_filter_notes_title">Filter notes</string>
 
+    <string name="dialog_google_drive_title">Google Drive</string>
+    <string name="dialog_google_drive_no_files">No files</string>
+
     <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
     <string name="message_shred_notes_has_not_been_updated">Shred notes has not been updated, because they are not on Google Drive</string>
     <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
@@ -138,6 +146,8 @@
     <string name="message_ask">For food and art</string>
 
     <string name="error_unauthorized_user">Available only to authorized users</string>
+    <string name="error_unselected_file">File not selected</string>
+    <string name="error_missing_file_name">File name is missing</string>
     <string name="error_wrong_json_syntax">Wrong syntax of the JSON file on Google Drive</string>
     <string name="error_unsupported_data_version">Unsupported data version: %d</string>
 

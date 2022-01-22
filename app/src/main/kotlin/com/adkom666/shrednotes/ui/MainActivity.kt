@@ -24,12 +24,15 @@ import com.adkom666.shrednotes.databinding.ActivityMainBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.ui.ask.AskFragment
 import com.adkom666.shrednotes.ui.exercises.ExercisesFragment
+import com.adkom666.shrednotes.ui.gdrivedialog.GoogleDriveDialogFragment
+import com.adkom666.shrednotes.ui.gdrivedialog.GoogleDriveDialogMode
 import com.adkom666.shrednotes.ui.notes.NotesFragment
 import com.adkom666.shrednotes.ui.statistics.StatisticsFragment
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.ensureNoTextInput
 import com.adkom666.shrednotes.util.getCurrentlyDisplayedFragment
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.performIfFoundByTag
 import com.adkom666.shrednotes.util.temporarilyDisable
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.navigation.NavigationBarView
@@ -50,8 +53,8 @@ class MainActivity :
 
     private companion object {
 
-        private const val TAG_CONFIRM_READ = "${BuildConfig.APPLICATION_ID}.tags.confirm_read"
-        private const val TAG_CONFIRM_WRITE = "${BuildConfig.APPLICATION_ID}.tags.confirm_write"
+        private const val TAG_READ = "${BuildConfig.APPLICATION_ID}.tags.read"
+        private const val TAG_WRITE = "${BuildConfig.APPLICATION_ID}.tags.write"
 
         private const val TAG_CONFIRM_SIGN_OUT =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_sign_out"
@@ -217,10 +220,10 @@ class MainActivity :
         supportFragmentManager.fragments.forEach {
             it?.setListenersIfNeed()
         }
-        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_READ) {
+        supportFragmentManager.performIfFoundByTag<GoogleDriveDialogFragment>(TAG_READ) {
             it.setReadingListener()
         }
-        supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_WRITE) {
+        supportFragmentManager.performIfFoundByTag<GoogleDriveDialogFragment>(TAG_WRITE) {
             it.setWritingListener()
         }
         supportFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_SIGN_OUT) {
@@ -394,22 +397,20 @@ class MainActivity :
 
     private fun onReadItemSelected() {
         Timber.d("Item selected: read notes")
-        val dialogFragment = ConfirmationDialogFragment.newInstance(
-            R.string.dialog_confirm_read_title,
-            R.string.dialog_confirm_read_message
+        val dialogFragment = GoogleDriveDialogFragment.newInstance(
+            mode = GoogleDriveDialogMode.READ
         )
         dialogFragment.setReadingListener()
-        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_READ)
+        dialogFragment.show(supportFragmentManager, TAG_READ)
     }
 
     private fun onWriteItemSelected() {
         Timber.d("Item selected: write notes")
-        val dialogFragment = ConfirmationDialogFragment.newInstance(
-            R.string.dialog_confirm_write_title,
-            R.string.dialog_confirm_write_message
+        val dialogFragment = GoogleDriveDialogFragment.newInstance(
+            mode = GoogleDriveDialogMode.WRITE
         )
         dialogFragment.setWritingListener()
-        dialogFragment.show(supportFragmentManager, TAG_CONFIRM_WRITE)
+        dialogFragment.show(supportFragmentManager, TAG_WRITE)
     }
 
     private fun onSignOutItemSelected() {
@@ -568,15 +569,15 @@ class MainActivity :
         }
     }
 
-    private fun ConfirmationDialogFragment.setReadingListener() {
-        setOnConfirmListener {
-            model.read()
+    private fun GoogleDriveDialogFragment.setReadingListener() {
+        setFileNameListener { fileName ->
+            model.read(fileName)
         }
     }
 
-    private fun ConfirmationDialogFragment.setWritingListener() {
-        setOnConfirmListener {
-            model.write()
+    private fun GoogleDriveDialogFragment.setWritingListener() {
+        setFileNameListener { fileName ->
+            model.write(fileName)
         }
     }
 
