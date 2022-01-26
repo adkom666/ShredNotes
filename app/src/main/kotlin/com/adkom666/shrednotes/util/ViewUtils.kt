@@ -3,9 +3,25 @@ package com.adkom666.shrednotes.util
 import android.content.Context
 import android.graphics.Point
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.core.view.children
 
 private const val CLICKABILITY_DISABLEMENT_MILLIS = 666L
+
+/**
+ * Recursively set the enablement of the view and all of its children.
+ *
+ * @param isEnabled whether view and all its children are enabled.
+ */
+fun View.setEnabledWithChildren(isEnabled: Boolean) {
+    this.isEnabled = isEnabled
+    if (this is ViewGroup) {
+        children.forEach {
+            it.setEnabledWithChildren(isEnabled)
+        }
+    }
+}
 
 /**
  * Measuring the height of a view after it has been drawn.

@@ -5,11 +5,18 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +29,7 @@ import com.adkom666.shrednotes.util.FirstItemDecoration
 import com.adkom666.shrednotes.util.dialog.ConfirmationDialogFragment
 import com.adkom666.shrednotes.util.forwardCursor
 import com.adkom666.shrednotes.util.performIfConfirmationFoundByTag
+import com.adkom666.shrednotes.util.setEnabledWithChildren
 import com.adkom666.shrednotes.util.startLinearSmoothScrollToPosition
 import com.adkom666.shrednotes.util.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -43,6 +51,11 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
         private const val TAG_CONFIRM_OPERATION =
             "${BuildConfig.APPLICATION_ID}.tags.confirm_operation"
+
+        private const val TAG_CONFIRM_DELETION =
+            "${BuildConfig.APPLICATION_ID}.tags.confirm_deletion"
+
+        private const val SCROLL_DELAY_MILLIS = 228L
 
         /**
          * Preferred way to create a fragment.
@@ -74,6 +87,9 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private val adapter: GoogleDriveFileListAdapter
         get() = requireNotNull(_adapter)
 
+    private val alertDialog: AlertDialog
+        get() = requireNotNull(_alertDialog)
+
     private val authLauncher: ActivityResultLauncher<Intent>
         get() = requireNotNull(_authLauncher)
 
@@ -81,9 +97,13 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private var _binding: DialogGoogleDriveBinding? = null
     private var _model: GoogleDriveViewModel? = null
     private var _adapter: GoogleDriveFileListAdapter? = null
+    private var _alertDialog: AlertDialog? = null
     private var _authLauncher: ActivityResultLauncher<Intent>? = null
 
+    private val actionModeCallback: ActionModeCallback = ActionModeCallback { actionMode = null }
     private val fileNameWatcher: FileNameWatcher = FileNameWatcher()
+
+    private var actionMode: ActionMode? = null
 
     private var fileNameListener: FileNameListener? = null
 
@@ -126,14 +146,15 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
             .setView(binding.root)
             .setPositiveButton(positiveButtonTitleResId, null)
             .setNeutralButton(R.string.button_title_cancel, null)
-        val dialog = builder.create()
-        dialog.setOnShowListener {
-            val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        _alertDialog = builder.create()
+        alertDialog.setOnShowListener {
+            observeLiveDataOnShow()
+            val positiveButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 model.onPositiveButtonClick()
             }
         }
-        return dialog
+        return alertDialog
     }
 
     override fun onDetach() {
@@ -170,7 +191,10 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         val marginTop = resources.getDimension(R.dimen.card_vertical_margin)
         val decoration = FirstItemDecoration(marginTop.toInt())
         binding.fileRecycler.addItemDecoration(decoration)
-        val adapter = GoogleDriveFileListAdapter(model::onTargetFileNameChange)
+        val adapter = GoogleDriveFileListAdapter(
+            model.selectableFiles,
+            model::onFileClick
+        )
         binding.fileRecycler.adapter = adapter
         return adapter
     }
@@ -184,13 +208,19 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_OPERATION) {
             it.setPositiveListener()
         }
+        childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_DELETION) {
+            it.setDeletingListener()
+        }
     }
 
     private fun observeLiveData() {
-        model.stateAsLiveData.observe(this, StateObserver())
         model.fileNamesAsLiveData.observe(this, FileNamesObserver())
         model.targetFileSelectionAsLiveData.observe(this, TargetFileSelectionObserver())
         model.targetFileNameAsLiveData.observe(this, TargetFileNameObserver())
+    }
+
+    private fun observeLiveDataOnShow() {
+        model.stateAsLiveData.observe(this, StateObserver())
     }
 
     private fun listenFlows() {
@@ -210,6 +240,8 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private fun show(message: GoogleDriveViewModel.Message) = when (message) {
         GoogleDriveViewModel.Message.ConfirmOperation ->
             showConfirmOperationDialog()
+        GoogleDriveViewModel.Message.ConfirmDeletion ->
+            showConfirmDeletionDialog()
         is GoogleDriveViewModel.Message.Error ->
             showError(message)
     }
@@ -229,6 +261,16 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         )
         dialogFragment.setPositiveListener()
         dialogFragment.show(childFragmentManager, TAG_CONFIRM_OPERATION)
+    }
+
+    private fun showConfirmDeletionDialog() {
+        val dialogFragment = ConfirmationDialogFragment.newInstance(
+            R.string.dialog_confirm_file_deletion_title,
+            R.string.dialog_confirm_file_deletion_message,
+            model.selectableFiles.selectedItemCount
+        )
+        dialogFragment.setDeletingListener()
+        dialogFragment.show(childFragmentManager, TAG_CONFIRM_DELETION)
     }
 
     private fun showError(message: GoogleDriveViewModel.Message.Error) = when (message) {
@@ -255,6 +297,43 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         }
     }
 
+    private fun ConfirmationDialogFragment.setDeletingListener() {
+        setOnConfirmListener {
+            model.onConfirmDeletion()
+        }
+    }
+
+    private inner class ActionModeCallback(
+        private val beforeDestroy: () -> Unit
+    ) : ActionMode.Callback {
+
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            mode?.menuInflater?.inflate(R.menu.google_drive_file_context, menu)
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            return if (item?.itemId == R.id.action_delete) {
+                model.onDeleteClick()
+                true
+            } else {
+                false
+            }
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            Timber.d("onDestroyActionMode: lifecycle.currentState=${lifecycle.currentState}")
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                beforeDestroy()
+                model.onSkipDeletionByUser()
+            }
+        }
+    }
+
     private inner class FileNameWatcher : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -266,13 +345,15 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         override fun onChanged(state: GoogleDriveViewModel.State) {
             Timber.d("State is $state")
             when (state) {
-                GoogleDriveViewModel.State.Waiting -> {
+                is GoogleDriveViewModel.State.Waiting -> {
                     binding.progressBar.isVisible = true
                     binding.filesContainer.isVisible = false
+                    setNonSelectionUi(isEnabled = false, isCancelable = state.isCancelable)
                 }
-                GoogleDriveViewModel.State.Working -> {
+                is GoogleDriveViewModel.State.Working -> {
                     binding.progressBar.isVisible = false
                     binding.filesContainer.isVisible = true
+                    setWorkingMode(state.workingMode)
                 }
                 is GoogleDriveViewModel.State.Finishing.Dismissing -> {
                     fileNameListener?.invoke(state.fileName)
@@ -281,6 +362,40 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
                 GoogleDriveViewModel.State.Finishing.Cancelling ->
                     dialog?.cancel()
             }
+        }
+
+        private fun setWorkingMode(
+            workingMode: GoogleDriveViewModel.State.Working.Mode
+        ) = when (workingMode) {
+            GoogleDriveViewModel.State.Working.Mode.ENTERING_FILE_NAME ->
+                setEnteringFileNameMode()
+            GoogleDriveViewModel.State.Working.Mode.DELETION ->
+                setDeletionMode()
+        }
+
+        private fun setEnteringFileNameMode() {
+            actionMode?.let { safeActionMode ->
+                actionMode = null
+                safeActionMode.finish()
+            }
+            adapter.selectionSource = GoogleDriveFileListAdapter.SelectionSource.PROVIDED_FILE_NAME
+            setNonSelectionUi(isEnabled = true, isCancelable = true)
+        }
+
+        private fun setDeletionMode() {
+            setNonSelectionUi(isEnabled = false, isCancelable = true)
+            adapter.selectionSource = GoogleDriveFileListAdapter.SelectionSource.SELECTABLE_FILES
+            if (actionMode == null) {
+                actionMode = dialog?.window?.decorView?.startActionMode(actionModeCallback)
+            }
+        }
+
+        private fun setNonSelectionUi(isEnabled: Boolean, isCancelable: Boolean) {
+            binding.fileCard.setEnabledWithChildren(isEnabled)
+            val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+            val positiveButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+            neutralButton?.isEnabled = isCancelable
+            positiveButton?.isEnabled = isEnabled
         }
     }
 
@@ -292,11 +407,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         }
 
         private fun setFileNames(fileNames: List<String>) {
-            adapter.submitList(
-                fileNames.map {
-                    SelectableFileName(fileName = it)
-                }
-            )
+            adapter.submitList(fileNames)
             if (fileNames.isNotEmpty()) {
                 binding.fileRecycler.isVisible = true
                 binding.noFilesTextView.isVisible = false
@@ -309,6 +420,8 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
     private inner class TargetFileSelectionObserver : Observer<String?> {
 
+        private val handler: Handler = Handler(Looper.getMainLooper())
+
         override fun onChanged(fileName: String?) {
             Timber.d("Target file selection is $fileName")
             setTargetFileSelection(fileName ?: "")
@@ -317,7 +430,9 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         private fun setTargetFileSelection(fileName: String) {
             val selectedItemPosition = adapter.select(fileName)
             selectedItemPosition?.let { position ->
-                binding.fileRecycler.startLinearSmoothScrollToPosition(position)
+                handler.postDelayed({
+                    binding.fileRecycler.startLinearSmoothScrollToPosition(position)
+                }, SCROLL_DELAY_MILLIS)
             }
         }
     }

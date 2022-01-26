@@ -118,6 +118,7 @@
     <style name="AppTheme.MaterialAlertDialog.GoogleDrive" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="colorSurface">@color/dialog_google_drive_surface_color</item>
         <item name="colorOnSurface">@color/dialog_google_drive_on_surface_color</item>
+        <item name="actionModeBackground">@color/color_primary</item>
         <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Positive</item>
         <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Neutral</item>
     </style>

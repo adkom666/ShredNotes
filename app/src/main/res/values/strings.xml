@@ -13,6 +13,8 @@
     <string name="menu_item_title_sing_in">Sign In</string>
     <string name="menu_item_title_sign_out">Sign Out</string>
 
+    <string name="menu_item_title_delete">Delete</string>
+
     <string name="progress_operation_reading">Reading</string>
     <string name="progress_operation_writing">Writing</string>
 
@@ -108,6 +110,9 @@
 
     <string name="dialog_confirm_write_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_write_message">ALL NOTES AND EXERCISES ON GOOGLE DRIVE WILL BE REPLACED WITH NOTES AND EXERCISES STORED ON THIS DEVICE.\nDo you confirm writing to Google Drive?</string>
+
+    <string name="dialog_confirm_file_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_file_deletion_message">Number of selected files: %d\nDo you confirm deletion?</string>
 
     <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
     <string name="dialog_confirm_sign_out_message">Do you confirm signing out of your account?</string>

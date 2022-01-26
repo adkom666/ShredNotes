@@ -11,6 +11,10 @@ import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.adkom666.shrednotes.util.ExecutiveViewModel
+import com.adkom666.shrednotes.util.selection.ManageableSelection
+import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
+import com.adkom666.shrednotes.util.selection.SelectableItems
+import com.adkom666.shrednotes.util.selection.Selection
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -37,13 +41,27 @@ class GoogleDriveViewModel @Inject constructor(
 
         /**
          * Waiting for the end of some operation.
+         *
+         * @property isCancelable whether user is able to cancel the dialog.
          */
-        object Waiting : State()
+        data class Waiting(val isCancelable: Boolean = true) : State()
 
         /**
          * Interacting with the user.
+         *
+         * @property workingMode current [Mode].
          */
-        object Working : State()
+        data class Working(val workingMode: Mode) : State() {
+
+            /**
+             * In addition to entering a file name, the user has the ability to delete files from
+             * Google Drive.
+             */
+            enum class Mode {
+                ENTERING_FILE_NAME,
+                DELETION
+            }
+        }
 
         /**
          * Finishing work with the dialog.
@@ -87,6 +105,11 @@ class GoogleDriveViewModel @Inject constructor(
          * this operation.
          */
         object ConfirmOperation : Message()
+
+        /**
+         * Message about the consequences of deletion, allowing you to confirm or reject it.
+         */
+        object ConfirmDeletion : Message()
 
         /**
          * Error message.
@@ -158,18 +181,50 @@ class GoogleDriveViewModel @Inject constructor(
     val messageFlow: Flow<Message>
         get() = _messageChannel.receiveAsFlow()
 
+    /**
+     * Files to select.
+     */
+    val selectableFiles: SelectableItems
+        get() = _manageableSelection
+
+    /**
+     * Information about the presence of selected notes.
+     */
+    val selection: Selection
+        get() = _manageableSelection
+
     private val mode: GoogleDriveDialogMode
         get() = requireNotNull(_mode)
 
-    private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
+    private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting())
     private val _fileNamesAsLiveData: MutableLiveData<List<String>?> = MutableLiveData(null)
     private val _targetFileNameAsLiveData: MutableLiveData<String?> = MutableLiveData(null)
     private val _navigationChannel: Channel<NavDirection> = Channel(1)
     private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _manageableSelection: ManageableSelection = ManageableSelection()
+
     private var _mode: GoogleDriveDialogMode? = null
 
-    private var fileNamesCache: List<String>? = null
+    private var googleDriveFileNames: List<String>? = null
+    private var displayedFileNames: MutableList<String>? = null
     private var fileNameToConfirm: String? = null
+
+    private val onSelectionActivenessChangeListener: OnActivenessChangeListener =
+        object : OnActivenessChangeListener {
+            override fun onActivenessChange(isActive: Boolean) {
+                val workingMode = if (isActive) {
+                    State.Working.Mode.DELETION
+                } else {
+                    State.Working.Mode.ENTERING_FILE_NAME
+                }
+                setState(State.Working(workingMode))
+            }
+        }
+
+    init {
+        Timber.d("Init")
+        _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
+    }
 
     /**
      * Prepare for working with the Google Drive.
@@ -187,9 +242,19 @@ class GoogleDriveViewModel @Inject constructor(
     fun start() {
         Timber.d("Start")
         execute {
-            setState(State.Waiting)
+            setState(State.Waiting())
             tryToReadJsonFileNames()
         }
+    }
+
+    /**
+     * Call this method to handle the file name click.
+     *
+     * @param fileName clicked file name.
+     */
+    fun onFileClick(fileName: String?) {
+        Timber.d("On file name click")
+        setTargetFileName(fileName)
     }
 
     /**
@@ -205,7 +270,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onPositiveButtonClick() {
         Timber.d("On positive button click")
-        val fileName = _targetFileNameAsLiveData.value?.outputFileName()
+        val fileName = targetFileNameForGoogleDrive()
         if (fileName.isNullOrEmpty()) {
             val message = when (mode) {
                 GoogleDriveDialogMode.READ -> Message.Error.UnselectedFile
@@ -213,8 +278,7 @@ class GoogleDriveViewModel @Inject constructor(
             }
             report(message)
         } else {
-            val isOnGoogleDrive = fileNamesCache?.contains(fileName) == true
-            if (isOnGoogleDrive) {
+            if (isOnGoogleDrive(fileName)) {
                 fileNameToConfirm = fileName
                 report(Message.ConfirmOperation)
             } else {
@@ -237,6 +301,40 @@ class GoogleDriveViewModel @Inject constructor(
     }
 
     /**
+     * Call this method to handle the confirmation of deletion after [Message.ConfirmDeletion]
+     * message is shown.
+     */
+    fun onConfirmDeletion() {
+        Timber.d("On confirm deletion")
+        execute {
+            setState(State.Waiting(isCancelable = false))
+            // Deletion
+            setState(State.Waiting(isCancelable = true))
+            tryToReadJsonFileNames(isUpdate = true)
+            val fileName = targetFileNameForGoogleDrive()
+            if (isOnGoogleDrive(fileName).not()) {
+                setTargetFileName(null)
+            }
+        }
+    }
+
+    /**
+     * Call this method to handle the 'Delete' click.
+     */
+    fun onDeleteClick() {
+        Timber.d("On action click")
+        report(Message.ConfirmDeletion)
+    }
+
+    /**
+     * Call this method when user skips [State.Working.Mode.DELETION].
+     */
+    fun onSkipDeletionByUser() {
+        Timber.d("On skip deletion by user")
+        _manageableSelection.reset(0)
+    }
+
+    /**
      * Call this method when activity result is acquired, making sure that the results of the Google
      * authorization call for intent from [NavDirection.ToAuth.intent] are returned.
      *
@@ -254,16 +352,19 @@ class GoogleDriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun tryToReadJsonFileNames() {
+    private suspend fun tryToReadJsonFileNames(isUpdate: Boolean = false) {
         @Suppress("TooGenericExceptionCaught")
         try {
-            val fileNames = fileNamesCache
-                ?: dataManager.readJsonFileNames()
-                    .also { fileNamesCache = it }
-            Timber.d("fileNames=$fileNames")
-            setFileNames(fileNames.ensureNoSuffix(FILE_SUFFIX))
-            Timber.d("Without suffixes: fileNames=$fileNames")
-            setState(State.Working)
+            if (isUpdate || googleDriveFileNames == null) {
+                googleDriveFileNames = dataManager.readJsonFileNames()
+                displayedFileNames = googleDriveFileNames?.map {
+                    it.ensureNoSuffix(FILE_SUFFIX)
+                }?.toMutableList()
+            }
+            Timber.d("googleDriveFileNames=$googleDriveFileNames")
+            Timber.d("displayedFileNames=$displayedFileNames")
+            displayedFileNames?.let { setFileNames(it) }
+            setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
         } catch (e: GoogleAuthException) {
             Timber.e(e)
             report(Message.Error.UnauthorizedUser)
@@ -281,6 +382,14 @@ class GoogleDriveViewModel @Inject constructor(
             reportAbout(e)
             setState(State.Finishing.Cancelling)
         }
+    }
+
+    private fun targetFileNameForGoogleDrive(): String? {
+        return _targetFileNameAsLiveData.value?.googleDriveFileName()
+    }
+
+    private fun isOnGoogleDrive(fileName: String?): Boolean {
+        return googleDriveFileNames?.contains(fileName) == true
     }
 
     private fun reportAbout(e: Exception) {
@@ -318,13 +427,9 @@ class GoogleDriveViewModel @Inject constructor(
         return this.trim().ensureNoSuffix(FILE_SUFFIX)
     }
 
-    private fun String.outputFileName(): String {
+    private fun String.googleDriveFileName(): String {
         return this.trim().ensureSuffix(FILE_SUFFIX)
     }
-
-    private fun List<String>.ensureNoSuffix(
-        suffix: String
-    ): List<String> = map { it.ensureNoSuffix(suffix) }
 
     private fun String.ensureNoSuffix(
         suffix: String
