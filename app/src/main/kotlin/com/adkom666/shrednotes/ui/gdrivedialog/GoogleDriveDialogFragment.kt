@@ -352,6 +352,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
                     binding.progressBar.isVisible = true
                     binding.filesContainer.isVisible = false
                     setNonSelectionUi(isEnabled = false, isCancelable = state.isCancelable)
+                    finishActionMode()
                 }
                 is GoogleDriveViewModel.State.Working -> {
                     binding.progressBar.isVisible = false
@@ -377,10 +378,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         }
 
         private fun setEnteringFileNameMode() {
-            actionMode?.let { safeActionMode ->
-                actionMode = null
-                safeActionMode.finish()
-            }
+            finishActionMode()
             adapter.selectionSource = GoogleDriveFileListAdapter.SelectionSource.PROVIDED_FILE_NAME
             setNonSelectionUi(isEnabled = true, isCancelable = true)
         }
@@ -388,8 +386,19 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         private fun setDeletionMode() {
             setNonSelectionUi(isEnabled = false, isCancelable = true)
             adapter.selectionSource = GoogleDriveFileListAdapter.SelectionSource.SELECTABLE_FILES
+            startActionMode()
+        }
+
+        private fun startActionMode() {
             if (actionMode == null) {
                 actionMode = dialog?.window?.decorView?.startActionMode(actionModeCallback)
+            }
+        }
+
+        private fun finishActionMode() {
+            actionMode?.let { safeActionMode ->
+                actionMode = null
+                safeActionMode.finish()
             }
         }
 
