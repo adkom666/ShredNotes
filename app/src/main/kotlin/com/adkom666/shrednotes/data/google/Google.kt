@@ -69,11 +69,11 @@ class Google(
         invalidateDriveHelper(context)
     }
 
-    override fun readJsonFileNames(): List<String> {
-        Timber.d("Read JSON file names")
+    override fun listJsonFiles(): List<GoogleDriveFile> {
+        Timber.d("Read information about JSON files")
         return when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
-            else -> tryToReadJsonFileNames(driveHelper = helper)
+            else -> tryToListJsonFiles(driveHelper = helper)
         }
     }
 
@@ -110,11 +110,11 @@ class Google(
     }
 
     @Throws(GoogleRecoverableAuthException::class)
-    private fun tryToReadJsonFileNames(
+    private fun tryToListJsonFiles(
         driveHelper: GoogleDriveHelper
-    ): List<String> {
+    ): List<GoogleDriveFile> {
         try {
-            return driveHelper.listJsonFileName()
+            return driveHelper.listJsonFile()
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             throw GoogleRecoverableAuthException(e)

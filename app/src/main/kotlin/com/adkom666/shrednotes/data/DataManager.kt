@@ -6,6 +6,7 @@ import com.adkom666.shrednotes.data.external.ExternalShredNotesV1
 import com.adkom666.shrednotes.data.google.Google
 import com.adkom666.shrednotes.data.google.GoogleAuth
 import com.adkom666.shrednotes.data.google.GoogleAuthException
+import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.adkom666.shrednotes.data.repository.ShredNotesRepository
 import com.google.gson.Gson
@@ -32,9 +33,9 @@ class DataManager(
     val googleAuth: GoogleAuth = google
 
     /**
-     * Reading a list of JSON file names stored in Google Drive.
+     * Reading a list of information about JSON files stored in Google Drive.
      *
-     * @return list of the JSON file names stored on Google Drive.
+     * @return list of of information about JSON files stored on Google Drive.
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
@@ -44,9 +45,9 @@ class DataManager(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun readJsonFileNames(): List<String> = withContext(Dispatchers.IO) {
-        Timber.d("Read JSON file names")
-        google.readJsonFileNames()
+    suspend fun listJsonFiles(): List<GoogleDriveFile> = withContext(Dispatchers.IO) {
+        Timber.d("Read information about JSON files")
+        google.listJsonFiles()
     }
 
     /**
@@ -125,6 +126,32 @@ class DataManager(
             json = shredNotesJson,
             jsonKey = jsonKey
         )
+    }
+
+    /**
+     * Deleting files from Google Drive with identifiers listed in [fileIdList].
+     *
+     * @param fileIdList list of target file identifiers.
+     * @param fileIdListKey key of the list of target file identifiers to save it in the
+     * [GoogleRecoverableAuthException.additionalData] map for the case if
+     * [GoogleRecoverableAuthException] has been thrown.
+     * @throws GoogleAuthException when user is signed out of the Google account.
+     * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights. This exception also contains the original
+     * [fileIdList] in its [GoogleRecoverableAuthException.additionalData] map with the key
+     * [fileIdListKey].
+     */
+    @Throws(
+        GoogleAuthException::class,
+        GoogleRecoverableAuthException::class
+    )
+    suspend fun delete(
+        fileIdList: List<String>,
+        fileIdListKey: String
+    ) = withContext(Dispatchers.IO) {
+        Timber.d("Delete: fileIdList=$fileIdList")
+        google.deleteFiles(fileIdList = fileIdList, fileIdListKey = fileIdListKey)
     }
 
     @Throws(

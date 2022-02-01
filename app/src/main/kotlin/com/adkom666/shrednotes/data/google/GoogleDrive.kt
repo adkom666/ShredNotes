@@ -6,16 +6,16 @@ package com.adkom666.shrednotes.data.google
 interface GoogleDrive {
 
     /**
-     * Reading a list of JSON file names stored in Google Drive.
+     * Reading a list of information about JSON files stored in Google Drive.
      *
-     * @return list of the JSON file names stored on Google Drive.
+     * @return list of of information about JSON files stored on Google Drive.
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
      * user interaction to recover his rights.
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun readJsonFileNames(): List<String>
+    fun listJsonFiles(): List<GoogleDriveFile>
 
     /**
      * Retrieving content of the JSON file named [fileName].

@@ -23,7 +23,7 @@ class GoogleDriveHelper(private val drive: Drive) {
     }
 
     /**
-     * Getting a list of JSON file names with the parent named [parentName].
+     * Getting a list of information about JSON files with the parent named [parentName].
      *
      * @param parentName name of one of the file's parents.
      * @return list of JSON file names with the parent named [parentName].
@@ -32,9 +32,9 @@ class GoogleDriveHelper(private val drive: Drive) {
      * user interaction to recover his rights.
      */
     @Throws(UserRecoverableAuthIOException::class)
-    fun listJsonFileName(parentName: String = FOLDER_APPDATA): List<String> {
+    fun listJsonFile(parentName: String = FOLDER_APPDATA): List<GoogleDriveFile> {
         Timber.d("Get root JSON file name list")
-        val fileNameList = mutableListOf<String>()
+        val fileList = mutableListOf<GoogleDriveFile>()
         var nextPageToken: String? = null
         do {
             val result = drive.files().list().apply {
@@ -44,13 +44,15 @@ class GoogleDriveHelper(private val drive: Drive) {
                 pageToken = nextPageToken
             }.execute()
             Timber.d("result=$result")
-            val pageFileNameList = result.files?.map { it.name }
-            pageFileNameList?.let { fileNameList.addAll(it) }
+            val pageFileList = result.files?.map { file ->
+                GoogleDriveFile(id = file.id, name = file.name)
+            }
+            pageFileList?.let { fileList.addAll(it) }
             nextPageToken = result.nextPageToken
             Timber.d("nextPageToken=$nextPageToken")
         } while (nextPageToken != null)
-        Timber.d("fileNameList=$fileNameList")
-        return fileNameList
+        Timber.d("fileList=$fileList")
+        return fileList
     }
 
     /**

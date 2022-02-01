@@ -9,6 +9,7 @@ import androidx.lifecycle.map
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
+import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.selection.ManageableSelection
@@ -32,6 +33,7 @@ class GoogleDriveViewModel @Inject constructor(
 
     private companion object {
         private const val FILE_SUFFIX = ".json"
+        private const val KEY_FILE_ID_LIST = "file_id_list"
     }
 
     /**
@@ -205,7 +207,7 @@ class GoogleDriveViewModel @Inject constructor(
 
     private var _mode: GoogleDriveDialogMode? = null
 
-    private var googleDriveFileNames: List<String>? = null
+    private var googleDriveFiles: List<GoogleDriveFile>? = null
     private var displayedFileNames: MutableList<String>? = null
     private var fileNameToConfirm: String? = null
 
@@ -355,13 +357,13 @@ class GoogleDriveViewModel @Inject constructor(
     private suspend fun tryToReadJsonFileNames(isUpdate: Boolean = false) {
         @Suppress("TooGenericExceptionCaught")
         try {
-            if (isUpdate || googleDriveFileNames == null) {
-                googleDriveFileNames = dataManager.readJsonFileNames()
-                displayedFileNames = googleDriveFileNames?.map {
-                    it.ensureNoSuffix(FILE_SUFFIX)
+            if (isUpdate || googleDriveFiles == null) {
+                googleDriveFiles = dataManager.listJsonFiles()
+                displayedFileNames = googleDriveFiles?.map {
+                    it.name.ensureNoSuffix(FILE_SUFFIX)
                 }?.toMutableList()
             }
-            Timber.d("googleDriveFileNames=$googleDriveFileNames")
+            Timber.d("googleDriveFiles=$googleDriveFiles")
             Timber.d("displayedFileNames=$displayedFileNames")
             displayedFileNames?.let { setFileNames(it) }
             setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
