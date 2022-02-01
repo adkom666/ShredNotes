@@ -100,7 +100,11 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private var _alertDialog: AlertDialog? = null
     private var _authLauncher: ActivityResultLauncher<Intent>? = null
 
-    private val actionModeCallback: ActionModeCallback = ActionModeCallback { actionMode = null }
+    private val actionModeCallback: ActionModeCallback = ActionModeCallback(
+        { actionMode != null },
+        { actionMode = null }
+    )
+
     private val fileNameWatcher: FileNameWatcher = FileNameWatcher()
     private var actionMode: ActionMode? = null
     private var fileNameListener: FileNameListener? = null
@@ -302,6 +306,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     }
 
     private inner class ActionModeCallback(
+        private val isDestroyEnabled: () -> Boolean,
         private val beforeDestroy: () -> Unit
     ) : ActionMode.Callback {
 
@@ -325,7 +330,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
         override fun onDestroyActionMode(mode: ActionMode?) {
             Timber.d("onDestroyActionMode: lifecycle.currentState=${lifecycle.currentState}")
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            if (isDestroyEnabled() && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 beforeDestroy()
                 model.onSkipDeletionByUser()
             }
