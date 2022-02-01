@@ -102,9 +102,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
     private val actionModeCallback: ActionModeCallback = ActionModeCallback { actionMode = null }
     private val fileNameWatcher: FileNameWatcher = FileNameWatcher()
-
     private var actionMode: ActionMode? = null
-
     private var fileNameListener: FileNameListener? = null
 
     override fun onAttach(context: Context) {
