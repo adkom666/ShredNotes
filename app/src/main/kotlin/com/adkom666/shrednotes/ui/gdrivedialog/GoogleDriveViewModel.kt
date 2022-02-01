@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import androidx.lifecycle.map
 import com.adkom666.shrednotes.BuildConfig
+import com.adkom666.shrednotes.common.Id
 import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
@@ -92,9 +93,19 @@ class GoogleDriveViewModel @Inject constructor(
         /**
          * To authorization on Google.
          *
+         * @property operation see [Operation].
          * @property intent [Intent] to use when calling an activity.
          */
-        data class ToAuth(val intent: Intent) : NavDirection()
+        data class ToAuth(val operation: Operation, val intent: Intent) : NavDirection() {
+
+            /**
+             * Interrupted operation.
+             */
+            enum class Operation {
+                READING_FILE_NAMES,
+                DELETION
+            }
+        }
     }
 
     /**
@@ -310,13 +321,7 @@ class GoogleDriveViewModel @Inject constructor(
         Timber.d("On confirm deletion")
         execute {
             setState(State.Waiting(isCancelable = false))
-            // Deletion
-            setState(State.Waiting(isCancelable = true))
-            tryToReadJsonFileNames(isUpdate = true)
-            val fileName = targetFileNameForGoogleDrive()
-            if (isOnGoogleDrive(fileName).not()) {
-                setTargetFileName(null)
-            }
+            tryToDeleteSelectedFiles()
         }
     }
 
@@ -340,14 +345,18 @@ class GoogleDriveViewModel @Inject constructor(
      * Call this method when activity result is acquired, making sure that the results of the Google
      * authorization call for intent from [NavDirection.ToAuth.intent] are returned.
      *
+     * @param operation operation interrupted for authorization.
      * @param resultCode the integer result code returned by the child activity through its
      * [Activity.setResult].
      */
-    fun handleAuthResult(resultCode: Int) {
-        Timber.d("Handle auth result: resultCode=$resultCode")
+    fun handleAuthResult(operation: NavDirection.ToAuth.Operation, resultCode: Int) {
+        Timber.d("Handle auth result: operation=$operation, resultCode=$resultCode")
         if (resultCode == Activity.RESULT_OK) {
             execute {
-                tryToReadJsonFileNames()
+                when (operation) {
+                    NavDirection.ToAuth.Operation.READING_FILE_NAMES -> tryToReadJsonFileNames()
+                    NavDirection.ToAuth.Operation.DELETION -> tryToDeleteSelectedFiles()
+                }
             }
         } else {
             setState(State.Finishing.Cancelling)
@@ -367,14 +376,21 @@ class GoogleDriveViewModel @Inject constructor(
             Timber.d("displayedFileNames=$displayedFileNames")
             displayedFileNames?.let { setFileNames(it) }
             setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
+            _manageableSelection.reset(0)
+            skipTargetFileNameIfFileDeleted()
         } catch (e: GoogleAuthException) {
             Timber.e(e)
             report(Message.Error.UnauthorizedUser)
             setState(State.Finishing.Cancelling)
         } catch (e: GoogleRecoverableAuthException) {
             Timber.e(e)
-            e.intent?.let {
-                navigateTo(NavDirection.ToAuth(it))
+            e.intent?.let { intent ->
+                navigateTo(
+                    NavDirection.ToAuth(
+                        operation = NavDirection.ToAuth.Operation.READING_FILE_NAMES,
+                        intent = intent
+                    )
+                )
             } ?: run {
                 report(Message.Error.Unknown)
                 setState(State.Finishing.Cancelling)
@@ -386,12 +402,72 @@ class GoogleDriveViewModel @Inject constructor(
         }
     }
 
+    private suspend fun tryToDeleteSelectedFiles() {
+        @Suppress("TooGenericExceptionCaught")
+        return try {
+            val deletionCount = deleteSelectedFiles()
+            if (deletionCount > 0) {
+                setState(State.Waiting(isCancelable = true))
+                tryToReadJsonFileNames(isUpdate = true)
+            } else {
+                setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
+            }
+        } catch (e: GoogleAuthException) {
+            Timber.e(e)
+            report(Message.Error.UnauthorizedUser)
+            setState(State.Working(State.Working.Mode.DELETION))
+        } catch (e: GoogleRecoverableAuthException) {
+            Timber.e(e)
+            e.intent?.let { intent ->
+                navigateTo(
+                    NavDirection.ToAuth(
+                        operation = NavDirection.ToAuth.Operation.DELETION,
+                        intent = intent
+                    )
+                )
+            } ?: run {
+                report(Message.Error.Unknown)
+                setState(State.Working(State.Working.Mode.DELETION))
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
+            setState(State.Working(State.Working.Mode.DELETION))
+        }
+    }
+
+    private suspend fun deleteSelectedFiles(): Int {
+        return when (val selectionState = _manageableSelection.state) {
+            is ManageableSelection.State.Active.Inclusive ->
+                googleDriveFiles?.let { files ->
+                    val selectedFileIndexList = selectionState
+                        .selectedItemIdSet
+                        .map(Id::toInt)
+                        .toList()
+                    val fileIdList = selectedFileIndexList
+                        .filter { files[it].id != null }
+                        .map { files[it].id ?: if (BuildConfig.DEBUG) error("Id is null!") else "" }
+                    dataManager.delete(fileIdList, KEY_FILE_ID_LIST)
+                    selectedFileIndexList.size
+                } ?: 0
+            is ManageableSelection.State.Active.Exclusive -> 0
+            ManageableSelection.State.Inactive -> 0
+        }
+    }
+
+    private fun skipTargetFileNameIfFileDeleted() {
+        val fileName = targetFileNameForGoogleDrive()
+        if (isOnGoogleDrive(fileName).not()) {
+            setTargetFileName(null)
+        }
+    }
+
     private fun targetFileNameForGoogleDrive(): String? {
         return _targetFileNameAsLiveData.value?.googleDriveFileName()
     }
 
     private fun isOnGoogleDrive(fileName: String?): Boolean {
-        return googleDriveFileNames?.contains(fileName) == true
+        return googleDriveFiles?.find { it.name.equals(fileName, ignoreCase = true) } != null
     }
 
     private fun reportAbout(e: Exception) {

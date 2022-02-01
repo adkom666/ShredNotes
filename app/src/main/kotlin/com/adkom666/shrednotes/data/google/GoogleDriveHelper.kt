@@ -157,4 +157,18 @@ class GoogleDriveHelper(private val drive: Drive) {
         val file = drive.files().update(fileId, metadata, contentStream).execute()
         Timber.d("File updated: file=$file")
     }
+
+    /**
+     * Deleting a file with identifier [fileId].
+     *
+     * @param fileId identifier of the target file.
+     * @throws UserRecoverableAuthIOException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights.
+     */
+    @Throws(UserRecoverableAuthIOException::class)
+    fun deleteFile(fileId: String) {
+        Timber.d("Delete file: fileId=$fileId")
+        drive.files().delete(fileId).execute()
+    }
 }

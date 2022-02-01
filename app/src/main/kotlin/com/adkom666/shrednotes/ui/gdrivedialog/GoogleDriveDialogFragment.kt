@@ -90,15 +90,19 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private val alertDialog: AlertDialog
         get() = requireNotNull(_alertDialog)
 
-    private val authLauncher: ActivityResultLauncher<Intent>
-        get() = requireNotNull(_authLauncher)
+    private val authOnReadingFileNamesLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_authOnReadingFileNamesLauncher)
+
+    private val authOnDeletionLauncher: ActivityResultLauncher<Intent>
+        get() = requireNotNull(_authOnDeletionLauncher)
 
     private var _mode: GoogleDriveDialogMode? = null
     private var _binding: DialogGoogleDriveBinding? = null
     private var _model: GoogleDriveViewModel? = null
     private var _adapter: GoogleDriveFileListAdapter? = null
     private var _alertDialog: AlertDialog? = null
-    private var _authLauncher: ActivityResultLauncher<Intent>? = null
+    private var _authOnReadingFileNamesLauncher: ActivityResultLauncher<Intent>? = null
+    private var _authOnDeletionLauncher: ActivityResultLauncher<Intent>? = null
 
     private val actionModeCallback: ActionModeCallback = ActionModeCallback(
         { actionMode != null },
@@ -174,16 +178,29 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     }
 
     private fun acquireActivityLaunchers() {
-        _authLauncher = registerForActivityResult(
+        _authOnReadingFileNamesLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-            Timber.d("On auth: result=$result")
-            model.handleAuthResult(result.resultCode)
+            Timber.d("On auth on reading file names: result=$result")
+            model.handleAuthResult(
+                operation = GoogleDriveViewModel.NavDirection.ToAuth.Operation.READING_FILE_NAMES,
+                resultCode = result.resultCode
+            )
+        }
+        _authOnDeletionLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            Timber.d("On auth on deletion: result=$result")
+            model.handleAuthResult(
+                operation = GoogleDriveViewModel.NavDirection.ToAuth.Operation.DELETION,
+                resultCode = result.resultCode
+            )
         }
     }
 
     private fun skipActivityLaunchers() {
-        _authLauncher = null
+        _authOnReadingFileNamesLauncher = null
+        _authOnDeletionLauncher = null
     }
 
     private fun initFileRecycler(): GoogleDriveFileListAdapter {
@@ -236,7 +253,17 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
     private fun goToScreen(direction: GoogleDriveViewModel.NavDirection) = when (direction) {
         is GoogleDriveViewModel.NavDirection.ToAuth ->
-            authLauncher.launch(direction.intent)
+            auth(direction.operation, direction.intent)
+    }
+
+    private fun auth(
+        operation: GoogleDriveViewModel.NavDirection.ToAuth.Operation,
+        intent: Intent
+    ) = when (operation) {
+        GoogleDriveViewModel.NavDirection.ToAuth.Operation.READING_FILE_NAMES ->
+            authOnReadingFileNamesLauncher.launch(intent)
+        GoogleDriveViewModel.NavDirection.ToAuth.Operation.DELETION ->
+            authOnDeletionLauncher.launch(intent)
     }
 
     private fun show(message: GoogleDriveViewModel.Message) = when (message) {

@@ -52,4 +52,21 @@ interface GoogleDrive {
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
     fun writeJson(fileName: String, fileNameKey: String, json: String, jsonKey: String)
+
+    /**
+     * Deleting files with identifiers listed in [fileIdList].
+     *
+     * @param fileIdList list of target file identifiers.
+     * @param fileIdListKey key of the list of target file identifiers to save it in the
+     * [GoogleRecoverableAuthException.additionalData] map for the case if
+     * [GoogleRecoverableAuthException] has been thrown.
+     * @throws GoogleAuthException when user is signed out of the Google account.
+     * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights. This exception also contains the original
+     * [fileIdList] in its [GoogleRecoverableAuthException.additionalData] map with the key
+     * [fileIdListKey].
+     */
+    @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
+    fun deleteFiles(fileIdList: List<String>, fileIdListKey: String)
 }

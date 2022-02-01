@@ -92,11 +92,11 @@ class GoogleDriveFileListAdapter(
         fileName: String
     ): Int? = if (selectionSource == SelectionSource.PROVIDED_FILE_NAME) {
         val oldPositionFound = (0 until itemCount).find {
-            getItem(it) == selectedFileName
+            getItem(it).equals(selectedFileName, ignoreCase = true)
         }
         selectedFileName = fileName
         val newPositionFound = (0 until itemCount).find {
-            getItem(it) == fileName
+            getItem(it).equals(fileName, ignoreCase = true)
         }
         oldPositionFound?.let { notifyItemChanged(it) }
         newPositionFound?.let { notifyItemChanged(it) }
@@ -124,7 +124,7 @@ class GoogleDriveFileListAdapter(
             val id = absoluteAdapterPosition.toId()
             binding.titleCard.isSelected = when (selectionSource) {
                 SelectionSource.PROVIDED_FILE_NAME ->
-                    fileName == selectedFileName
+                    fileName.equals(selectedFileName, ignoreCase = true)
                 SelectionSource.SELECTABLE_FILES ->
                     selectableFiles.isSelected(id)
             }
