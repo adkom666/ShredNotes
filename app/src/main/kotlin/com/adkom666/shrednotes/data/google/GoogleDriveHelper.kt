@@ -56,38 +56,6 @@ class GoogleDriveHelper(private val drive: Drive) {
     }
 
     /**
-     * Getting a list of identifiers for files named [fileName] with the parent named [parentName].
-     *
-     * @param fileName name of the target files.
-     * @param parentName name of one of the file's parents.
-     * @return list of identifiers for files named [fileName] with the parent named [parentName].
-     * @throws UserRecoverableAuthIOException when the user does not have enough rights to perform
-     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights.
-     */
-    @Throws(UserRecoverableAuthIOException::class)
-    fun listJsonFileId(fileName: String, parentName: String = FOLDER_APPDATA): List<String> {
-        Timber.d("Get root JSON file id list: fileName=$fileName")
-        val fileIdList = mutableListOf<String>()
-        var nextPageToken: String? = null
-        do {
-            val result = drive.files().list().apply {
-                q = "name='$fileName' and mimeType='$MIME_TYPE_JSON' and '$parentName' in parents"
-                fields = "nextPageToken, files(id, name, parents)"
-                spaces = SPACE_APPDATA
-                pageToken = nextPageToken
-            }.execute()
-            Timber.d("result=$result")
-            val pageFileIdList = result.files?.map { it.id }
-            pageFileIdList?.let { fileIdList.addAll(it) }
-            nextPageToken = result.nextPageToken
-            Timber.d("nextPageToken=$nextPageToken")
-        } while (nextPageToken != null)
-        Timber.d("fileIdList=$fileIdList")
-        return fileIdList
-    }
-
-    /**
      * Retrieves the content of the file with the identifier [fileId].
      *
      * @param fileId identifier of the target file.
