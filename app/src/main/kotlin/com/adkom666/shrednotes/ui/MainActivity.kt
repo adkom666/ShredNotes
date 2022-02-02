@@ -468,8 +468,6 @@ class MainActivity :
     private fun show(message: MainViewModel.Message) = when (message) {
         MainViewModel.Message.ShredNotesUpdate ->
             toast(R.string.message_shred_notes_has_been_updated)
-        MainViewModel.Message.NoShredNotesUpdate ->
-            toast(R.string.message_shred_notes_has_not_been_updated, isShort = false)
         MainViewModel.Message.GoogleDriveUpdate ->
             toast(R.string.message_google_drive_has_been_updated)
         is MainViewModel.Message.Error ->

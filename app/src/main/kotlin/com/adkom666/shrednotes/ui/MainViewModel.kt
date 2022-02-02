@@ -134,11 +134,6 @@ class MainViewModel @Inject constructor(
         object ShredNotesUpdate : Message()
 
         /**
-         * Shred notes has not been updated (because they are not on Google drive).
-         */
-        object NoShredNotesUpdate : Message()
-
-        /**
          * Google Drive has been updated.
          */
         object GoogleDriveUpdate : Message()

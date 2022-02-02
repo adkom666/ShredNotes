@@ -125,7 +125,6 @@
     <string name="dialog_google_drive_no_files">Файлов нет</string>
 
     <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
-    <string name="message_shred_notes_has_not_been_updated">Информация не обновлена, потому что ее нет на Google Диске</string>
     <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
 
     <string name="message_exercise_has_been_added">Упражнение добавлено</string>

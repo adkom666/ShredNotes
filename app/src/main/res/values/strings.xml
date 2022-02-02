@@ -132,7 +132,6 @@
     <string name="dialog_google_drive_no_files">No files</string>
 
     <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
-    <string name="message_shred_notes_has_not_been_updated">Shred notes has not been updated, because they are not on Google Drive</string>
     <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
 
     <string name="message_exercise_has_been_added">Exercise has been added</string>
