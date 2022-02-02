@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -245,7 +244,7 @@ class NotesFragment :
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
         val noteExpectationObserver = NoteExpectationObserver()
         model.noteExpectationAsLiveData.observe(viewLifecycleOwner, noteExpectationObserver)
-        val notePagingDataObserver = NotePagingDataObserver(lifecycle, adapter)
+        val notePagingDataObserver = NotePagingDataObserver()
         model.notePagingAsLiveData.observe(viewLifecycleOwner, notePagingDataObserver)
     }
 
@@ -397,10 +396,7 @@ class NotesFragment :
         }
     }
 
-    private class NotePagingDataObserver(
-        private val lifecycle: Lifecycle,
-        private val adapter: NotePagingDataAdapter
-    ) : Observer<PagingData<Note>> {
+    private inner class NotePagingDataObserver : Observer<PagingData<Note>> {
 
         override fun onChanged(notePagingData: PagingData<Note>) {
             adapter.submitData(lifecycle, notePagingData)

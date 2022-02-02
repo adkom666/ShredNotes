@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -225,7 +224,7 @@ class ExercisesFragment :
         model.stateAsLiveData.observe(viewLifecycleOwner, stateObserver)
         val exerciseExpectationObserver = ExerciseExpectationObserver()
         model.exerciseExpectationAsLiveData.observe(viewLifecycleOwner, exerciseExpectationObserver)
-        val exercisePagingDataObserver = ExercisePagingDataObserver(lifecycle, adapter)
+        val exercisePagingDataObserver = ExercisePagingDataObserver()
         model.exercisePagingAsLiveData.observe(viewLifecycleOwner, exercisePagingDataObserver)
     }
 
@@ -342,10 +341,7 @@ class ExercisesFragment :
         }
     }
 
-    private class ExercisePagingDataObserver(
-        private val lifecycle: Lifecycle,
-        private val adapter: ExercisePagingDataAdapter
-    ) : Observer<PagingData<Exercise>> {
+    private inner class ExercisePagingDataObserver : Observer<PagingData<Exercise>> {
 
         override fun onChanged(exercisePagingData: PagingData<Exercise>) {
             adapter.submitData(lifecycle, exercisePagingData)
