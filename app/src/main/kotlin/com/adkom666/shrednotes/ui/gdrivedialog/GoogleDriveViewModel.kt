@@ -385,7 +385,7 @@ class GoogleDriveViewModel @Inject constructor(
             displayedFileNames?.let { setFileNames(it) }
             setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
             _manageableSelection.reset()
-            skipTargetFileNameIfFileDeleted()
+            skipTargetFileNameIfFileMissing()
         } catch (e: GoogleAuthException) {
             Timber.e(e)
             report(Message.Error.UnauthorizedUser)
@@ -464,7 +464,7 @@ class GoogleDriveViewModel @Inject constructor(
         }
     }
 
-    private fun skipTargetFileNameIfFileDeleted() {
+    private fun skipTargetFileNameIfFileMissing() {
         val fileName = targetFileNameForGoogleDrive()
         if (isOnGoogleDrive(fileName).not()) {
             setTargetFileName(null)
