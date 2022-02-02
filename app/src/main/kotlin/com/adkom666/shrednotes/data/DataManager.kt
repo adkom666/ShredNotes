@@ -47,7 +47,9 @@ class DataManager(
     )
     suspend fun listJsonFiles(): List<GoogleDriveFile> = withContext(Dispatchers.IO) {
         Timber.d("Read information about JSON files")
-        google.listJsonFiles()
+        val jsonFiles = google.listJsonFiles()
+        Timber.d("jsonFiles=$jsonFiles")
+        jsonFiles
     }
 
     /**
