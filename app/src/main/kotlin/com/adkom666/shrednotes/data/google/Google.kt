@@ -69,34 +69,69 @@ class Google(
         invalidateDriveHelper(context)
     }
 
-    override fun readJson(fileName: String): String? {
-        Timber.d("Read JSON: fileName=$fileName")
+    override fun listJsonFiles(): List<GoogleDriveFile> {
+        Timber.d("Read information about JSON files")
         return when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
-            else -> tryToReadJson(
+            else -> tryToListJsonFiles(driveHelper = helper)
+        }
+    }
+
+    override fun readFile(fileId: String, fileIdKey: String): String {
+        Timber.d("Read file: fileId=$fileId")
+        return when (val helper = driveHelper) {
+            null -> throw GoogleAuthException()
+            else -> tryToReadFile(
                 driveHelper = helper,
-                fileName = fileName
+                fileId = fileId,
+                fileIdKey = fileIdKey
             )
         }
     }
 
-    override fun writeJson(fileName: String, json: String, jsonKey: String) {
-        Timber.d("Write JSON: fileName=$fileName, json=$json, jsonKey=$jsonKey")
+    override fun writeJson(
+        driveFile: GoogleDriveFile,
+        driveFileKey: String,
+        json: String,
+        jsonKey: String
+    ) {
+        Timber.d(
+            """Write JSON:
+                |driveFile=$driveFile,
+                |driveFileKey=$driveFileKey,
+                |json=$json,
+                |jsonKey=$jsonKey""".trimMargin()
+        )
         when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
             else -> tryToWriteJson(
                 driveHelper = helper,
-                fileName = fileName,
+                driveFile = driveFile,
+                driveFileKey = driveFileKey,
                 json = json,
                 jsonKey = jsonKey
             )
         }
     }
 
+    override fun deleteFiles(fileIdList: List<String>, fileIdListKey: String) {
+        Timber.d("Delete files: fileIdList=$fileIdList, fileIdListKey=$fileIdListKey")
+        when (val helper = driveHelper) {
+            null -> throw GoogleAuthException()
+            else -> tryToDeleteFiles(
+                driveHelper = helper,
+                fileIdList = fileIdList,
+                fileIdListKey = fileIdListKey
+            )
+        }
+    }
+
     @Throws(GoogleRecoverableAuthException::class)
-    private fun tryToReadJson(driveHelper: GoogleDriveHelper, fileName: String): String? {
+    private fun tryToListJsonFiles(
+        driveHelper: GoogleDriveHelper
+    ): List<GoogleDriveFile> {
         try {
-            return readJson(driveHelper = driveHelper, fileName = fileName)
+            return driveHelper.listJsonFile()
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             throw GoogleRecoverableAuthException(e)
@@ -104,39 +139,85 @@ class Google(
     }
 
     @Throws(GoogleRecoverableAuthException::class)
+    private fun tryToReadFile(
+        driveHelper: GoogleDriveHelper,
+        fileId: String,
+        fileIdKey: String
+    ): String {
+        try {
+            return readFile(driveHelper = driveHelper, fileId = fileId)
+        } catch (e: UserRecoverableAuthIOException) {
+            Timber.d(e)
+            val authIOException = GoogleRecoverableAuthException(e)
+            authIOException.additionalData[fileIdKey] = fileId
+            throw authIOException
+        }
+    }
+
+    @Throws(GoogleRecoverableAuthException::class)
     private fun tryToWriteJson(
         driveHelper: GoogleDriveHelper,
-        fileName: String,
+        driveFile: GoogleDriveFile,
+        driveFileKey: String,
         json: String,
         jsonKey: String
     ) {
         try {
-            writeJson(driveHelper = driveHelper, fileName = fileName, json = json)
+            writeJson(driveHelper = driveHelper, driveFile = driveFile, json = json)
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
+            authIOException.additionalData[driveFileKey] = driveFile
             authIOException.additionalData[jsonKey] = json
             throw authIOException
         }
     }
 
-    @Throws(UserRecoverableAuthIOException::class)
-    private fun readJson(driveHelper: GoogleDriveHelper, fileName: String): String? {
-        val fileIdList = driveHelper.listJsonFileId(fileName)
-        return fileIdList.firstOrNull()?.let {
-            driveHelper.readFile(it)
+    @Throws(GoogleRecoverableAuthException::class)
+    private fun tryToDeleteFiles(
+        driveHelper: GoogleDriveHelper,
+        fileIdList: List<String>,
+        fileIdListKey: String
+    ) {
+        try {
+            deleteFiles(driveHelper = driveHelper, fileIdList = fileIdList)
+        } catch (e: UserRecoverableAuthIOException) {
+            Timber.d(e)
+            val authIOException = GoogleRecoverableAuthException(e)
+            authIOException.additionalData[fileIdListKey] = fileIdList
+            throw authIOException
         }
     }
 
     @Throws(UserRecoverableAuthIOException::class)
-    private fun writeJson(driveHelper: GoogleDriveHelper, fileName: String, json: String) {
-        val fileIdList = driveHelper.listJsonFileId(fileName)
-        if (fileIdList.isNullOrEmpty()) {
-            driveHelper.createJsonFile(fileName = fileName, json = json)
+    private fun readFile(driveHelper: GoogleDriveHelper, fileId: String): String {
+        return driveHelper.readFile(fileId)
+    }
+
+    @Throws(UserRecoverableAuthIOException::class)
+    private fun writeJson(
+        driveHelper: GoogleDriveHelper,
+        driveFile: GoogleDriveFile,
+        json: String
+    ) {
+        if (driveFile.id.isNullOrBlank()) {
+            driveHelper.createJsonFile(
+                fileName = driveFile.name,
+                json = json
+            )
         } else {
-            fileIdList.forEach { fileId ->
-                driveHelper.updateJsonFile(fileId = fileId, fileName = fileName, json = json)
-            }
+            driveHelper.updateJsonFile(
+                fileId = driveFile.id,
+                fileName = driveFile.name,
+                json = json
+            )
+        }
+    }
+
+    @Throws(UserRecoverableAuthIOException::class)
+    private fun deleteFiles(driveHelper: GoogleDriveHelper, fileIdList: List<String>) {
+        fileIdList.forEach { fileId ->
+            driveHelper.deleteFile(fileId = fileId)
         }
     }
 

@@ -29,7 +29,7 @@
     <color name="dialog_background_color">@color/grey</color>
     <color name="dialog_title_color">@color/illustration_color</color>
     <color name="dialog_text_color">@color/illustration_color</color>
-    <color name="dialog_button_color">@color/illustration_color</color>
+    <color name="dialog_button_color">@color/illustration_color_selector</color>
     <color name="dialog_button_ripple_color">@color/grey_dark</color>
 
     <color name="dialog_confirmation_surface_color">@color/dialog_background_color</color>
@@ -58,4 +58,10 @@
 
     <color name="dialog_date_time_picker_surface_color">@color/dialog_background_color</color>
     <color name="dialog_date_time_picker_on_surface_color">@color/white</color>
+
+    <color name="dialog_google_drive_surface_color">@color/dialog_background_color</color>
+    <color name="dialog_google_drive_on_surface_color">@color/illustration_color</color>
+    <color name="dialog_google_drive_button_positive_color">@color/danger_color_selector</color>
+    <color name="dialog_google_drive_button_neutral_color">@color/dialog_button_color</color>
+    <color name="dialog_google_drive_button_ripple_color">@color/dialog_button_ripple_color</color>
 </resources>

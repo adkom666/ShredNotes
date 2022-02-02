@@ -115,6 +115,24 @@
         <item name="rippleColor">@color/red</item>
     </style>
 
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/dialog_google_drive_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_google_drive_on_surface_color</item>
+        <item name="actionModeBackground">@color/color_primary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Positive</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Neutral</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_google_drive_button_positive_color</item>
+        <item name="rippleColor">@color/dialog_google_drive_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_google_drive_button_neutral_color</item>
+        <item name="rippleColor">@color/dialog_google_drive_button_ripple_color</item>
+    </style>
+
     <style name="AppTheme.Text" parent="TextAppearance.AppCompat.Small">
         <item name="android:textColor">@color/content_color_selector</item>
     </style>

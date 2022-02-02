@@ -23,6 +23,39 @@ class GoogleDriveHelper(private val drive: Drive) {
     }
 
     /**
+     * Getting a list of information about JSON files with the parent named [parentName].
+     *
+     * @param parentName name of one of the file's parents.
+     * @return list of JSON file names with the parent named [parentName].
+     * @throws UserRecoverableAuthIOException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights.
+     */
+    @Throws(UserRecoverableAuthIOException::class)
+    fun listJsonFile(parentName: String = FOLDER_APPDATA): List<GoogleDriveFile> {
+        Timber.d("Get root JSON file name list")
+        val fileList = mutableListOf<GoogleDriveFile>()
+        var nextPageToken: String? = null
+        do {
+            val result = drive.files().list().apply {
+                q = "mimeType='$MIME_TYPE_JSON' and '$parentName' in parents"
+                fields = "nextPageToken, files(id, name, parents)"
+                spaces = SPACE_APPDATA
+                pageToken = nextPageToken
+            }.execute()
+            Timber.d("result=$result")
+            val pageFileList = result.files?.map { file ->
+                GoogleDriveFile(id = file.id, name = file.name)
+            }
+            pageFileList?.let { fileList.addAll(it) }
+            nextPageToken = result.nextPageToken
+            Timber.d("nextPageToken=$nextPageToken")
+        } while (nextPageToken != null)
+        Timber.d("fileList=$fileList")
+        return fileList
+    }
+
+    /**
      * Getting a list of identifiers for files named [fileName] with the parent named [parentName].
      *
      * @param fileName name of the target files.
@@ -123,5 +156,19 @@ class GoogleDriveHelper(private val drive: Drive) {
         val contentStream = ByteArrayContent.fromString(MIME_TYPE_JSON, json)
         val file = drive.files().update(fileId, metadata, contentStream).execute()
         Timber.d("File updated: file=$file")
+    }
+
+    /**
+     * Deleting a file with identifier [fileId].
+     *
+     * @param fileId identifier of the target file.
+     * @throws UserRecoverableAuthIOException when the user does not have enough rights to perform
+     * an operation with Google Drive. This exception contains [android.content.Intent] to allow
+     * user interaction to recover his rights.
+     */
+    @Throws(UserRecoverableAuthIOException::class)
+    fun deleteFile(fileId: String) {
+        Timber.d("Delete file: fileId=$fileId")
+        drive.files().delete(fileId).execute()
     }
 }
