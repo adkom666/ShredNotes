@@ -62,7 +62,8 @@ class DataManager(
      * @throws GoogleAuthException when the user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights.
+     * user interaction to recover his rights. This exception also contains [fileId] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileIdKey].
      * @throws JsonSyntaxException when the syntax of the JSON from Google Drive is incorrect.
      * @throws UnsupportedDataException when the suggested shred notes version is not supported.
      */
@@ -97,10 +98,9 @@ class DataManager(
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains all information to be
-     * written on Google Drive as JSON in its [GoogleRecoverableAuthException.additionalData] map
-     * with the key [jsonKey]. This JSON should be used as [readyJson] after the rights are
-     * recovered.
+     * user interaction to recover his rights. This exception also contains [googleDriveFile] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [googleDriveFileKey] and all
+     * information to be written on Google Drive as JSON with the key [jsonKey].
      */
     @Throws(
         GoogleAuthException::class,

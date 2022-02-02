@@ -28,7 +28,8 @@ interface GoogleDrive {
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights.
+     * user interaction to recover his rights. This exception also contains [fileId] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileIdKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
     fun readFile(fileId: String, fileIdKey: String): String?
