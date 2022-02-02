@@ -120,14 +120,16 @@ class GoogleDriveFileListAdapter(
          * @param fileName information to paste into the file item view.
          */
         fun bind(fileName: String) {
-            binding.titleTextView.text = fileName
             val id = absoluteAdapterPosition.toId()
+
+            binding.titleTextView.text = fileName
             binding.titleCard.isSelected = when (selectionSource) {
                 SelectionSource.PROVIDED_FILE_NAME ->
                     fileName.equals(selectedFileName, ignoreCase = true)
                 SelectionSource.SELECTABLE_FILES ->
                     selectableFiles.isSelected(id)
             }
+
             val handleInactiveFileClick = { onFileClick(fileName) }
             val changeSelection = { isSelected: Boolean ->
                 binding.titleCard.isSelected = isSelected

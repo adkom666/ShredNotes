@@ -76,15 +76,12 @@ class NotePagingDataAdapter(
             binding.noteCard.isSelected = selectableNotes.isSelected(note.id)
 
             val handleInactiveNoteClick = { onNoteClick(note) }
-
             val changeSelection = { isSelected: Boolean ->
                 binding.noteCard.isSelected = isSelected
             }
-
             binding.root.setOnClickListener {
                 selectableNotes.click(note.id, changeSelection, handleInactiveNoteClick)
             }
-
             binding.root.setOnLongClickListener {
                 selectableNotes.longClick(note.id, changeSelection)
                 true

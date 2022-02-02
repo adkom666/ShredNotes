@@ -67,15 +67,12 @@ class ExercisePagingDataAdapter(
             binding.exerciseCard.isSelected = selectableExercises.isSelected(exercise.id)
 
             val handleInactiveExerciseClick = { onExerciseClick(exercise) }
-
             val changeSelection = { isSelected: Boolean ->
                 binding.exerciseCard.isSelected = isSelected
             }
-
             binding.root.setOnClickListener {
                 selectableExercises.click(exercise.id, changeSelection, handleInactiveExerciseClick)
             }
-
             binding.root.setOnLongClickListener {
                 selectableExercises.longClick(exercise.id, changeSelection)
                 true
