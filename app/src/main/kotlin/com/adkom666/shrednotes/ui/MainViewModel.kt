@@ -6,8 +6,6 @@ import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.ask.Donor
 import com.adkom666.shrednotes.data.DataManager
@@ -16,11 +14,11 @@ import com.adkom666.shrednotes.data.UnsupportedDataException
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
+import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -35,7 +33,7 @@ class MainViewModel @Inject constructor(
     private val dataManager: DataManager,
     private val donor: Donor,
     private val toolPreferences: ToolPreferences
-) : ViewModel() {
+) : ExecutiveViewModel() {
 
     private companion object {
         private val DEFAULT_SECTION = Section.NOTES
@@ -386,80 +384,76 @@ class MainViewModel @Inject constructor(
         toolPreferences.reset()
     }
 
-    private fun launchRead(fileId: String? = null) {
+    private fun launchRead(fileId: String? = null) = execute {
         setState(State.Waiting(State.Waiting.Operation.READING))
-        viewModelScope.launch {
-            @Suppress("TooGenericExceptionCaught")
-            val isForceUnsearchAndUnfilter = try {
-                val finalFileId = finalFileId(fileId, readyFileId)
-                readyFileId = null
-                dataManager.read(
-                    fileId = finalFileId,
-                    fileIdKey = KEY_FILE_ID
-                )
-                give(Signal.ContentUpdated)
-                report(Message.ShredNotesUpdate)
-                true
-            } catch (e: GoogleAuthException) {
-                Timber.e(e)
-                report(Message.Error.UnauthorizedUser)
-                false
-            } catch (e: GoogleRecoverableAuthException) {
-                Timber.e(e)
-                readyFileId = e.additionalData[KEY_FILE_ID] as? String
-                e.intent?.let {
-                    navigateTo(NavDirection.ToAuthOnRead(it))
-                } ?: report(Message.Error.Unknown)
-                false
-            } catch (e: JsonSyntaxException) {
-                Timber.e(e)
-                report(Message.Error.WrongJsonSyntax)
-                false
-            } catch (e: UnsupportedDataException) {
-                Timber.e(e)
-                report(Message.Error.UnsupportedDataVersion(e.version))
-                false
-            } catch (e: Exception) {
-                Timber.e(e)
-                reportAbout(e)
-                false
-            }
-            setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter))
+        @Suppress("TooGenericExceptionCaught")
+        val isForceUnsearchAndUnfilter = try {
+            val finalFileId = finalFileId(fileId, readyFileId)
+            readyFileId = null
+            dataManager.read(
+                fileId = finalFileId,
+                fileIdKey = KEY_FILE_ID
+            )
+            give(Signal.ContentUpdated)
+            report(Message.ShredNotesUpdate)
+            true
+        } catch (e: GoogleAuthException) {
+            Timber.e(e)
+            report(Message.Error.UnauthorizedUser)
+            false
+        } catch (e: GoogleRecoverableAuthException) {
+            Timber.e(e)
+            readyFileId = e.additionalData[KEY_FILE_ID] as? String
+            e.intent?.let {
+                navigateTo(NavDirection.ToAuthOnRead(it))
+            } ?: report(Message.Error.Unknown)
+            false
+        } catch (e: JsonSyntaxException) {
+            Timber.e(e)
+            report(Message.Error.WrongJsonSyntax)
+            false
+        } catch (e: UnsupportedDataException) {
+            Timber.e(e)
+            report(Message.Error.UnsupportedDataVersion(e.version))
+            false
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
+            false
         }
+        setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter))
     }
 
-    private fun launchWrite(googleDriveFile: GoogleDriveFile? = null) {
+    private fun launchWrite(googleDriveFile: GoogleDriveFile? = null) = execute {
         setState(State.Waiting(State.Waiting.Operation.WRITING))
-        viewModelScope.launch {
-            @Suppress("TooGenericExceptionCaught")
-            try {
-                val finalFile = finalFile(googleDriveFile, readyFile)
-                readyFile = null
-                val json = readyJson
-                readyJson = null
-                dataManager.write(
-                    googleDriveFile = finalFile,
-                    googleDriveFileKey = KEY_FILE,
-                    readyJson = json,
-                    jsonKey = KEY_JSON,
-                )
-                report(Message.GoogleDriveUpdate)
-            } catch (e: GoogleAuthException) {
-                Timber.e(e)
-                report(Message.Error.UnauthorizedUser)
-            } catch (e: GoogleRecoverableAuthException) {
-                Timber.e(e)
-                readyFile = e.additionalData[KEY_FILE] as? GoogleDriveFile
-                readyJson = e.additionalData[KEY_JSON] as? String
-                e.intent?.let {
-                    navigateTo(NavDirection.ToAuthOnWrite(it))
-                } ?: report(Message.Error.Unknown)
-            } catch (e: Exception) {
-                Timber.e(e)
-                reportAbout(e)
-            }
-            setState(State.Preparation.Continuing(isForceResetTools = false))
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            val finalFile = finalFile(googleDriveFile, readyFile)
+            readyFile = null
+            val json = readyJson
+            readyJson = null
+            dataManager.write(
+                googleDriveFile = finalFile,
+                googleDriveFileKey = KEY_FILE,
+                readyJson = json,
+                jsonKey = KEY_JSON,
+            )
+            report(Message.GoogleDriveUpdate)
+        } catch (e: GoogleAuthException) {
+            Timber.e(e)
+            report(Message.Error.UnauthorizedUser)
+        } catch (e: GoogleRecoverableAuthException) {
+            Timber.e(e)
+            readyFile = e.additionalData[KEY_FILE] as? GoogleDriveFile
+            readyJson = e.additionalData[KEY_JSON] as? String
+            e.intent?.let {
+                navigateTo(NavDirection.ToAuthOnWrite(it))
+            } ?: report(Message.Error.Unknown)
+        } catch (e: Exception) {
+            Timber.e(e)
+            reportAbout(e)
         }
+        setState(State.Preparation.Continuing(isForceResetTools = false))
     }
 
     private fun finalFileId(
