@@ -21,6 +21,15 @@ class ConfirmationDialogFragment : KeyboardlessDialogFragment() {
 
     companion object {
 
+        private const val ARG_TITLE_RES_ID =
+            "${BuildConfig.APPLICATION_ID}.args.title_res_id"
+
+        private const val ARG_MESSAGE_RES_ID =
+            "${BuildConfig.APPLICATION_ID}.args.message_res_id"
+
+        private const val ARG_FORMAT_ARGS_ENVELOPE =
+            "${BuildConfig.APPLICATION_ID}.args.format_args_envelope"
+
         /**
          * Preferred way to create a fragment.
          *
@@ -32,8 +41,10 @@ class ConfirmationDialogFragment : KeyboardlessDialogFragment() {
          * @return new instance as [ConfirmationDialogFragment].
          */
         fun newInstance(
-            @StringRes titleResId: Int,
-            @StringRes messageResId: Int,
+            @StringRes
+            titleResId: Int,
+            @StringRes
+            messageResId: Int,
             vararg messageFormatArgs: Any
         ): ConfirmationDialogFragment {
             val arguments = Bundle()
@@ -46,15 +57,6 @@ class ConfirmationDialogFragment : KeyboardlessDialogFragment() {
             fragment.arguments = arguments
             return fragment
         }
-
-        private const val ARG_TITLE_RES_ID =
-            "${BuildConfig.APPLICATION_ID}.args.title_res_id"
-
-        private const val ARG_MESSAGE_RES_ID =
-            "${BuildConfig.APPLICATION_ID}.args.message_res_id"
-
-        private const val ARG_FORMAT_ARGS_ENVELOPE =
-            "${BuildConfig.APPLICATION_ID}.args.format_args_envelope"
     }
 
     private var onConfirmListener: OnConfirmListener? = null
