@@ -7,7 +7,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 /**
  * Managing tools such as filter and search.
@@ -26,8 +26,8 @@ class ToolPreferences(
         private const val KEY_EXERCISE_SUBNAME = "exercises.subname"
     }
 
-    override var isNoteSearchActive: Boolean by Delegates.observable(
-        preferences.getBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, false)
+    override var isNoteSearchActive: Boolean by observable(
+        initialValue = preferences.getBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isNoteSearchActive: old=$old, new=$new")
         preferences.edit {
@@ -36,8 +36,8 @@ class ToolPreferences(
         give(NoteToolPreferences.Signal.NoteSearchActivenessChanged)
     }
 
-    override var noteExerciseSubname: String? by Delegates.observable(
-        preferences.getString(KEY_NOTE_EXERCISE_SUBNAME, null)
+    override var noteExerciseSubname: String? by observable(
+        initialValue = preferences.getString(KEY_NOTE_EXERCISE_SUBNAME, null)
     ) { _, old, new ->
         Timber.d("Change noteExerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
@@ -49,8 +49,8 @@ class ToolPreferences(
         }
     }
 
-    override var isNoteFilterEnabled: Boolean by Delegates.observable(
-        preferences.getBoolean(KEY_IS_NOTE_FILTER_ENABLED, false)
+    override var isNoteFilterEnabled: Boolean by observable(
+        initialValue = preferences.getBoolean(KEY_IS_NOTE_FILTER_ENABLED, false)
     ) { _, old, new ->
         Timber.d("Change _isNoteFilterEnabled: old=$old, new=$new")
         if (new != old) {
@@ -64,8 +64,8 @@ class ToolPreferences(
     override val noteToolSignalFlow: Flow<NoteToolPreferences.Signal>
         get() = _noteToolSignalChannel.receiveAsFlow()
 
-    override var isExcerciseSearchActive: Boolean by Delegates.observable(
-        preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
+    override var isExcerciseSearchActive: Boolean by observable(
+        initialValue = preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isExcerciseSearchActive: old=$old, new=$new")
         preferences.edit {
@@ -74,8 +74,8 @@ class ToolPreferences(
         give(ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged)
     }
 
-    override var exerciseSubname: String? by Delegates.observable(
-        preferences.getString(KEY_EXERCISE_SUBNAME, null)
+    override var exerciseSubname: String? by observable(
+        initialValue = preferences.getString(KEY_EXERCISE_SUBNAME, null)
     ) { _, old, new ->
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {

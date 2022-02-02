@@ -238,14 +238,18 @@ class RecordsViewModel @Inject constructor(
     private var _targetParameter: RecordsTargetParameter? = null
     private var _dateRange: DateRange? = null
 
-    private var recordPosition: Int by observable(0) { _, old, new ->
+    private var recordPosition: Int by observable(
+        initialValue = 0
+    ) { _, old, new ->
         Timber.d("Change recordPosition: old=$old, new=$new")
         if (new != old) {
             invalidateMoreRecordsPresence()
         }
     }
 
-    private var recordCount: Int? by observable(null) { _, old, new ->
+    private var recordCount: Int? by observable(
+        initialValue = null
+    ) { _, old, new ->
         Timber.d("Change recordCount: old=$old, new=$new")
         if (new != old) {
             invalidateMoreRecordsPresence()

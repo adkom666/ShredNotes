@@ -137,7 +137,7 @@ class CommonStatisticsViewModel
      * The date range over which statistics should be shown.
      */
     var dateRange: DateRange by observable(
-        preferences.getDateRange()
+        initialValue = preferences.getDateRange()
     ) { _, old, new ->
         Timber.d("Change date range: old=$old, new=$new")
         if (new != old) {

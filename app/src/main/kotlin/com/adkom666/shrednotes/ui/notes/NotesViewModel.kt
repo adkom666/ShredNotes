@@ -276,7 +276,7 @@ class NotesViewModel @Inject constructor(
         get() = noteToolPreferences.isNoteFilterEnabled
 
     private var filter: NoteFilter by observable(
-        preferences.getNoteFilter()
+        initialValue = preferences.getNoteFilter()
     ) { _, old, new ->
         Timber.d("Change filter: old=$old, new=$new")
         if (new != old) {

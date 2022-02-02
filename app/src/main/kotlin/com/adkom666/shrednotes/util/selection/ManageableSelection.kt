@@ -55,7 +55,9 @@ class ManageableSelection(private var itemCount: Int = 0) :
     val state: State
         get() = _state
 
-    private var _state: State by observable(State.Inactive) { _, old: State, new: State ->
+    private var _state: State by observable(
+        initialValue = State.Inactive
+    ) { _, old: State, new: State ->
         if (old == State.Inactive && new != State.Inactive ||
             old != State.Inactive && new == State.Inactive
         ) {
