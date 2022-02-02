@@ -113,6 +113,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
         _binding = DialogFilterNotesBinding.inflate(layoutInflater)
 
         init(savedInstanceState)
+        isCancelable = false
 
         val builder = MaterialAlertDialogBuilder(
             requireContext(),
