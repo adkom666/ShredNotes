@@ -307,19 +307,19 @@ class NotesViewModel @Inject constructor(
         ).also { noteSource = it }
     }
 
+    private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
+    private val _noteExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
+    private val _navigationChannel: Channel<NavDirection> = Channel(1)
+    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
+    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
+    private val _manageableSelection: ManageableSelection = ManageableSelection()
+
     private val onSelectionActivenessChangeListener: OnActivenessChangeListener =
         object : OnActivenessChangeListener {
             override fun onActivenessChange(isActive: Boolean) {
                 give(Signal.SelectionChanged)
             }
         }
-
-    private val _manageableSelection: ManageableSelection = ManageableSelection()
-    private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting)
-    private val _noteExpectationAsLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
-    private val _navigationChannel: Channel<NavDirection> = Channel(1)
-    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
-    private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
     init {
         Timber.d("Init")
