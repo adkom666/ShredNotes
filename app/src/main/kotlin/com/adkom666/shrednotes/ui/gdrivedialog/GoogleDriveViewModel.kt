@@ -346,7 +346,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onSkipDeletionByUser() {
         Timber.d("On skip deletion by user")
-        _manageableSelection.reset(0)
+        _manageableSelection.reset()
     }
 
     /**
@@ -384,7 +384,7 @@ class GoogleDriveViewModel @Inject constructor(
             Timber.d("displayedFileNames=$displayedFileNames")
             displayedFileNames?.let { setFileNames(it) }
             setState(State.Working(State.Working.Mode.ENTERING_FILE_NAME))
-            _manageableSelection.reset(0)
+            _manageableSelection.reset()
             skipTargetFileNameIfFileDeleted()
         } catch (e: GoogleAuthException) {
             Timber.e(e)

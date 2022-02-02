@@ -138,7 +138,7 @@ class ManageableSelection(private var itemCount: Int = 0) :
      *
      * @param itemCount new total count of items to select.
      */
-    fun reset(itemCount: Int) {
+    fun reset(itemCount: Int = 0) {
         this.itemCount = itemCount
         _state = State.Inactive
     }
