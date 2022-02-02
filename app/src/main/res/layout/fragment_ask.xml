@@ -68,7 +68,7 @@
                     android:paddingStart="@dimen/padding_xl"
                     android:paddingEnd="@dimen/padding_xl"
                     android:gravity="center"
-                    android:textColor="@color/light_text_color_selector"
+                    android:textColor="@color/content_color_selector"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
