@@ -126,6 +126,7 @@
 
     <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
     <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
+    <string name="message_deleted_files">Удалено файлов: %d</string>
 
     <string name="message_exercise_has_been_added">Упражнение добавлено</string>
     <string name="message_exercise_has_been_updated">Упражнение обновлено</string>

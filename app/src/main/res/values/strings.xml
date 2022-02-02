@@ -133,6 +133,7 @@
 
     <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
     <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
+    <string name="message_deleted_files">Deleted files: %d</string>
 
     <string name="message_exercise_has_been_added">Exercise has been added</string>
     <string name="message_exercise_has_been_updated">Exercise has been updated</string>

@@ -125,6 +125,13 @@ class GoogleDriveViewModel @Inject constructor(
         object ConfirmDeletion : Message()
 
         /**
+         * Message about the count of deleted files.
+         *
+         * @property fileCount count of deleted files.
+         */
+        data class Deletion(val fileCount: Int) : Message()
+
+        /**
          * Error message.
          */
         sealed class Error : Message() {
@@ -407,6 +414,7 @@ class GoogleDriveViewModel @Inject constructor(
         @Suppress("TooGenericExceptionCaught")
         return try {
             val deletionCount = deleteSelectedFiles()
+            report(Message.Deletion(deletionCount))
             if (deletionCount > 0) {
                 setState(State.Waiting(isCancelable = true))
                 tryToReadJsonFileNames(isUpdate = true)

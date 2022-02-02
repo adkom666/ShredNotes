@@ -272,6 +272,11 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
             showConfirmOperationDialog()
         GoogleDriveViewModel.Message.ConfirmDeletion ->
             showConfirmDeletionDialog()
+        is GoogleDriveViewModel.Message.Deletion -> {
+            Timber.d("Deleted files count is ${message.fileCount}")
+            val messageString = getString(R.string.message_deleted_files, message.fileCount)
+            toast(messageString)
+        }
         is GoogleDriveViewModel.Message.Error ->
             showError(message)
     }
