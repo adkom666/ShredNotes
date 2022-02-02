@@ -77,23 +77,28 @@ class Google(
         }
     }
 
-    override fun readJson(fileName: String, fileNameKey: String): String? {
-        Timber.d("Read JSON: fileName=$fileName")
+    override fun readFile(fileId: String, fileIdKey: String): String {
+        Timber.d("Read file: fileId=$fileId")
         return when (val helper = driveHelper) {
             null -> throw GoogleAuthException()
-            else -> tryToReadJson(
+            else -> tryToReadFile(
                 driveHelper = helper,
-                fileName = fileName,
-                fileNameKey = fileNameKey
+                fileId = fileId,
+                fileIdKey = fileIdKey
             )
         }
     }
 
-    override fun writeJson(fileName: String, fileNameKey: String, json: String, jsonKey: String) {
+    override fun writeJson(
+        driveFile: GoogleDriveFile,
+        driveFileKey: String,
+        json: String,
+        jsonKey: String
+    ) {
         Timber.d(
             """Write JSON:
-                |fileName=$fileName,
-                |fileNameKey=$fileNameKey,
+                |driveFile=$driveFile,
+                |driveFileKey=$driveFileKey,
                 |json=$json,
                 |jsonKey=$jsonKey""".trimMargin()
         )
@@ -101,8 +106,8 @@ class Google(
             null -> throw GoogleAuthException()
             else -> tryToWriteJson(
                 driveHelper = helper,
-                fileName = fileName,
-                fileNameKey = fileNameKey,
+                driveFile = driveFile,
+                driveFileKey = driveFileKey,
                 json = json,
                 jsonKey = jsonKey
             )
@@ -134,17 +139,17 @@ class Google(
     }
 
     @Throws(GoogleRecoverableAuthException::class)
-    private fun tryToReadJson(
+    private fun tryToReadFile(
         driveHelper: GoogleDriveHelper,
-        fileName: String,
-        fileNameKey: String
-    ): String? {
+        fileId: String,
+        fileIdKey: String
+    ): String {
         try {
-            return readJson(driveHelper = driveHelper, fileName = fileName)
+            return readFile(driveHelper = driveHelper, fileId = fileId)
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
-            authIOException.additionalData[fileNameKey] = fileName
+            authIOException.additionalData[fileIdKey] = fileId
             throw authIOException
         }
     }
@@ -152,17 +157,17 @@ class Google(
     @Throws(GoogleRecoverableAuthException::class)
     private fun tryToWriteJson(
         driveHelper: GoogleDriveHelper,
-        fileName: String,
-        fileNameKey: String,
+        driveFile: GoogleDriveFile,
+        driveFileKey: String,
         json: String,
         jsonKey: String
     ) {
         try {
-            writeJson(driveHelper = driveHelper, fileName = fileName, json = json)
+            writeJson(driveHelper = driveHelper, driveFile = driveFile, json = json)
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
-            authIOException.additionalData[fileNameKey] = fileName
+            authIOException.additionalData[driveFileKey] = driveFile
             authIOException.additionalData[jsonKey] = json
             throw authIOException
         }
@@ -185,22 +190,27 @@ class Google(
     }
 
     @Throws(UserRecoverableAuthIOException::class)
-    private fun readJson(driveHelper: GoogleDriveHelper, fileName: String): String? {
-        val fileIdList = driveHelper.listJsonFileId(fileName)
-        return fileIdList.firstOrNull()?.let {
-            driveHelper.readFile(it)
-        }
+    private fun readFile(driveHelper: GoogleDriveHelper, fileId: String): String {
+        return driveHelper.readFile(fileId)
     }
 
     @Throws(UserRecoverableAuthIOException::class)
-    private fun writeJson(driveHelper: GoogleDriveHelper, fileName: String, json: String) {
-        val fileIdList = driveHelper.listJsonFileId(fileName)
-        if (fileIdList.isNullOrEmpty()) {
-            driveHelper.createJsonFile(fileName = fileName, json = json)
+    private fun writeJson(
+        driveHelper: GoogleDriveHelper,
+        driveFile: GoogleDriveFile,
+        json: String
+    ) {
+        if (driveFile.id.isNullOrBlank()) {
+            driveHelper.createJsonFile(
+                fileName = driveFile.name,
+                json = json
+            )
         } else {
-            fileIdList.forEach { fileId ->
-                driveHelper.updateJsonFile(fileId = fileId, fileName = fileName, json = json)
-            }
+            driveHelper.updateJsonFile(
+                fileId = driveFile.id,
+                fileName = driveFile.name,
+                json = json
+            )
         }
     }
 

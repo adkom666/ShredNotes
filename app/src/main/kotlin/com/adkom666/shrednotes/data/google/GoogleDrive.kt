@@ -18,26 +18,26 @@ interface GoogleDrive {
     fun listJsonFiles(): List<GoogleDriveFile>
 
     /**
-     * Retrieving content of the JSON file named [fileName].
+     * Retrieving content of the file with identifier [fileId].
      *
-     * @param fileName name of the target JSON file.
-     * @param fileNameKey key of the target JSON file name to save it in the
+     * @param fileId identifier of the target file.
+     * @param fileIdKey key of the target file identifier to save it in the
      * [GoogleRecoverableAuthException.additionalData] map for the case if
      * [GoogleRecoverableAuthException] has been thrown.
-     * @return content of the JSON file named [fileName].
+     * @return content of the file with identifier [fileId].
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
      * user interaction to recover his rights.
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun readJson(fileName: String, fileNameKey: String): String?
+    fun readFile(fileId: String, fileIdKey: String): String?
 
     /**
-     * Writing [json] to a file named [fileName].
+     * Writing [json] to a [driveFile].
      *
-     * @param fileName name of the target JSON file.
-     * @param fileNameKey key of the target JSON file name to save it in the
+     * @param driveFile target JSON file information.
+     * @param driveFileKey key of the target JSON file information to save it in the
      * [GoogleRecoverableAuthException.additionalData] map for the case if
      * [GoogleRecoverableAuthException] has been thrown.
      * @param json JSON to be written.
@@ -47,11 +47,12 @@ interface GoogleDrive {
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains the original [json] in
-     * its [GoogleRecoverableAuthException.additionalData] map with the key [jsonKey].
+     * user interaction to recover his rights. This exception also contains [driveFile] in
+     * its [GoogleRecoverableAuthException.additionalData] map with the key [driveFileKey] and
+     * original [json] with the key [jsonKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun writeJson(fileName: String, fileNameKey: String, json: String, jsonKey: String)
+    fun writeJson(driveFile: GoogleDriveFile, driveFileKey: String, json: String, jsonKey: String)
 
     /**
      * Deleting files with identifiers listed in [fileIdList].

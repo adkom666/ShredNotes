@@ -51,13 +51,12 @@ class DataManager(
     }
 
     /**
-     * Reading all content from Google Drive.
+     * Reading all content from Google Drive file with identifier [fileId].
      *
-     * @param fileName name of the target JSON file.
-     * @param fileNameKey key for storing information to be read from Google Drive as text in the
+     * @param fileId identifier of the target file.
+     * @param fileIdKey key for storing information to be read from Google Drive as text in the
      * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
-     * thrown. This text should be used as [fileName] after the rights are recovered.
-     * @return true if the content was read, false if there is no information on Google Drive.
+     * thrown. This text should be used as [fileId] after the rights are recovered.
      * @throws GoogleAuthException when the user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
@@ -73,25 +72,23 @@ class DataManager(
         UnsupportedDataException::class
     )
     suspend fun read(
-        fileName: String,
-        fileNameKey: String
-    ): Boolean = withContext(Dispatchers.IO) {
+        fileId: String,
+        fileIdKey: String
+    ) = withContext(Dispatchers.IO) {
         Timber.d("Read")
-        val json = google.readJson(fileName = fileName, fileNameKey = fileNameKey)
+        val json = google.readFile(fileId = fileId, fileIdKey = fileIdKey)
         Timber.d("json=$json")
-        json?.let {
-            parseAsShredNotes(it)
-            true
-        } ?: false
+        parseAsShredNotes(json)
     }
 
     /**
      * Writing all content to Google Drive.
      *
-     * @param fileName name of the target JSON file.
-     * @param fileNameKey key for storing information to be written on Google Drive as text in the
-     * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
-     * thrown. This text should be used as [fileName] after the rights are recovered.
+     * @param googleDriveFile target JSON file information.
+     * @param googleDriveFileKey key for storing information to be written on Google Drive as
+     * [GoogleDriveFile] in the map [GoogleRecoverableAuthException.additionalData] if
+     * [GoogleRecoverableAuthException] is thrown. This text should be used as [googleDriveFile]
+     * after the rights are recovered.
      * @param readyJson information to be written on Google Drive as JSON.
      * @param jsonKey key for storing information to be written on Google Drive as JSON in the map
      * [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
@@ -109,8 +106,8 @@ class DataManager(
         GoogleRecoverableAuthException::class
     )
     suspend fun write(
-        fileName: String,
-        fileNameKey: String,
+        googleDriveFile: GoogleDriveFile,
+        googleDriveFileKey: String,
         readyJson: String? = null,
         jsonKey: String
     ) = withContext(Dispatchers.IO) {
@@ -121,8 +118,8 @@ class DataManager(
         }
         Timber.d("shredNotesJson=$shredNotesJson")
         google.writeJson(
-            fileName = fileName,
-            fileNameKey = fileNameKey,
+            driveFile = googleDriveFile,
+            driveFileKey = googleDriveFileKey,
             json = shredNotesJson,
             jsonKey = jsonKey
         )

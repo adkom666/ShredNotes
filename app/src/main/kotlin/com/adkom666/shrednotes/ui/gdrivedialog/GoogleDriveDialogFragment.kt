@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
+import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.databinding.DialogGoogleDriveBinding
 import com.adkom666.shrednotes.di.viewmodel.viewModel
 import com.adkom666.shrednotes.util.FirstItemDecoration
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 
-typealias FileNameListener = (String) -> Unit
+typealias GoogleDriveFileListener = (GoogleDriveFile) -> Unit
 
 /**
  * Google Drive dialog.
@@ -111,7 +112,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
 
     private val fileNameWatcher: FileNameWatcher = FileNameWatcher()
     private var actionMode: ActionMode? = null
-    private var fileNameListener: FileNameListener? = null
+    private var googleDriveFileListener: GoogleDriveFileListener? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -171,10 +172,10 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     /**
      * Set [listener] to use on positive button click.
      *
-     * @param listener the [FileNameListener] to use on positive button click.
+     * @param listener the [GoogleDriveFileListener] to use on positive button click.
      */
-    fun setFileNameListener(listener: FileNameListener) {
-        fileNameListener = listener
+    fun setGoogleDriveFileListener(listener: GoogleDriveFileListener) {
+        googleDriveFileListener = listener
     }
 
     private fun acquireActivityLaunchers() {
@@ -387,7 +388,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
                     setWorkingMode(state.workingMode)
                 }
                 is GoogleDriveViewModel.State.Finishing.Dismissing -> {
-                    fileNameListener?.invoke(state.fileName)
+                    googleDriveFileListener?.invoke(state.googleDriveFile)
                     dialog?.dismiss()
                 }
                 GoogleDriveViewModel.State.Finishing.Cancelling ->

@@ -77,11 +77,11 @@ class GoogleDriveViewModel @Inject constructor(
             object Cancelling : Finishing()
 
             /**
-             * Finishing work with the dialog providing the name of the target file.
+             * Finishing work with the dialog providing the target file.
              *
-             * @property fileName the name of the target file provided by the user.
+             * @property googleDriveFile target file provided by the user.
              */
-            data class Dismissing(val fileName: String) : Finishing()
+            data class Dismissing(val googleDriveFile: GoogleDriveFile) : Finishing()
         }
     }
 
@@ -220,7 +220,7 @@ class GoogleDriveViewModel @Inject constructor(
 
     private var googleDriveFiles: List<GoogleDriveFile>? = null
     private var displayedFileNames: MutableList<String>? = null
-    private var fileNameToConfirm: String? = null
+    private var fileToConfirm: GoogleDriveFile? = null
 
     private val onSelectionActivenessChangeListener: OnActivenessChangeListener =
         object : OnActivenessChangeListener {
@@ -291,11 +291,12 @@ class GoogleDriveViewModel @Inject constructor(
             }
             report(message)
         } else {
-            if (isOnGoogleDrive(fileName)) {
-                fileNameToConfirm = fileName
+            fileFromGoogleDrive(fileName)?.let { googleDriveFile ->
+                fileToConfirm = googleDriveFile
                 report(Message.ConfirmOperation)
-            } else {
-                setState(State.Finishing.Dismissing(fileName))
+            } ?: run {
+                val googleDriveFile = GoogleDriveFile(id = null, name = fileName)
+                setState(State.Finishing.Dismissing(googleDriveFile))
             }
         }
     }
@@ -306,10 +307,10 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onConfirmOperation() {
         Timber.d("On confirm operation")
-        fileNameToConfirm?.let { fileName ->
-            setState(State.Finishing.Dismissing(fileName))
+        fileToConfirm?.let { file ->
+            setState(State.Finishing.Dismissing(file))
         } ?: if (BuildConfig.DEBUG) {
-            error("Missing confirmed file name!")
+            error("Missing confirmed file!")
         }
     }
 
@@ -468,6 +469,10 @@ class GoogleDriveViewModel @Inject constructor(
 
     private fun isOnGoogleDrive(fileName: String?): Boolean {
         return googleDriveFiles?.find { it.name.equals(fileName, ignoreCase = true) } != null
+    }
+
+    private fun fileFromGoogleDrive(fileName: String?): GoogleDriveFile? {
+        return googleDriveFiles?.find { it.name.equals(fileName, ignoreCase = true) }
     }
 
     private fun reportAbout(e: Exception) {
