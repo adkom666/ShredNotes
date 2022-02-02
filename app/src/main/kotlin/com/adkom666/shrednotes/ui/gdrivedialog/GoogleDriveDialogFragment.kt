@@ -144,6 +144,7 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
             GoogleDriveDialogMode.READ -> R.string.button_title_read
             GoogleDriveDialogMode.WRITE -> R.string.button_title_write
         }
+
         val builder = MaterialAlertDialogBuilder(
             requireContext(),
             R.style.AppTheme_MaterialAlertDialog_GoogleDrive
