@@ -164,7 +164,7 @@
     </style>
 
     <style name="AppTheme.EditableText" parent="TextAppearance.AppCompat.Medium">
-        <item name="android:textColor">@color/color_accent</item>
+        <item name="android:textColor">@color/content_color_selector</item>
         <item name="android:textColorHint">@color/color_control</item>
     </style>
 
