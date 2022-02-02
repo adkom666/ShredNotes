@@ -302,6 +302,7 @@ class TrackingActivity : AppCompatActivity() {
     private inner class StatisticsObserver : Observer<TrackingViewModel.StatisticsTracking?> {
 
         override fun onChanged(statistics: TrackingViewModel.StatisticsTracking?) {
+            Timber.d("statistics=$statistics")
             statistics?.let { setStatistics(it) }
         }
 

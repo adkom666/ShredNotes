@@ -257,6 +257,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
     private inner class StatisticsObserver : Observer<WeekdaysStatistics?> {
 
         override fun onChanged(statistics: WeekdaysStatistics?) {
+            Timber.d("statistics=$statistics")
             statistics?.let { setStatistics(it) }
         }
 

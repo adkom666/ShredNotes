@@ -344,6 +344,7 @@ class ExercisesFragment :
     private inner class ExercisePagingDataObserver : Observer<PagingData<Exercise>> {
 
         override fun onChanged(exercisePagingData: PagingData<Exercise>) {
+            Timber.d("exercisePagingData=$exercisePagingData")
             adapter.submitData(lifecycle, exercisePagingData)
         }
     }

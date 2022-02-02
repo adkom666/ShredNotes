@@ -327,11 +327,11 @@ class NoteActivity : AppCompatActivity() {
     private inner class ExercisesObserver : Observer<List<Exercise>?> {
 
         override fun onChanged(exercises: List<Exercise>?) {
+            Timber.d("exercises=$exercises")
             exercises?.let { setExercises(it) }
         }
 
         private fun setExercises(exerciseList: List<Exercise>) {
-            Timber.d("exerciseList=$exerciseList")
             val adapter = ArrayAdapter(
                 this@NoteActivity,
                 R.layout.item_exercise_name_dropdown,

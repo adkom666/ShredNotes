@@ -188,6 +188,7 @@ class CommonStatisticsActivity : AppCompatActivity() {
     private inner class StatisticsObserver : Observer<CommonStatistics?> {
 
         override fun onChanged(statistics: CommonStatistics?) {
+            Timber.d("statistics=$statistics")
             statistics?.let { setStatistics(it) }
         }
 

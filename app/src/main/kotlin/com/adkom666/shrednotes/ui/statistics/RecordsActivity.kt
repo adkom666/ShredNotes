@@ -263,6 +263,7 @@ class RecordsActivity : AppCompatActivity() {
     private inner class RecordsObserver : Observer<RecordsViewModel.Records?> {
 
         override fun onChanged(records: RecordsViewModel.Records?) {
+            Timber.d("records=$records")
             records?.let { setRecords(it) }
         }
 

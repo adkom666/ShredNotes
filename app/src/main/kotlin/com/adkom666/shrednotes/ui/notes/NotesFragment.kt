@@ -399,6 +399,7 @@ class NotesFragment :
     private inner class NotePagingDataObserver : Observer<PagingData<Note>> {
 
         override fun onChanged(notePagingData: PagingData<Note>) {
+            Timber.d("notePagingData=$notePagingData")
             adapter.submitData(lifecycle, notePagingData)
         }
     }
