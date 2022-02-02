@@ -12,9 +12,9 @@ import java.util.Collections
 /**
  * Operations with Google Drive.
  *
- * @property drive service definition for Google Drive (v3). See [Drive].
+ * @property driveV3 service definition for Google Drive (v3). See [Drive].
  */
-class GoogleDriveHelper(private val drive: Drive) {
+class GoogleDriveHelper(private val driveV3: Drive) {
 
     private companion object {
         private const val FOLDER_APPDATA = "appDataFolder"
@@ -37,7 +37,7 @@ class GoogleDriveHelper(private val drive: Drive) {
         val fileList = mutableListOf<GoogleDriveFile>()
         var nextPageToken: String? = null
         do {
-            val result = drive.files().list().apply {
+            val result = driveV3.files().list().apply {
                 q = "mimeType='$MIME_TYPE_JSON' and '$parentName' in parents"
                 fields = "nextPageToken, files(id, name, parents)"
                 spaces = SPACE_APPDATA
@@ -67,7 +67,7 @@ class GoogleDriveHelper(private val drive: Drive) {
     @Throws(UserRecoverableAuthIOException::class)
     fun readFile(fileId: String): String {
         Timber.d("Read from file: fileId=$fileId")
-        val inputStream = drive.files().get(fileId).executeMediaAsInputStream()
+        val inputStream = driveV3.files().get(fileId).executeMediaAsInputStream()
         val reader = BufferedReader(InputStreamReader(inputStream))
         val stringBuilder = StringBuilder()
         var line = reader.readLine()
@@ -100,7 +100,7 @@ class GoogleDriveHelper(private val drive: Drive) {
             .setMimeType(MIME_TYPE_JSON)
             .setName(fileName)
         val contentStream = ByteArrayContent.fromString(MIME_TYPE_JSON, json)
-        val file = drive.files().create(metadata, contentStream).execute()
+        val file = driveV3.files().create(metadata, contentStream).execute()
         Timber.d("File created: file=$file")
     }
 
@@ -122,7 +122,7 @@ class GoogleDriveHelper(private val drive: Drive) {
             .setMimeType(MIME_TYPE_JSON)
             .setName(fileName)
         val contentStream = ByteArrayContent.fromString(MIME_TYPE_JSON, json)
-        val file = drive.files().update(fileId, metadata, contentStream).execute()
+        val file = driveV3.files().update(fileId, metadata, contentStream).execute()
         Timber.d("File updated: file=$file")
     }
 
@@ -137,6 +137,6 @@ class GoogleDriveHelper(private val drive: Drive) {
     @Throws(UserRecoverableAuthIOException::class)
     fun deleteFile(fileId: String) {
         Timber.d("Delete file: fileId=$fileId")
-        drive.files().delete(fileId).execute()
+        driveV3.files().delete(fileId).execute()
     }
 }

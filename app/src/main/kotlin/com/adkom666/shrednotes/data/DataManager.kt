@@ -28,12 +28,13 @@ class DataManager(
     private val gson: Gson
 ) {
     /**
-     * Use it to authorization in Google before [read] or [write].
+     * Use it to authorization in Google before [readFileFromGoogleDrive] or
+     * [writeJsonToGoogleDrive].
      */
     val googleAuth: GoogleAuth = google
 
     /**
-     * Reading a list of information about JSON files stored in Google Drive.
+     * Reading a list of information about JSON files stored on Google Drive.
      *
      * @return list of of information about JSON files stored on Google Drive.
      * @throws GoogleAuthException when user is signed out of the Google account.
@@ -45,9 +46,9 @@ class DataManager(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun listJsonFiles(): List<GoogleDriveFile> = withContext(Dispatchers.IO) {
-        Timber.d("Read information about JSON files")
-        val jsonFiles = google.listJsonFiles()
+    suspend fun listGoogleDriveJsonFiles(): List<GoogleDriveFile> = withContext(Dispatchers.IO) {
+        Timber.d("Read information about JSON files stored on GoogleDrive")
+        val jsonFiles = google.drive.listJsonFiles()
         Timber.d("jsonFiles=$jsonFiles")
         jsonFiles
     }
@@ -55,7 +56,7 @@ class DataManager(
     /**
      * Reading all content from Google Drive file with identifier [fileId].
      *
-     * @param fileId identifier of the target file.
+     * @param fileId identifier of the target Google Drive file.
      * @param fileIdKey key for storing information to be read from Google Drive as text in the
      * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
      * thrown. This text should be used as [fileId] after the rights are recovered.
@@ -73,24 +74,24 @@ class DataManager(
         JsonSyntaxException::class,
         UnsupportedDataException::class
     )
-    suspend fun read(
+    suspend fun readFileFromGoogleDrive(
         fileId: String,
         fileIdKey: String
     ) = withContext(Dispatchers.IO) {
-        Timber.d("Read")
-        val json = google.readFile(fileId = fileId, fileIdKey = fileIdKey)
+        Timber.d("Read: fileId=$fileId")
+        val json = google.drive.readFile(fileId = fileId, fileIdKey = fileIdKey)
         Timber.d("json=$json")
         parseAsShredNotes(json)
     }
 
     /**
-     * Writing all content to Google Drive.
+     * Writing all content to Google Drive as JSON.
      *
-     * @param googleDriveFile target JSON file information.
-     * @param googleDriveFileKey key for storing information to be written on Google Drive as
-     * [GoogleDriveFile] in the map [GoogleRecoverableAuthException.additionalData] if
-     * [GoogleRecoverableAuthException] is thrown. This text should be used as [googleDriveFile]
-     * after the rights are recovered.
+     * @param file information about target JSON file on Google Drive.
+     * @param fileKey key for storing information to be written on Google Drive as [GoogleDriveFile]
+     * in the map [GoogleRecoverableAuthException.additionalData] if
+     * [GoogleRecoverableAuthException] is thrown. This text should be used as [file] after the
+     * rights are recovered.
      * @param readyJson information to be written on Google Drive as JSON.
      * @param jsonKey key for storing information to be written on Google Drive as JSON in the map
      * [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
@@ -98,29 +99,29 @@ class DataManager(
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains [googleDriveFile] in its
-     * [GoogleRecoverableAuthException.additionalData] map with the key [googleDriveFileKey] and all
+     * user interaction to recover his rights. This exception also contains [file] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileKey] and all
      * information to be written on Google Drive as JSON with the key [jsonKey].
      */
     @Throws(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun write(
-        googleDriveFile: GoogleDriveFile,
-        googleDriveFileKey: String,
+    suspend fun writeJsonToGoogleDrive(
+        file: GoogleDriveFile,
+        fileKey: String,
         readyJson: String? = null,
         jsonKey: String
     ) = withContext(Dispatchers.IO) {
-        Timber.d("Write: readyJson=$readyJson")
+        Timber.d("Write: file=$file, readyJson=$readyJson")
         val shredNotesJson = readyJson ?: run {
             val version = BuildConfig.SHRED_NOTES_VERSION
             prepareShredNotesJson(version)
         }
         Timber.d("shredNotesJson=$shredNotesJson")
-        google.writeJson(
-            driveFile = googleDriveFile,
-            driveFileKey = googleDriveFileKey,
+        google.drive.writeJson(
+            file = file,
+            fileKey = fileKey,
             json = shredNotesJson,
             jsonKey = jsonKey
         )
@@ -144,12 +145,12 @@ class DataManager(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun delete(
+    suspend fun deleteFilesFromGoogleDrive(
         fileIdList: List<String>,
         fileIdListKey: String
     ) = withContext(Dispatchers.IO) {
         Timber.d("Delete: fileIdList=$fileIdList")
-        google.deleteFiles(fileIdList = fileIdList, fileIdListKey = fileIdListKey)
+        google.drive.deleteFiles(fileIdList = fileIdList, fileIdListKey = fileIdListKey)
     }
 
     @Throws(

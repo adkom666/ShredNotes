@@ -6,7 +6,7 @@ package com.adkom666.shrednotes.data.google
 interface GoogleDrive {
 
     /**
-     * Reading a list of information about JSON files stored in Google Drive.
+     * Reading a list of information about JSON files stored on Google Drive.
      *
      * @return list of of information about JSON files stored on Google Drive.
      * @throws GoogleAuthException when user is signed out of the Google account.
@@ -32,13 +32,13 @@ interface GoogleDrive {
      * [GoogleRecoverableAuthException.additionalData] map with the key [fileIdKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun readFile(fileId: String, fileIdKey: String): String?
+    fun readFile(fileId: String, fileIdKey: String): String
 
     /**
-     * Writing [json] to a [driveFile].
+     * Writing [json] to a [file].
      *
-     * @param driveFile target JSON file information.
-     * @param driveFileKey key of the target JSON file information to save it in the
+     * @param file target JSON file information.
+     * @param fileKey key of the target JSON file information to save it in the
      * [GoogleRecoverableAuthException.additionalData] map for the case if
      * [GoogleRecoverableAuthException] has been thrown.
      * @param json JSON to be written.
@@ -48,12 +48,12 @@ interface GoogleDrive {
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains [driveFile] in
-     * its [GoogleRecoverableAuthException.additionalData] map with the key [driveFileKey] and
-     * original [json] with the key [jsonKey].
+     * user interaction to recover his rights. This exception also contains [file] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileKey] and original
+     * [json] with the key [jsonKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun writeJson(driveFile: GoogleDriveFile, driveFileKey: String, json: String, jsonKey: String)
+    fun writeJson(file: GoogleDriveFile, fileKey: String, json: String, jsonKey: String)
 
     /**
      * Deleting files with identifiers listed in [fileIdList].

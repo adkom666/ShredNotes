@@ -375,7 +375,7 @@ class GoogleDriveViewModel @Inject constructor(
         @Suppress("TooGenericExceptionCaught")
         try {
             if (isUpdate || googleDriveFiles == null) {
-                googleDriveFiles = dataManager.listJsonFiles()
+                googleDriveFiles = dataManager.listGoogleDriveJsonFiles()
                 displayedFileNames = googleDriveFiles?.map {
                     it.name.ensureNoSuffix(FILE_SUFFIX)
                 }?.toMutableList()
@@ -456,7 +456,7 @@ class GoogleDriveViewModel @Inject constructor(
                     val fileIdList = selectedFileIndexList
                         .filter { files[it].id != null }
                         .map { files[it].id ?: if (BuildConfig.DEBUG) error("Id is null!") else "" }
-                    dataManager.delete(fileIdList, KEY_FILE_ID_LIST)
+                    dataManager.deleteFilesFromGoogleDrive(fileIdList, KEY_FILE_ID_LIST)
                     selectedFileIndexList.size
                 } ?: 0
             is ManageableSelection.State.Active.Exclusive -> 0

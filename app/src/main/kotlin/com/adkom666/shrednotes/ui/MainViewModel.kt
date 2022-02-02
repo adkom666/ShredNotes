@@ -390,7 +390,7 @@ class MainViewModel @Inject constructor(
         val isForceUnsearchAndUnfilter = try {
             val finalFileId = finalFileId(fileId, readyFileId)
             readyFileId = null
-            dataManager.read(
+            dataManager.readFileFromGoogleDrive(
                 fileId = finalFileId,
                 fileIdKey = KEY_FILE_ID
             )
@@ -432,9 +432,9 @@ class MainViewModel @Inject constructor(
             readyFile = null
             val json = readyJson
             readyJson = null
-            dataManager.write(
-                googleDriveFile = finalFile,
-                googleDriveFileKey = KEY_FILE,
+            dataManager.writeJsonToGoogleDrive(
+                file = finalFile,
+                fileKey = KEY_FILE,
                 readyJson = json,
                 jsonKey = KEY_JSON,
             )
