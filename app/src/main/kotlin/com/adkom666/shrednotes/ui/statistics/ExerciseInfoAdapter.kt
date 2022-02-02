@@ -13,7 +13,6 @@ import com.adkom666.shrednotes.databinding.ItemExerciseBinding
 class ExerciseInfoAdapter : ListAdapter<String, ExerciseInfoAdapter.ViewHolder>(
     DIFF_UTIL_CALLBACK
 ) {
-
     private companion object {
 
         private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<String>() {

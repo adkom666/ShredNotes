@@ -16,7 +16,6 @@ import java.util.Locale
 class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(
     DIFF_UTIL_CALLBACK
 ) {
-
     private companion object {
 
         private val DIFF_UTIL_CALLBACK = object : DiffUtil.ItemCallback<Note>() {
