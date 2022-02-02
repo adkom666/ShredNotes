@@ -126,6 +126,29 @@ class Google(
         }
     }
 
+    private fun invalidateDriveHelper(context: Context) {
+        Timber.d("Invalidate driveHelper")
+        Timber.d("authHelper.signInAccount=${authHelper.signInAccount}")
+        Timber.d("authHelper.signInAccount?.account=${authHelper.signInAccount?.account}")
+        driveHelper = authHelper.signInAccount?.account?.let { account ->
+            val appName = context.getString(appNameResId)
+            val drive = createDrive(context, account, appName)
+            GoogleDriveHelper(drive)
+        }
+        Timber.d("driveHelper=$driveHelper")
+    }
+
+    private fun createDrive(context: Context, account: Account, appName: String): Drive {
+        val transport = AndroidHttp.newCompatibleTransport()
+        val jacksonFactory = JacksonFactory.getDefaultInstance()
+        val scopes = Collections.singleton(SCOPE_STRING_DRIVE_APPDATA)
+        val credential = GoogleAccountCredential.usingOAuth2(context.applicationContext, scopes)
+        credential.selectedAccount = account
+        return Drive.Builder(transport, jacksonFactory, credential)
+            .setApplicationName(appName)
+            .build()
+    }
+
     @Throws(GoogleRecoverableAuthException::class)
     private fun tryToListJsonFiles(
         driveHelper: GoogleDriveHelper
@@ -219,28 +242,5 @@ class Google(
         fileIdList.forEach { fileId ->
             driveHelper.deleteFile(fileId = fileId)
         }
-    }
-
-    private fun invalidateDriveHelper(context: Context) {
-        Timber.d("Invalidate driveHelper")
-        Timber.d("authHelper.signInAccount=${authHelper.signInAccount}")
-        Timber.d("authHelper.signInAccount?.account=${authHelper.signInAccount?.account}")
-        driveHelper = authHelper.signInAccount?.account?.let { account ->
-            val appName = context.getString(appNameResId)
-            val drive = createDrive(context, account, appName)
-            GoogleDriveHelper(drive)
-        }
-        Timber.d("driveHelper=$driveHelper")
-    }
-
-    private fun createDrive(context: Context, account: Account, appName: String): Drive {
-        val transport = AndroidHttp.newCompatibleTransport()
-        val jacksonFactory = JacksonFactory.getDefaultInstance()
-        val scopes = Collections.singleton(SCOPE_STRING_DRIVE_APPDATA)
-        val credential = GoogleAccountCredential.usingOAuth2(context.applicationContext, scopes)
-        credential.selectedAccount = account
-        return Drive.Builder(transport, jacksonFactory, credential)
-            .setApplicationName(appName)
-            .build()
     }
 }
