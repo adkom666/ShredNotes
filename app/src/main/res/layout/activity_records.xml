@@ -157,7 +157,7 @@
 
     <ProgressBar
         android:id="@+id/progress_bar"
-        style="@style/AppTheme.ProgressBar"
+        style="@style/AppTheme.HotProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"

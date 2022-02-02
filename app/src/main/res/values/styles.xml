@@ -170,9 +170,9 @@
 
     <style name="AppTheme.EditText" parent="AppTheme.EditableText" />
 
-    <style name="AppTheme.ProgressBar">
+    <style name="AppTheme.HotProgressBar">
         <item name="android:padding">@dimen/padding_l</item>
-        <item name="android:background">@drawable/progress_background</item>
+        <item name="android:background">@drawable/hot_progress_background</item>
     </style>
 
     <style name="AppTheme.Button">
