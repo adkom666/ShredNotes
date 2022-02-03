@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
+import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
 import com.adkom666.shrednotes.statistics.CommonStatistics
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregator
 import com.adkom666.shrednotes.util.DateRange
@@ -18,18 +19,20 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
+import javax.inject.Named
 import kotlin.properties.Delegates.observable
 
 /**
  * Common statistics screen model.
  *
  * @property statisticsAggregator source of common statistics.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] dependent on data.
  */
 @ExperimentalTime
 class CommonStatisticsViewModel
 @Inject constructor(
     private val statisticsAggregator: CommonStatisticsAggregator,
+    @Named(PREFS_DATA_DEPENDENT)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

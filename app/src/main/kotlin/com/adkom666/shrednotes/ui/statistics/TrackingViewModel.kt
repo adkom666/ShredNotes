@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
+import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
 import com.adkom666.shrednotes.statistics.MaxBpmTracking
 import com.adkom666.shrednotes.statistics.NoteCountTracking
 import com.adkom666.shrednotes.statistics.TrackingAggregator
@@ -20,15 +21,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 /**
  * Statistics tracking screen model.
  *
  * @property trackingAggregator source of statistics tracking.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] dependent on data.
  */
 class TrackingViewModel @Inject constructor(
     private val trackingAggregator: TrackingAggregator,
+    @Named(PREFS_DATA_DEPENDENT)
     private val preferences: SharedPreferences,
     private val exerciseRepository: ExerciseRepository
 ) : ExecutiveViewModel() {

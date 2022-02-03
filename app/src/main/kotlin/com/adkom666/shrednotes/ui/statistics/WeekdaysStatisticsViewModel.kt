@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
+import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
 import com.adkom666.shrednotes.statistics.WeekdaysStatistics
 import com.adkom666.shrednotes.statistics.WeekdaysStatisticsAggregator
 import com.adkom666.shrednotes.util.DateRange
@@ -17,15 +18,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 /**
  * Statistics by days of week screen model.
  *
  * @property statisticsAggregator source of statistics by days of week.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] dependent on data.
  */
 class WeekdaysStatisticsViewModel @Inject constructor(
     private val statisticsAggregator: WeekdaysStatisticsAggregator,
+    @Named(PREFS_DATA_DEPENDENT)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 
