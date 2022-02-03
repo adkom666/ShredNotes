@@ -2,6 +2,8 @@ package com.adkom666.shrednotes.ui.gdrivedialog
 
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
@@ -27,14 +29,17 @@ import javax.inject.Inject
  * Google Drive dialog model.
  *
  * @property dataManager [DataManager] to manage files with app info.
+ * @property preferences project's [SharedPreferences].
  */
 class GoogleDriveViewModel @Inject constructor(
-    private val dataManager: DataManager
+    private val dataManager: DataManager,
+    private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 
     private companion object {
         private const val FILE_SUFFIX = ".json"
         private const val KEY_FILE_ID_LIST = "file_id_list"
+        private const val KEY_TARGET_FILE_NAME = "google_drive.target_file_name"
     }
 
     /**
@@ -216,12 +221,12 @@ class GoogleDriveViewModel @Inject constructor(
     private val mode: GoogleDriveDialogMode
         get() = requireNotNull(_mode)
 
-    private val _stateAsLiveData: MutableLiveData<State> = MutableLiveData(State.Waiting())
-    private val _fileNamesAsLiveData: MutableLiveData<List<String>?> = MutableLiveData(null)
-    private val _targetFileNameAsLiveData: MutableLiveData<String?> = MutableLiveData(null)
-    private val _navigationChannel: Channel<NavDirection> = Channel(1)
-    private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
-    private val _manageableSelection: ManageableSelection = ManageableSelection()
+    private val _stateAsLiveData: MutableLiveData<State>
+    private val _fileNamesAsLiveData: MutableLiveData<List<String>?>
+    private val _targetFileNameAsLiveData: MutableLiveData<String?>
+    private val _navigationChannel: Channel<NavDirection>
+    private val _messageChannel: Channel<Message>
+    private val _manageableSelection: ManageableSelection
 
     private var _mode: GoogleDriveDialogMode? = null
 
@@ -243,6 +248,12 @@ class GoogleDriveViewModel @Inject constructor(
 
     init {
         Timber.d("Init")
+        _stateAsLiveData = MutableLiveData(State.Waiting())
+        _fileNamesAsLiveData = MutableLiveData(null)
+        _targetFileNameAsLiveData = MutableLiveData(preferences.getTargetFileName())
+        _navigationChannel = Channel(1)
+        _messageChannel = Channel(Channel.UNLIMITED)
+        _manageableSelection = ManageableSelection()
         _manageableSelection.addOnActivenessChangeListener(onSelectionActivenessChangeListener)
     }
 
@@ -274,7 +285,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onFileClick(fileName: String?) {
         Timber.d("On file name click")
-        setTargetFileName(fileName)
+        acceptTargetFileName(fileName)
     }
 
     /**
@@ -282,7 +293,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onTargetFileNameChange(fileName: String?) {
         Timber.d("On target file name change")
-        setTargetFileName(fileName)
+        acceptTargetFileName(fileName)
     }
 
     /**
@@ -467,7 +478,7 @@ class GoogleDriveViewModel @Inject constructor(
     private fun skipTargetFileNameIfFileMissing() {
         val fileName = targetFileNameForGoogleDrive()
         if (isOnGoogleDrive(fileName).not()) {
-            setTargetFileName(null)
+            acceptTargetFileName(null)
         }
     }
 
@@ -481,6 +492,13 @@ class GoogleDriveViewModel @Inject constructor(
 
     private fun fileFromGoogleDrive(fileName: String?): GoogleDriveFile? {
         return googleDriveFiles?.find { it.name.equals(fileName, ignoreCase = true) }
+    }
+
+    private fun acceptTargetFileName(fileName: String?) {
+        preferences.edit {
+            putTargetFileName(fileName)
+        }
+        setTargetFileName(fileName)
     }
 
     private fun reportAbout(e: Exception) {
@@ -512,6 +530,14 @@ class GoogleDriveViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.offer(message)
+    }
+
+    private fun SharedPreferences.getTargetFileName(): String? {
+        return getString(KEY_TARGET_FILE_NAME, null)
+    }
+
+    private fun SharedPreferences.Editor.putTargetFileName(fileName: String?) {
+        putString(KEY_TARGET_FILE_NAME, fileName)
     }
 
     private fun String.fileSelection(): String {
