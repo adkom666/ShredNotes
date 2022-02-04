@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.util
 
+import androidx.core.util.Pair
 import androidx.fragment.app.FragmentManager
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.util.time.Days
@@ -30,7 +31,7 @@ fun showDateRangePicker(
     builder.setTheme(R.style.AppTheme_MaterialAlertDialog_DatePicker)
     val dateRange = dateRangeProvider()
     Timber.d("Initial date range: dateRange=$dateRange")
-    val selection = androidx.core.util.Pair.create(
+    val selection = Pair.create(
         dateRange.fromInclusive.localTimestampOrNull(),
         dateRange.toExclusive?.yesterday.localTimestampOrNull()
     )
@@ -61,7 +62,7 @@ private fun MaterialDatePicker<*>.addDateListener(
     onPositiveButtonClick: (DateRange) -> Unit
 ) {
     addOnPositiveButtonClickListener { selection ->
-        if (selection is androidx.core.util.Pair<*, *>) {
+        if (selection is Pair<*, *>) {
             val from = selection.first as? Long
             val to = selection.second as? Long
             val dateFromInclusive = from?.let { Days(it) }
