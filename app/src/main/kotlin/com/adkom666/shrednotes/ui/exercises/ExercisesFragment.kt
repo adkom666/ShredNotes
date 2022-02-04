@@ -140,12 +140,12 @@ class ExercisesFragment :
     }
 
     override fun search(query: String?): Boolean {
-        Timber.d("search: query=$query")
+        Timber.d("Search: query=$query")
         return true
     }
 
     override fun preview(newText: String?): Boolean {
-        Timber.d("preview: newText=$newText")
+        Timber.d("Preview: newText=$newText")
         model.subname = newText
         return true
     }

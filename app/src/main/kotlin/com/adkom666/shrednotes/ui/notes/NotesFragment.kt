@@ -153,17 +153,18 @@ class NotesFragment :
     }
 
     override fun search(query: String?): Boolean {
-        Timber.d("search: query=$query")
+        Timber.d("Search: query=$query")
         return true
     }
 
     override fun preview(newText: String?): Boolean {
-        Timber.d("preview: newText=$newText")
+        Timber.d("Preview: newText=$newText")
         model.exerciseSubname = newText
         return true
     }
 
     override fun filter() {
+        Timber.d("Filter")
         model.requestFilter()
     }
 
