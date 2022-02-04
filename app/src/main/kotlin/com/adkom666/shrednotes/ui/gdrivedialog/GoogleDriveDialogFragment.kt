@@ -477,7 +477,9 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
             val selectedItemPosition = adapter.select(fileName)
             selectedItemPosition?.let { position ->
                 handler.postDelayed({
-                    binding.fileRecycler.startLinearSmoothScrollToPosition(position)
+                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        binding.fileRecycler.startLinearSmoothScrollToPosition(position)
+                    }
                 }, SCROLL_DELAY_MILLIS)
             }
         }

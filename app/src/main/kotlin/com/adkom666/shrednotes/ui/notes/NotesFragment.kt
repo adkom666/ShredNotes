@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -132,7 +133,7 @@ class NotesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initNoteRecycler()
         _fabDashboard = initFabDashboard(model.selection)
-        _scroller = ScrollToNewItem(binding.noteRecycler, SCROLL_DELAY_MILLIS)
+        _scroller = ScrollToNewItem(binding.noteRecycler, lifecycle, SCROLL_DELAY_MILLIS)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -339,13 +340,17 @@ class NotesFragment :
 
     private fun invalidateNoteDecorations() {
         view?.handler?.postDelayed({
-            binding.noteRecycler.invalidateItemDecorations()
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                binding.noteRecycler.invalidateItemDecorations()
+            }
         }, INVALIDATION_DELAY_MILLIS)
     }
 
     private fun startSmoothScrollToBegin() {
         view?.handler?.postDelayed({
-            binding.noteRecycler.startLinearSmoothScrollToPosition(0)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                binding.noteRecycler.startLinearSmoothScrollToPosition(0)
+            }
         }, SCROLL_DELAY_MILLIS)
     }
 

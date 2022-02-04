@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.util
 
 import android.os.Handler
 import android.os.Looper
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import timber.log.Timber
 
@@ -9,10 +10,12 @@ import timber.log.Timber
  * Observer for watching new item to scroll to it.
  *
  * @property recycler target recycler view.
+ * @property lifecycle [Lifecycle] of the [recycler]'s owner.
  * @property scrollDelayMillis delay before scroll in milliseconds.
  */
 class ScrollToNewItem(
     private val recycler: RecyclerView,
+    private val lifecycle: Lifecycle,
     private val scrollDelayMillis: Long
 ) {
     private val adapterDataObserver: RecyclerView.AdapterDataObserver = AdapterDataObserver()
@@ -57,7 +60,9 @@ class ScrollToNewItem(
                 waitForNewItem = false
                 handler.postDelayed({
                     Timber.d("Scroll to position: position=$positionStart")
-                    recycler.startLinearSmoothScrollToPosition(positionStart)
+                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        recycler.startLinearSmoothScrollToPosition(positionStart)
+                    }
                 }, scrollDelayMillis)
             }
         }

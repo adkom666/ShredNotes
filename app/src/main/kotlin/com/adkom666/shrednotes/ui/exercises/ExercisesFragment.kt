@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -119,7 +120,7 @@ class ExercisesFragment :
         _model = viewModel(viewModelFactory)
         _adapter = initExerciseRecycler()
         _fabDashboard = initFabDashboard(model.selection)
-        _scroller = ScrollToNewItem(binding.exercisesRecycler, SCROLL_DELAY_MILLIS)
+        _scroller = ScrollToNewItem(binding.exercisesRecycler, lifecycle, SCROLL_DELAY_MILLIS)
 
         setupFabListeners()
         restoreFragmentListeners()
@@ -300,7 +301,9 @@ class ExercisesFragment :
 
     private fun startSmoothScrollToBegin() {
         view?.handler?.postDelayed({
-            binding.exercisesRecycler.startLinearSmoothScrollToPosition(0)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                binding.exercisesRecycler.startLinearSmoothScrollToPosition(0)
+            }
         }, SCROLL_DELAY_MILLIS)
     }
 
