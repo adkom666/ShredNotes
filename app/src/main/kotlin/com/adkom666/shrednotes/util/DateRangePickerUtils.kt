@@ -2,6 +2,7 @@ package com.adkom666.shrednotes.util
 
 import androidx.core.util.Pair
 import androidx.fragment.app.FragmentManager
+import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.R
 import com.adkom666.shrednotes.util.time.Days
 import com.adkom666.shrednotes.util.time.localTimestampOrNull
@@ -35,10 +36,16 @@ fun showDateRangePicker(
         dateRange.fromInclusive.localTimestampOrNull(),
         dateRange.toExclusive?.yesterday.localTimestampOrNull()
     )
-    builder.setSelection(selection)
-    val picker = builder.build()
-    picker.addDateListener(onPositiveButtonClick)
-    picker.show(fragmentManager, tag)
+    if (isValid(selection)) {
+        builder.setSelection(selection)
+        val picker = builder.build()
+        picker.addDateListener(onPositiveButtonClick)
+        picker.show(fragmentManager, tag)
+    } else {
+        if (BuildConfig.DEBUG) {
+            error("Initial date range $dateRange is invalid!")
+        }
+    }
 }
 
 /**
@@ -56,6 +63,12 @@ fun restoreDateRangeListener(
     fragmentManager.performIfFoundByTag<MaterialDatePicker<*>>(tag) {
         it.addDateListener(onPositiveButtonClick)
     }
+}
+
+private fun isValid(selection: Pair<Long?, Long?>): Boolean {
+    val first = selection.first
+    val second = selection.second
+    return first == null || second == null || first <= second
 }
 
 private fun MaterialDatePicker<*>.addDateListener(
