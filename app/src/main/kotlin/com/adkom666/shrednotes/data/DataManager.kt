@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.data
 
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.adkom666.shrednotes.BuildConfig
 import com.adkom666.shrednotes.data.external.ExternalShredNotesEnvelope
 import com.adkom666.shrednotes.data.external.ExternalShredNotesV1
@@ -9,6 +11,7 @@ import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
 import com.adkom666.shrednotes.data.repository.ShredNotesRepository
+import com.adkom666.shrednotes.util.put
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
@@ -19,11 +22,13 @@ import timber.log.Timber
  * Responsible for saving all application data.
  *
  * @property repository all application data storage.
+ * @property preferences project's [SharedPreferences] to keep in file with content.
  * @property google here we interacting with Google.
  * @property gson JSON converter.
  */
 class DataManager(
     private val repository: ShredNotesRepository,
+    private val preferences: SharedPreferences,
     private val google: Google,
     private val gson: Gson
 ) {
@@ -158,34 +163,123 @@ class DataManager(
         UnsupportedDataException::class
     )
     private suspend fun parseAsShredNotes(json: String) {
+        Timber.d("parseAsShredNotes: json=$json")
         val shredNotesEnvelope = gson.fromJson(
             json,
             ExternalShredNotesEnvelope::class.java
         )
+        Timber.d("shredNotesEnvelope=$shredNotesEnvelope")
         when (shredNotesEnvelope.version) {
-            1 -> {
-                val shredNotes = gson.fromJson(
-                    shredNotesEnvelope.content,
-                    ExternalShredNotesV1::class.java
-                )
-                Timber.d("shredNotes=$shredNotes")
-                repository.replaceShredNotesByV1Suspending(shredNotes)
-            }
+            1 -> setupShredNotesV1(shredNotesEnvelope.content, shredNotesEnvelope.preferences)
             else -> throw UnsupportedDataException(shredNotesEnvelope.version)
         }
     }
 
     private suspend fun prepareShredNotesJson(version: Int): String {
-        val shredNotes = when (version) {
-            1 -> repository.shredNotesV1Suspending()
+        Timber.d("prepareShredNotesJson: version=$version")
+        return when (version) {
+            1 -> prepareShredNotesJsonV1()
             else -> error("There is no implementation for the shred notes version $version")
         }
+    }
+
+    private suspend fun setupShredNotesV1(contentJson: String, preferencesJson: String?) {
+        Timber.d(
+            """setupShredNotesV1:
+                |contentJson=$contentJson,
+                |preferencesJson=$preferencesJson""".trimMargin()
+        )
+
+        val shredNotes = gson.fromJson(
+            contentJson,
+            ExternalShredNotesV1::class.java
+        )
         Timber.d("shredNotes=$shredNotes")
+        repository.replaceShredNotesByV1Suspending(shredNotes)
+
+        preferencesJson?.let { json ->
+            preferences.edit {
+                clear()
+                putFromJson(json)
+            }
+        } ?: run {
+            preferences.edit {
+                clear()
+            }
+        }
+    }
+
+    private suspend fun prepareShredNotesJsonV1(): String {
+        Timber.d("prepareShredNotesJsonV1")
+
+        val shredNotes = repository.shredNotesV1Suspending()
+        Timber.d("shredNotes=$shredNotes")
+        val contentJson = gson.toJson(shredNotes)
+        Timber.d("contentJson=$contentJson")
+
+        val preferencesMap = preferences.all
+        Timber.d("preferencesMap=$preferencesMap")
+        val preferencesMapBackup = preferencesMap.backup()
+        Timber.d("preferencesMapBackup=$preferencesMapBackup")
+        val preferencesJson = gson.toJson(preferencesMapBackup)
+        Timber.d("preferencesJson=$preferencesJson")
+
         val shredNotesEnvelope = ExternalShredNotesEnvelope(
-            version = version,
-            content = gson.toJson(shredNotes)
+            version = 1,
+            content = contentJson,
+            preferences = preferencesJson
         )
         Timber.d("shredNotesEnvelope=$shredNotesEnvelope")
-        return gson.toJson(shredNotesEnvelope)
+        val shredNotesJson = gson.toJson(shredNotesEnvelope)
+        Timber.d("shredNotesJson=$shredNotesJson")
+
+        return shredNotesJson
     }
+
+    private fun SharedPreferences.Editor.putFromJson(
+        preferencesJson: String
+    ): SharedPreferences.Editor {
+        Timber.d("putFromJson: preferencesJson=$preferencesJson")
+        val preferencesMapBackup = gson.fromJson(
+            preferencesJson,
+            MapBackup::class.java
+        )
+        Timber.d("preferencesMapBackup=$preferencesMapBackup")
+        val preferencesMap = preferencesMapBackup.map()
+        Timber.d("preferencesMap=$preferencesMap")
+        put(preferencesMap)
+        return this
+    }
+
+    private fun Map<String, *>.backup(): MapBackup {
+        val backup = MapBackup()
+        entries.forEach { entry ->
+            when (val entryValue = entry.value) {
+                is Boolean -> backup.booleans[entry.key] = entryValue
+                is Int -> backup.integers[entry.key] = entryValue
+                is Long -> backup.longs[entry.key] = entryValue
+                is String -> backup.strings[entry.key] = entryValue
+                is Float -> backup.floats[entry.key] = entryValue
+            }
+        }
+        return backup
+    }
+
+    private fun MapBackup.map(): Map<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        booleans.entries.forEach { map[it.key] = it.value }
+        integers.entries.forEach { map[it.key] = it.value }
+        longs.entries.forEach { map[it.key] = it.value }
+        strings.entries.forEach { map[it.key] = it.value }
+        floats.entries.forEach { map[it.key] = it.value }
+        return map
+    }
+
+    private data class MapBackup(
+        val booleans: MutableMap<String, Boolean> = mutableMapOf(),
+        val integers: MutableMap<String, Int> = mutableMapOf(),
+        val longs: MutableMap<String, Long> = mutableMapOf(),
+        val strings: MutableMap<String, String> = mutableMapOf(),
+        val floats: MutableMap<String, Float> = mutableMapOf()
+    )
 }

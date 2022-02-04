@@ -166,6 +166,11 @@ class NotesFragment :
         model.requestFilter()
     }
 
+    override fun invalidateFilter() {
+        Timber.d("Invalidate filter")
+        model.invalidateFilter()
+    }
+
     override fun scrollToBegin() = startSmoothScrollToBegin()
 
     private fun acquireActivityLaunchers() {

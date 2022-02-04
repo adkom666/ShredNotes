@@ -21,4 +21,9 @@ interface Filterable {
      * Call filter for configuration.
      */
     fun filter()
+
+    /**
+     * Invalidate filter parameters.
+     */
+    fun invalidateFilter()
 }

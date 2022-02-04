@@ -448,6 +448,14 @@ class NotesViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Invalidate filter parameters.
+     */
+    fun invalidateFilter() {
+        Timber.d("Invalidate filter")
+        filter = preferences.getNoteFilter()
+    }
+
     private fun resetNotes() {
         execute {
             setState(State.Waiting)

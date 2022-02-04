@@ -137,3 +137,27 @@ fun SharedPreferences.Editor.putNullableInt(
     putInt(key, safeValue)
     putBoolean(presenceAttributeKey, true)
 } ?: putBoolean(presenceAttributeKey, false)
+
+/**
+ * Set all values from the [map] in the preferences editor, to be written back once
+ * [SharedPreferences.Editor.commit] or [SharedPreferences.Editor.apply] are called. The preference
+ * names are the same as the corresponding keys from [map].
+ *
+ * @param map the map to save.
+ * @return Returns a reference to the same [SharedPreferences.Editor] object, so you can chain put
+ * calls together.
+ */
+fun SharedPreferences.Editor.put(
+    map: Map<String, Any>
+): SharedPreferences.Editor {
+    map.entries.forEach { entry ->
+        when (val entryValue = entry.value) {
+            is Boolean -> putBoolean(entry.key, entryValue)
+            is Int -> putInt(entry.key, entryValue)
+            is Long -> putLong(entry.key, entryValue)
+            is String -> putString(entry.key, entryValue)
+            is Float -> putFloat(entry.key, entryValue)
+        }
+    }
+    return this
+}
