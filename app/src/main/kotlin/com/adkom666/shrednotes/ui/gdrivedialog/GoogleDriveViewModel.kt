@@ -14,6 +14,7 @@ import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
+import com.adkom666.shrednotes.di.module.PREFS_DATA_INDEPENDENT
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
@@ -24,15 +25,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 
 /**
  * Google Drive dialog model.
  *
  * @property dataManager [DataManager] to manage files with app info.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] independent on data.
  */
 class GoogleDriveViewModel @Inject constructor(
     private val dataManager: DataManager,
+    @Named(PREFS_DATA_INDEPENDENT)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

@@ -30,8 +30,10 @@ class ToolPreferences(
         initialValue = preferences.getBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isNoteSearchActive: old=$old, new=$new")
-        preferences.edit {
-            putBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, new)
+        if (isExternalUpdate) {
+            preferences.edit {
+                putBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, new)
+            }
         }
         give(NoteToolPreferences.Signal.NoteSearchActivenessChanged)
     }
@@ -42,8 +44,10 @@ class ToolPreferences(
         Timber.d("Change noteExerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             val finalExerciseSubname = new?.trim()
-            preferences.edit {
-                putString(KEY_NOTE_EXERCISE_SUBNAME, finalExerciseSubname)
+            if (isExternalUpdate) {
+                preferences.edit {
+                    putString(KEY_NOTE_EXERCISE_SUBNAME, finalExerciseSubname)
+                }
             }
             give(NoteToolPreferences.Signal.NoteExerciseSubnameChanged(old, new))
         }
@@ -54,8 +58,10 @@ class ToolPreferences(
     ) { _, old, new ->
         Timber.d("Change _isNoteFilterEnabled: old=$old, new=$new")
         if (new != old) {
-            preferences.edit {
-                putBoolean(KEY_IS_NOTE_FILTER_ENABLED, new)
+            if (isExternalUpdate) {
+                preferences.edit {
+                    putBoolean(KEY_IS_NOTE_FILTER_ENABLED, new)
+                }
             }
             give(NoteToolPreferences.Signal.NoteFilterEnablementChanged(new))
         }
@@ -68,8 +74,10 @@ class ToolPreferences(
         initialValue = preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isExcerciseSearchActive: old=$old, new=$new")
-        preferences.edit {
-            putBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, new)
+        if (isExternalUpdate) {
+            preferences.edit {
+                putBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, new)
+            }
         }
         give(ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged)
     }
@@ -80,8 +88,10 @@ class ToolPreferences(
         Timber.d("Change exerciseSubname: old=$old, new=$new")
         if (new containsDifferentTrimmedTextIgnoreCaseThan old) {
             val finalExerciseSubname = new?.trim()
-            preferences.edit {
-                putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
+            if (isExternalUpdate) {
+                preferences.edit {
+                    putString(KEY_EXERCISE_SUBNAME, finalExerciseSubname)
+                }
             }
             give(ExerciseToolPreferences.Signal.ExerciseSubnameChanged(old, new))
         }
@@ -96,15 +106,20 @@ class ToolPreferences(
     private val _exerciseToolSignalChannel: Channel<ExerciseToolPreferences.Signal> =
         Channel(Channel.UNLIMITED)
 
+    private var isExternalUpdate: Boolean = true
+
     /**
-     * Reset all tools.
+     * Invalidate all tools.
      */
-    fun reset() {
-        isNoteSearchActive = false
-        noteExerciseSubname = null
-        isExcerciseSearchActive = false
-        exerciseSubname = null
-        isNoteFilterEnabled = false
+    fun invalidate() {
+        Timber.d("Invalidate")
+        selfUpdate {
+            isNoteSearchActive = preferences.getBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, false)
+            noteExerciseSubname = preferences.getString(KEY_NOTE_EXERCISE_SUBNAME, null)
+            isExcerciseSearchActive = preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
+            exerciseSubname = preferences.getString(KEY_EXERCISE_SUBNAME, null)
+            isNoteFilterEnabled = preferences.getBoolean(KEY_IS_NOTE_FILTER_ENABLED, false)
+        }
     }
 
     private fun give(signal: NoteToolPreferences.Signal) {
@@ -115,5 +130,11 @@ class ToolPreferences(
     private fun give(signal: ExerciseToolPreferences.Signal) {
         Timber.d("Give: signal=$signal")
         _exerciseToolSignalChannel.offer(signal)
+    }
+
+    private fun selfUpdate(block: () -> Unit) {
+        isExternalUpdate = false
+        block()
+        isExternalUpdate = true
     }
 }

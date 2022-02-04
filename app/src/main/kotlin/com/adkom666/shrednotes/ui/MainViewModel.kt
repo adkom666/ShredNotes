@@ -61,10 +61,10 @@ class MainViewModel @Inject constructor(
             /**
              * Show options menu before continuing.
              *
-             * @property isForceResetTools whether to forcibly reset tools after continuing, for
-             * example, inactivate search and filter.
+             * @property isForceInvalidateTools whether to forcibly invalidate tools after
+             * continuing, for example, invalidate search and filter.
              */
-            data class Continuing(val isForceResetTools: Boolean) : Preparation()
+            data class Continuing(val isForceInvalidateTools: Boolean) : Preparation()
 
             /**
              * The user is logged in or logged out. Invalidate the options menu and the account
@@ -378,16 +378,16 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Reset tools for all possible screens.
+     * Invalidate tools for all possible screens.
      */
-    fun resetTools() {
-        toolPreferences.reset()
+    fun invalidateTools() {
+        toolPreferences.invalidate()
     }
 
     private fun launchRead(fileId: String? = null) = execute {
         setState(State.Waiting(State.Waiting.Operation.READING))
         @Suppress("TooGenericExceptionCaught")
-        val isForceUnsearchAndUnfilter = try {
+        val isForceInvalidateTools = try {
             val finalFileId = finalFileId(fileId, readyFileId)
             readyFileId = null
             dataManager.readFileFromGoogleDrive(
@@ -421,7 +421,7 @@ class MainViewModel @Inject constructor(
             reportAbout(e)
             false
         }
-        setState(State.Preparation.Continuing(isForceUnsearchAndUnfilter))
+        setState(State.Preparation.Continuing(isForceInvalidateTools))
     }
 
     private fun launchWrite(googleDriveFile: GoogleDriveFile? = null) = execute {
@@ -453,7 +453,7 @@ class MainViewModel @Inject constructor(
             Timber.e(e)
             reportAbout(e)
         }
-        setState(State.Preparation.Continuing(isForceResetTools = false))
+        setState(State.Preparation.Continuing(isForceInvalidateTools = false))
     }
 
     private fun finalFileId(

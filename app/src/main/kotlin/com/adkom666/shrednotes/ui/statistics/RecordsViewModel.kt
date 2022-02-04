@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
+import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
 import com.adkom666.shrednotes.statistics.BpmRecords
 import com.adkom666.shrednotes.statistics.NoteCountRecords
 import com.adkom666.shrednotes.statistics.RecordsAggregator
@@ -18,16 +19,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.properties.Delegates.observable
 
 /**
  * Records screen model.
  *
  * @property recordsAggregator source of records.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] dependent on data.
  */
 class RecordsViewModel @Inject constructor(
     private val recordsAggregator: RecordsAggregator,
+    @Named(PREFS_DATA_DEPENDENT)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

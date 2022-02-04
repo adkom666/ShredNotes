@@ -18,6 +18,7 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.pref.NoteToolPreferences
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
@@ -41,6 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.properties.Delegates.observable
 
 /**
@@ -48,11 +50,12 @@ import kotlin.properties.Delegates.observable
  *
  * @property noteRepository note storage management.
  * @property noteToolPreferences to manage note filter and search.
- * @property preferences project's [SharedPreferences].
+ * @property preferences project's [SharedPreferences] dependent on data.
  */
 class NotesViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val noteToolPreferences: NoteToolPreferences,
+    @Named(PREFS_DATA_DEPENDENT)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 
@@ -443,6 +446,14 @@ class NotesViewModel @Inject constructor(
             }
             ConfigFilterStatus.CANCEL -> Unit
         }
+    }
+
+    /**
+     * Invalidate filter parameters.
+     */
+    fun invalidateFilter() {
+        Timber.d("Invalidate filter")
+        filter = preferences.getNoteFilter()
     }
 
     private fun resetNotes() {

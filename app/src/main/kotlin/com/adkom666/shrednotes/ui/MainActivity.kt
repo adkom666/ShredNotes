@@ -395,6 +395,14 @@ class MainActivity :
         }
     }
 
+    private fun invalidateFilter() {
+        Timber.d("invalidateFilter")
+        val fragment = supportFragmentManager.getCurrentlyDisplayedFragment()
+        if (fragment is Filterable) {
+            fragment.invalidateFilter()
+        }
+    }
+
     private fun onReadItemSelected() {
         Timber.d("Item selected: read notes")
         val dialogFragment = GoogleDriveDialogFragment.newInstance(
@@ -644,8 +652,9 @@ class MainActivity :
             MainViewModel.State.Preparation.Initial ->
                 Unit
             is MainViewModel.State.Preparation.Continuing -> {
-                if (state.isForceResetTools) {
-                    model.resetTools()
+                invalidateFilter()
+                if (state.isForceInvalidateTools) {
+                    model.invalidateTools()
                 }
                 menuReference.get()?.invalidate()
             }
