@@ -556,7 +556,7 @@ class NotesViewModel @Inject constructor(
         val dateToExclusive = getNullableDays(
             key = KEY_FILTER_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_FILTER_HAVE_DATE_TO,
-            defaultValue = defaultDays
+            defaultValue = defaultDays.tomorrow
         )
         val bpmFromInclusive = getNullableInt(
             key = KEY_FILTER_BPM_FROM_INCLUSIVE,

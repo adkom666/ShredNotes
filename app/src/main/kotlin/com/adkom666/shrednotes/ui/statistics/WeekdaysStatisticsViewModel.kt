@@ -306,7 +306,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         val dateToExclusive = getNullableDays(
             key = KEY_MAX_BPM_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_MAX_BPM_DATE_RANGE_HAVE_DATE_TO,
-            defaultValue = defaultDays
+            defaultValue = defaultDays.tomorrow
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
@@ -337,7 +337,7 @@ class WeekdaysStatisticsViewModel @Inject constructor(
         val dateToExclusive = getNullableDays(
             key = KEY_NOTE_COUNT_DATE_RANGE_DATE_TO_EXCLUSIVE,
             presenceAttributeKey = KEY_DOES_NOTE_COUNT_DATE_RANGE_HAVE_DATE_TO,
-            defaultValue = defaultDays
+            defaultValue = defaultDays.tomorrow
         )
         return DateRange(
             fromInclusive = dateFromInclusive,
