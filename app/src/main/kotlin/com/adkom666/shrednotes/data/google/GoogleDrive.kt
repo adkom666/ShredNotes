@@ -1,5 +1,7 @@
 package com.adkom666.shrednotes.data.google
 
+import com.adkom666.shrednotes.common.Json
+
 /**
  * High-level operations with Google Drive.
  */
@@ -53,7 +55,7 @@ interface GoogleDrive {
      * [json] with the key [jsonKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun writeJson(file: GoogleDriveFile, fileKey: String, json: String, jsonKey: String)
+    fun writeJson(file: GoogleDriveFile, fileKey: String, json: Json, jsonKey: String)
 
     /**
      * Deleting files with identifiers listed in [fileIdList].

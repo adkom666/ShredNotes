@@ -390,7 +390,7 @@ class MainViewModel @Inject constructor(
         val isForceInvalidateTools = try {
             val finalFileId = finalFileId(fileId, readyFileId)
             readyFileId = null
-            dataManager.readFileFromGoogleDrive(
+            dataManager.readShredNotesFromGoogleDriveJsonFile(
                 fileId = finalFileId,
                 fileIdKey = KEY_FILE_ID
             )
@@ -432,7 +432,7 @@ class MainViewModel @Inject constructor(
             readyFile = null
             val json = readyJson
             readyJson = null
-            dataManager.writeJsonToGoogleDrive(
+            dataManager.writeShredNotesToGoogleDriveJsonFile(
                 file = finalFile,
                 fileKey = KEY_FILE,
                 readyJson = json,

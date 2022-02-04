@@ -4,6 +4,7 @@ import android.accounts.Account
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.StringRes
+import com.adkom666.shrednotes.common.Json
 import com.google.android.gms.common.api.Scope
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -129,7 +130,7 @@ class Google(
         driveHelper: GoogleDriveHelper,
         file: GoogleDriveFile,
         fileKey: String,
-        json: String,
+        json: Json,
         jsonKey: String
     ) {
         try {
@@ -168,7 +169,7 @@ class Google(
     private fun writeJsonToDrive(
         driveHelper: GoogleDriveHelper,
         file: GoogleDriveFile,
-        json: String
+        json: Json
     ) {
         if (file.id.isNullOrBlank()) {
             driveHelper.createJsonFile(
@@ -219,7 +220,7 @@ class Google(
         override fun writeJson(
             file: GoogleDriveFile,
             fileKey: String,
-            json: String,
+            json: Json,
             jsonKey: String
         ) {
             Timber.d(

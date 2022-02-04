@@ -1,5 +1,6 @@
 package com.adkom666.shrednotes.data.google
 
+import com.adkom666.shrednotes.common.Json
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.Drive
@@ -92,7 +93,7 @@ class GoogleDriveHelper(private val driveV3: Drive) {
      * user interaction to recover his rights.
      */
     @Throws(UserRecoverableAuthIOException::class)
-    fun createJsonFile(fileName: String, json: String, parentName: String = FOLDER_APPDATA) {
+    fun createJsonFile(fileName: String, json: Json, parentName: String = FOLDER_APPDATA) {
         Timber.d("Create JSON file: fileName=$fileName, json=$json")
         val parent = Collections.singletonList(parentName)
         val metadata = File()
@@ -116,7 +117,7 @@ class GoogleDriveHelper(private val driveV3: Drive) {
      * user interaction to recover his rights.
      */
     @Throws(UserRecoverableAuthIOException::class)
-    fun updateJsonFile(fileId: String, fileName: String, json: String) {
+    fun updateJsonFile(fileId: String, fileName: String, json: Json) {
         Timber.d("Update JSON file: fileId=$fileId, fileName=$fileName, json=$json")
         val metadata = File()
             .setMimeType(MIME_TYPE_JSON)

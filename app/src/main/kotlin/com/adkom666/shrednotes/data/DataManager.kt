@@ -3,6 +3,7 @@ package com.adkom666.shrednotes.data
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.adkom666.shrednotes.BuildConfig
+import com.adkom666.shrednotes.common.Json
 import com.adkom666.shrednotes.data.external.ExternalShredNotesEnvelope
 import com.adkom666.shrednotes.data.external.ExternalShredNotesV1
 import com.adkom666.shrednotes.data.google.Google
@@ -33,8 +34,8 @@ class DataManager(
     private val gson: Gson
 ) {
     /**
-     * Use it to authorization in Google before [readFileFromGoogleDrive] or
-     * [writeJsonToGoogleDrive].
+     * Use it to authorization in Google before [readShredNotesFromGoogleDriveJsonFile] or
+     * [writeShredNotesToGoogleDriveJsonFile].
      */
     val googleAuth: GoogleAuth = google
 
@@ -79,7 +80,7 @@ class DataManager(
         JsonSyntaxException::class,
         UnsupportedDataException::class
     )
-    suspend fun readFileFromGoogleDrive(
+    suspend fun readShredNotesFromGoogleDriveJsonFile(
         fileId: String,
         fileIdKey: String
     ) = withContext(Dispatchers.IO) {
@@ -112,10 +113,10 @@ class DataManager(
         GoogleAuthException::class,
         GoogleRecoverableAuthException::class
     )
-    suspend fun writeJsonToGoogleDrive(
+    suspend fun writeShredNotesToGoogleDriveJsonFile(
         file: GoogleDriveFile,
         fileKey: String,
-        readyJson: String? = null,
+        readyJson: Json? = null,
         jsonKey: String
     ) = withContext(Dispatchers.IO) {
         Timber.d("Write: file=$file, readyJson=$readyJson")
@@ -162,7 +163,7 @@ class DataManager(
         JsonSyntaxException::class,
         UnsupportedDataException::class
     )
-    private suspend fun parseAsShredNotes(json: String) {
+    private suspend fun parseAsShredNotes(json: Json) {
         Timber.d("parseAsShredNotes: json=$json")
         val shredNotesEnvelope = gson.fromJson(
             json,
@@ -175,7 +176,7 @@ class DataManager(
         }
     }
 
-    private suspend fun prepareShredNotesJson(version: Int): String {
+    private suspend fun prepareShredNotesJson(version: Int): Json {
         Timber.d("prepareShredNotesJson: version=$version")
         return when (version) {
             1 -> prepareShredNotesJsonV1()
@@ -183,7 +184,7 @@ class DataManager(
         }
     }
 
-    private suspend fun setupShredNotesV1(contentJson: String, preferencesJson: String?) {
+    private suspend fun setupShredNotesV1(contentJson: Json, preferencesJson: Json?) {
         Timber.d(
             """setupShredNotesV1:
                 |contentJson=$contentJson,
@@ -209,7 +210,7 @@ class DataManager(
         }
     }
 
-    private suspend fun prepareShredNotesJsonV1(): String {
+    private suspend fun prepareShredNotesJsonV1(): Json {
         Timber.d("prepareShredNotesJsonV1")
 
         val shredNotes = repository.shredNotesV1Suspending()
@@ -237,7 +238,7 @@ class DataManager(
     }
 
     private fun SharedPreferences.Editor.putFromJson(
-        preferencesJson: String
+        preferencesJson: Json
     ): SharedPreferences.Editor {
         Timber.d("putFromJson: preferencesJson=$preferencesJson")
         val preferencesMapBackup = gson.fromJson(
