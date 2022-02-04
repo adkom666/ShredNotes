@@ -141,7 +141,7 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
             showDateRangePicker(
                 supportFragmentManager,
                 TAG_DATE_RANGE_PICKER,
-                { model.dateRange },
+                model.dateRange,
                 ::changeDateRange
             )
         }

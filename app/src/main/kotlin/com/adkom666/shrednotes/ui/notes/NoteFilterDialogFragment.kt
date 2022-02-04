@@ -215,7 +215,7 @@ class NoteFilterDialogFragment : KeyboardlessDialogFragment() {
             showDateRangePicker(
                 childFragmentManager,
                 TAG_DATE_RANGE_PICKER,
-                { dateRange },
+                dateRange,
                 ::changeDateRange
             )
         }

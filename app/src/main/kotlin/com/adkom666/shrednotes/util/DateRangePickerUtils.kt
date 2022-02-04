@@ -18,23 +18,21 @@ import timber.log.Timber
  *
  * @param fragmentManager the [FragmentManager] this fragment will be added to.
  * @param tag the tag for this fragment, as per [androidx.fragment.app.FragmentTransaction.add].
- * @param dateRangeProvider this function should return the actual date range to initialize the
- * dialog.
+ * @param initialDateRange date range to initialize the dialog.
  * @param onPositiveButtonClick this callback gets the actual date range after the dialog is closed.
  */
 fun showDateRangePicker(
     fragmentManager: FragmentManager,
     tag: String,
-    dateRangeProvider: () -> DateRange,
+    initialDateRange: DateRange,
     onPositiveButtonClick: (DateRange) -> Unit
 ) {
+    Timber.d("Show date range picker: initialDateRange=$initialDateRange")
     val builder = MaterialDatePicker.Builder.dateRangePicker()
     builder.setTheme(R.style.AppTheme_MaterialAlertDialog_DatePicker)
-    val dateRange = dateRangeProvider()
-    Timber.d("Initial date range: dateRange=$dateRange")
     val selection = Pair.create(
-        dateRange.fromInclusive.localTimestampOrNull(),
-        dateRange.toExclusive?.yesterday.localTimestampOrNull()
+        initialDateRange.fromInclusive.localTimestampOrNull(),
+        initialDateRange.toExclusive?.yesterday.localTimestampOrNull()
     )
     if (isValid(selection)) {
         builder.setSelection(selection)
@@ -43,7 +41,7 @@ fun showDateRangePicker(
         picker.show(fragmentManager, tag)
     } else {
         if (BuildConfig.DEBUG) {
-            error("Initial date range $dateRange is invalid!")
+            error("Initial date range $initialDateRange is invalid!")
         }
     }
 }
