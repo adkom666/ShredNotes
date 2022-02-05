@@ -11,6 +11,8 @@ import kotlin.properties.Delegates.observable
 
 /**
  * Managing tools such as filter and search.
+ *
+ * @property preferences project's [SharedPreferences] to store values.
  */
 class ToolPreferences(
     private val preferences: SharedPreferences
