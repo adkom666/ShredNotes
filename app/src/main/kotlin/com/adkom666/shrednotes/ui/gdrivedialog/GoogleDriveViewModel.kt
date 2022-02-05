@@ -459,23 +459,23 @@ class GoogleDriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun deleteSelectedFiles(): Int {
-        return when (val selectionState = _manageableSelection.state) {
-            is ManageableSelection.State.Active.Inclusive ->
-                googleDriveFiles?.let { files ->
-                    val selectedFileIndexList = selectionState
-                        .selectedItemIdSet
-                        .map(Id::toInt)
-                        .toList()
-                    val fileIdList = selectedFileIndexList
-                        .filter { files[it].id != null }
-                        .map { files[it].id ?: if (BuildConfig.DEBUG) error("Id is null!") else "" }
-                    dataManager.deleteFilesFromGoogleDrive(fileIdList, KEY_FILE_ID_LIST)
-                    selectedFileIndexList.size
-                } ?: 0
-            is ManageableSelection.State.Active.Exclusive -> 0
-            ManageableSelection.State.Inactive -> 0
-        }
+    private suspend fun deleteSelectedFiles(): Int = when (
+        val selectionState = _manageableSelection.state
+    ) {
+        is ManageableSelection.State.Active.Inclusive ->
+            googleDriveFiles?.let { files ->
+                val selectedFileIndexList = selectionState
+                    .selectedItemIdSet
+                    .map(Id::toInt)
+                    .toList()
+                val fileIdList = selectedFileIndexList
+                    .filter { files[it].id != null }
+                    .map { files[it].id ?: if (BuildConfig.DEBUG) error("Id is null!") else "" }
+                dataManager.deleteFilesFromGoogleDrive(fileIdList, KEY_FILE_ID_LIST)
+                selectedFileIndexList.size
+            } ?: 0
+        is ManageableSelection.State.Active.Exclusive -> 0
+        ManageableSelection.State.Inactive -> 0
     }
 
     private fun skipTargetFileNameIfFileMissing() {
