@@ -24,7 +24,7 @@ class PreferencesModule {
     }
 
     @Provides
-    @Named(PREFS_DATA_DEPENDENT)
+    @Named(DATA_DEPENDENT_PREFERENCES)
     @Singleton
     fun dataDependentPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(
@@ -34,7 +34,7 @@ class PreferencesModule {
     }
 
     @Provides
-    @Named(PREFS_DATA_INDEPENDENT)
+    @Named(DATA_INDEPENDENT_PREFERENCES)
     @Singleton
     fun dataIndependentPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(
@@ -46,7 +46,7 @@ class PreferencesModule {
     @Provides
     @Singleton
     fun toolPreferences(
-        @Named(PREFS_DATA_DEPENDENT)
+        @Named(DATA_DEPENDENT_PREFERENCES)
         preferences: SharedPreferences
     ): ToolPreferences {
         return ToolPreferences(preferences)

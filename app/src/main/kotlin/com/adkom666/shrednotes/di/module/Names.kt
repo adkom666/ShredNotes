@@ -1,6 +1,6 @@
 package com.adkom666.shrednotes.di.module
 
-const val STRING_SKU = "sku"
+const val SKU_STRING = "sku"
 
-const val PREFS_DATA_DEPENDENT = "data_dependent"
-const val PREFS_DATA_INDEPENDENT = "data_independent"
+const val DATA_DEPENDENT_PREFERENCES = "data_dependent"
+const val DATA_INDEPENDENT_PREFERENCES = "data_independent"

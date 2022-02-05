@@ -18,7 +18,7 @@ import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.model.NoteFilter
 import com.adkom666.shrednotes.data.pref.NoteToolPreferences
 import com.adkom666.shrednotes.data.repository.NoteRepository
-import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
+import com.adkom666.shrednotes.di.module.DATA_DEPENDENT_PREFERENCES
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.getNullableDays
 import com.adkom666.shrednotes.util.getNullableInt
@@ -55,7 +55,7 @@ import kotlin.properties.Delegates.observable
 class NotesViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val noteToolPreferences: NoteToolPreferences,
-    @Named(PREFS_DATA_DEPENDENT)
+    @Named(DATA_DEPENDENT_PREFERENCES)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

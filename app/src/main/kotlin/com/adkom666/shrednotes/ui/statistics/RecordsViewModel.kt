@@ -5,7 +5,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
+import com.adkom666.shrednotes.di.module.DATA_DEPENDENT_PREFERENCES
 import com.adkom666.shrednotes.statistics.BpmRecords
 import com.adkom666.shrednotes.statistics.NoteCountRecords
 import com.adkom666.shrednotes.statistics.RecordsAggregator
@@ -30,7 +30,7 @@ import kotlin.properties.Delegates.observable
  */
 class RecordsViewModel @Inject constructor(
     private val recordsAggregator: RecordsAggregator,
-    @Named(PREFS_DATA_DEPENDENT)
+    @Named(DATA_DEPENDENT_PREFERENCES)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

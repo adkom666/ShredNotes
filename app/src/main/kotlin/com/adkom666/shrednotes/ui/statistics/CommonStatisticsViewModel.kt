@@ -5,7 +5,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
-import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
+import com.adkom666.shrednotes.di.module.DATA_DEPENDENT_PREFERENCES
 import com.adkom666.shrednotes.statistics.CommonStatistics
 import com.adkom666.shrednotes.statistics.CommonStatisticsAggregator
 import com.adkom666.shrednotes.util.DateRange
@@ -32,7 +32,7 @@ import kotlin.properties.Delegates.observable
 class CommonStatisticsViewModel
 @Inject constructor(
     private val statisticsAggregator: CommonStatisticsAggregator,
-    @Named(PREFS_DATA_DEPENDENT)
+    @Named(DATA_DEPENDENT_PREFERENCES)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

@@ -23,7 +23,7 @@ class BillingModule {
     }
 
     @Provides
-    @Named(STRING_SKU)
+    @Named(SKU_STRING)
     @Singleton
     fun sku(): String {
         return SKU

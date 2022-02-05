@@ -27,7 +27,7 @@ class DataManagerModule {
     @Provides
     fun dataManager(
         repository: ShredNotesRepository,
-        @Named(PREFS_DATA_DEPENDENT)
+        @Named(DATA_DEPENDENT_PREFERENCES)
         preferences: SharedPreferences,
         google: Google,
         gson: Gson

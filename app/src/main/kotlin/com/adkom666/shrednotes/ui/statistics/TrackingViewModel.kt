@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
 import com.adkom666.shrednotes.data.model.Exercise
 import com.adkom666.shrednotes.data.repository.ExerciseRepository
-import com.adkom666.shrednotes.di.module.PREFS_DATA_DEPENDENT
+import com.adkom666.shrednotes.di.module.DATA_DEPENDENT_PREFERENCES
 import com.adkom666.shrednotes.statistics.MaxBpmTracking
 import com.adkom666.shrednotes.statistics.NoteCountTracking
 import com.adkom666.shrednotes.statistics.TrackingAggregator
@@ -31,7 +31,7 @@ import javax.inject.Named
  */
 class TrackingViewModel @Inject constructor(
     private val trackingAggregator: TrackingAggregator,
-    @Named(PREFS_DATA_DEPENDENT)
+    @Named(DATA_DEPENDENT_PREFERENCES)
     private val preferences: SharedPreferences,
     private val exerciseRepository: ExerciseRepository
 ) : ExecutiveViewModel() {

@@ -14,7 +14,7 @@ import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
-import com.adkom666.shrednotes.di.module.PREFS_DATA_INDEPENDENT
+import com.adkom666.shrednotes.di.module.DATA_INDEPENDENT_PREFERENCES
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
@@ -35,7 +35,7 @@ import javax.inject.Named
  */
 class GoogleDriveViewModel @Inject constructor(
     private val dataManager: DataManager,
-    @Named(PREFS_DATA_INDEPENDENT)
+    @Named(DATA_INDEPENDENT_PREFERENCES)
     private val preferences: SharedPreferences
 ) : ExecutiveViewModel() {
 

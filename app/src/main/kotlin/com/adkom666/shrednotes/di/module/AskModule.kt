@@ -22,7 +22,7 @@ class AskModule {
     @Singleton
     fun donor(
         billingFactory: GoogleLikeBillingFactory,
-        @Named(STRING_SKU)
+        @Named(SKU_STRING)
         sku: String,
         shredSound: ShredSound
     ): Donor {
