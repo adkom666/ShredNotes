@@ -35,6 +35,9 @@
 -keepattributes SourceFile,LineNumberTable
 -repackageclasses ''
 
+-dontwarn java.lang.ClassValue
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
