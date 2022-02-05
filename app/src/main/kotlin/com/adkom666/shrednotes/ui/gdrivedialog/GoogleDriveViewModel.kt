@@ -553,15 +553,15 @@ class GoogleDriveViewModel @Inject constructor(
 
     private fun String.ensureNoSuffix(
         suffix: String
-    ): String = if (this.endsWith(suffix) && this.length > suffix.length) {
-        this.removeSuffix(suffix)
+    ): String = if (this.endsWith(suffix, ignoreCase = true) && this.length > suffix.length) {
+        this.substring(0, this.length - suffix.length)
     } else {
         this
     }
 
     private fun String.ensureSuffix(
         suffix: String
-    ): String = if (this.isEmpty() || this.endsWith(suffix)) {
+    ): String = if (this.isEmpty() || this.endsWith(suffix, ignoreCase = true)) {
         this
     } else {
         this + suffix
