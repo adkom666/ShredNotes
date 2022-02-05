@@ -2,8 +2,6 @@ package com.adkom666.shrednotes.ui.gdrivedialog
 
 import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
-import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.distinctUntilChanged
@@ -14,7 +12,7 @@ import com.adkom666.shrednotes.data.DataManager
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
-import com.adkom666.shrednotes.di.module.DATA_INDEPENDENT_PREFERENCES
+import com.adkom666.shrednotes.data.pref.InputOutputPreferences
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.adkom666.shrednotes.util.selection.ManageableSelection
 import com.adkom666.shrednotes.util.selection.OnActivenessChangeListener
@@ -25,24 +23,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 import javax.inject.Inject
-import javax.inject.Named
 
 /**
  * Google Drive dialog model.
  *
  * @property dataManager [DataManager] to manage files with app info.
- * @property preferences project's [SharedPreferences] independent on data.
+ * @property preferences project's [InputOutputPreferences] for managing a name of the last read or
+ * written file on Google Drive.
  */
 class GoogleDriveViewModel @Inject constructor(
     private val dataManager: DataManager,
-    @Named(DATA_INDEPENDENT_PREFERENCES)
-    private val preferences: SharedPreferences
+    private val preferences: InputOutputPreferences
 ) : ExecutiveViewModel() {
 
     private companion object {
         private const val FILE_SUFFIX = ".json"
         private const val KEY_FILE_ID_LIST = "file_id_list"
-        private const val KEY_TARGET_FILE_NAME = "google_drive.target_file_name"
     }
 
     /**
@@ -253,7 +249,8 @@ class GoogleDriveViewModel @Inject constructor(
         Timber.d("Init")
         _stateAsLiveData = MutableLiveData(State.Waiting())
         _fileNamesAsLiveData = MutableLiveData(null)
-        _targetFileNameAsLiveData = MutableLiveData(preferences.getTargetFileName())
+        val fileName = preferences.googleDriveFileName?.fileSelection()
+        _targetFileNameAsLiveData = MutableLiveData(fileName)
         _navigationChannel = Channel(1)
         _messageChannel = Channel(Channel.UNLIMITED)
         _manageableSelection = ManageableSelection()
@@ -288,7 +285,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onFileClick(fileName: String?) {
         Timber.d("On file name click")
-        acceptTargetFileName(fileName)
+        setTargetFileName(fileName)
     }
 
     /**
@@ -296,7 +293,7 @@ class GoogleDriveViewModel @Inject constructor(
      */
     fun onTargetFileNameChange(fileName: String?) {
         Timber.d("On target file name change")
-        acceptTargetFileName(fileName)
+        setTargetFileName(fileName)
     }
 
     /**
@@ -481,7 +478,7 @@ class GoogleDriveViewModel @Inject constructor(
     private fun skipTargetFileNameIfFileMissing() {
         val fileName = targetFileNameForGoogleDrive()
         if (isOnGoogleDrive(fileName).not()) {
-            acceptTargetFileName(null)
+            skipTargetFileName()
         }
     }
 
@@ -497,11 +494,10 @@ class GoogleDriveViewModel @Inject constructor(
         return googleDriveFiles?.find { it.name.equals(fileName, ignoreCase = true) }
     }
 
-    private fun acceptTargetFileName(fileName: String?) {
-        preferences.edit {
-            putTargetFileName(fileName)
-        }
-        setTargetFileName(fileName)
+    private fun skipTargetFileName() {
+        Timber.d("Skip target file name")
+        preferences.googleDriveFileName = null
+        setTargetFileName(null)
     }
 
     private fun reportAbout(e: Exception) {
@@ -533,14 +529,6 @@ class GoogleDriveViewModel @Inject constructor(
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
         _messageChannel.trySend(message)
-    }
-
-    private fun SharedPreferences.getTargetFileName(): String? {
-        return getString(KEY_TARGET_FILE_NAME, null)
-    }
-
-    private fun SharedPreferences.Editor.putTargetFileName(fileName: String?) {
-        putString(KEY_TARGET_FILE_NAME, fileName)
     }
 
     private fun String.fileSelection(): String {

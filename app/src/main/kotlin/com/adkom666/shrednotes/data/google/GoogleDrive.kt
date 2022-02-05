@@ -20,21 +20,22 @@ interface GoogleDrive {
     fun listJsonFiles(): List<GoogleDriveFile>
 
     /**
-     * Retrieving content of the file with identifier [fileId].
+     * Retrieving content of [file].
      *
-     * @param fileId identifier of the target file.
-     * @param fileIdKey key of the target file identifier to save it in the
+     * @param file target file information.
+     * @param fileKey key of the target JSON file information to save it in the
      * [GoogleRecoverableAuthException.additionalData] map for the case if
      * [GoogleRecoverableAuthException] has been thrown.
-     * @return content of the file with identifier [fileId].
+     * @return content of the [file] or null if [file] does not contain information about its
+     * identifier.
      * @throws GoogleAuthException when user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains [fileId] in its
-     * [GoogleRecoverableAuthException.additionalData] map with the key [fileIdKey].
+     * user interaction to recover his rights. This exception also contains [file] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileKey].
      */
     @Throws(GoogleAuthException::class, GoogleRecoverableAuthException::class)
-    fun readFile(fileId: String, fileIdKey: String): String
+    fun readFile(file: GoogleDriveFile, fileKey: String): String?
 
     /**
      * Writing [json] to a [file].

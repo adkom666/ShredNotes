@@ -577,13 +577,7 @@ class MainActivity :
 
     private fun GoogleDriveDialogFragment.setReadingListener() {
         setGoogleDriveFileListener { googleDriveFile ->
-            googleDriveFile.id?.let {
-                model.read(it)
-            } ?: run {
-                if (BuildConfig.DEBUG) {
-                    error("File identifier is null!")
-                }
-            }
+            model.read(googleDriveFile)
         }
     }
 

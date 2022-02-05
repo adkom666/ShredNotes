@@ -112,15 +112,15 @@ class Google(
     @Throws(GoogleRecoverableAuthException::class)
     private fun tryToReadFileFromDrive(
         driveHelper: GoogleDriveHelper,
-        fileId: String,
-        fileIdKey: String
-    ): String {
+        file: GoogleDriveFile,
+        fileKey: String
+    ): String? {
         try {
-            return readFileFromDrive(driveHelper = driveHelper, fileId = fileId)
+            return readFileFromDrive(driveHelper = driveHelper, file = file)
         } catch (e: UserRecoverableAuthIOException) {
             Timber.d(e)
             val authIOException = GoogleRecoverableAuthException(e)
-            authIOException.additionalData[fileIdKey] = fileId
+            authIOException.additionalData[fileKey] = file
             throw authIOException
         }
     }
@@ -161,8 +161,8 @@ class Google(
     }
 
     @Throws(UserRecoverableAuthIOException::class)
-    private fun readFileFromDrive(driveHelper: GoogleDriveHelper, fileId: String): String {
-        return driveHelper.readFile(fileId)
+    private fun readFileFromDrive(driveHelper: GoogleDriveHelper, file: GoogleDriveFile): String? {
+        return file.id?.let { driveHelper.readFile(it) }
     }
 
     @Throws(UserRecoverableAuthIOException::class)
@@ -205,14 +205,14 @@ class Google(
             }
         }
 
-        override fun readFile(fileId: String, fileIdKey: String): String {
-            Timber.d("Read file: fileId=$fileId")
+        override fun readFile(file: GoogleDriveFile, fileKey: String): String? {
+            Timber.d("Read file: file=$file")
             return when (val helper = driveHelper) {
                 null -> throw GoogleAuthException()
                 else -> tryToReadFileFromDrive(
                     driveHelper = helper,
-                    fileId = fileId,
-                    fileIdKey = fileIdKey
+                    file = file,
+                    fileKey = fileKey
                 )
             }
         }

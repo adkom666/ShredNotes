@@ -60,17 +60,18 @@ class DataManager(
     }
 
     /**
-     * Reading all content from Google Drive file with identifier [fileId].
+     * Reading all content from Google Drive [file], which should contain suitable JSON.
      *
-     * @param fileId identifier of the target Google Drive file.
-     * @param fileIdKey key for storing information to be read from Google Drive as text in the
-     * map [GoogleRecoverableAuthException.additionalData] if [GoogleRecoverableAuthException] is
-     * thrown. This text should be used as [fileId] after the rights are recovered.
+     * @param file information about target file on Google Drive.
+     * @param fileKey key for storing information to be written on Google Drive as [GoogleDriveFile]
+     * in the map [GoogleRecoverableAuthException.additionalData] if
+     * [GoogleRecoverableAuthException] is thrown. This text should be used as [file] after the
+     * rights are recovered.
      * @throws GoogleAuthException when the user is signed out of the Google account.
      * @throws GoogleRecoverableAuthException when the user does not have enough rights to perform
      * an operation with Google Drive. This exception contains [android.content.Intent] to allow
-     * user interaction to recover his rights. This exception also contains [fileId] in its
-     * [GoogleRecoverableAuthException.additionalData] map with the key [fileIdKey].
+     * user interaction to recover his rights. This exception also contains [file] in its
+     * [GoogleRecoverableAuthException.additionalData] map with the key [fileKey].
      * @throws JsonSyntaxException when the syntax of the JSON from Google Drive is incorrect.
      * @throws UnsupportedDataException when the suggested shred notes version is not supported.
      */
@@ -81,13 +82,19 @@ class DataManager(
         UnsupportedDataException::class
     )
     suspend fun readShredNotesFromGoogleDriveJsonFile(
-        fileId: String,
-        fileIdKey: String
+        file: GoogleDriveFile,
+        fileKey: String
     ) = withContext(Dispatchers.IO) {
-        Timber.d("Read: fileId=$fileId")
-        val json = google.drive.readFile(fileId = fileId, fileIdKey = fileIdKey)
+        Timber.d("Read: file=$file")
+        val json = google.drive.readFile(file = file, fileKey = fileKey)
         Timber.d("json=$json")
-        parseAsShredNotes(json)
+        json?.let {
+            parseAsShredNotes(it)
+        } ?: run {
+            if (BuildConfig.DEBUG) {
+                error("JSON is null!")
+            }
+        }
     }
 
     /**

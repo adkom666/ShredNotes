@@ -14,6 +14,7 @@ import com.adkom666.shrednotes.data.UnsupportedDataException
 import com.adkom666.shrednotes.data.google.GoogleAuthException
 import com.adkom666.shrednotes.data.google.GoogleDriveFile
 import com.adkom666.shrednotes.data.google.GoogleRecoverableAuthException
+import com.adkom666.shrednotes.data.pref.InputOutputPreferences
 import com.adkom666.shrednotes.util.ExecutiveViewModel
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.channels.Channel
@@ -27,17 +28,19 @@ import javax.inject.Inject
  *
  * @property dataManager [DataManager] to read and write app info.
  * @property donor donor of money.
+ * @property preferences project's [InputOutputPreferences] for managing a name of the last read or
+ * written file on Google Drive.
  * @property toolPreferences project's [ToolPreferences] to manage, for example, filter and search.
  */
 class MainViewModel @Inject constructor(
     private val dataManager: DataManager,
     private val donor: Donor,
+    private val preferences: InputOutputPreferences,
     private val toolPreferences: ToolPreferences
 ) : ExecutiveViewModel() {
 
     private companion object {
         private val DEFAULT_SECTION = Section.NOTES
-        private const val KEY_FILE_ID = "file_id"
         private const val KEY_FILE = "file"
         private const val KEY_JSON = "json"
         private const val DEFAULT_FILE_NAME = "_shrednotes.json"
@@ -273,7 +276,6 @@ class MainViewModel @Inject constructor(
     private val _messageChannel: Channel<Message> = Channel(Channel.UNLIMITED)
     private val _signalChannel: Channel<Signal> = Channel(Channel.UNLIMITED)
 
-    private var readyFileId: String? = null
     private var readyFile: GoogleDriveFile? = null
     private var readyJson: String? = null
 
@@ -314,13 +316,13 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Reading all content from Google Drive file with identifier [fileId].
+     * Reading all content from Google Drive file described in [googleDriveFile].
      *
-     * @param fileId name of the target file identifier.
+     * @param googleDriveFile information about the target JSON file.
      */
-    fun read(fileId: String) {
-        Timber.d("Read: fileId=$fileId")
-        launchRead(fileId)
+    fun read(googleDriveFile: GoogleDriveFile? = null) {
+        Timber.d("Read: googleDriveFile=$googleDriveFile")
+        launchRead(googleDriveFile)
     }
 
     /**
@@ -384,16 +386,17 @@ class MainViewModel @Inject constructor(
         toolPreferences.invalidate()
     }
 
-    private fun launchRead(fileId: String? = null) = execute {
+    private fun launchRead(googleDriveFile: GoogleDriveFile? = null) = execute {
         setState(State.Waiting(State.Waiting.Operation.READING))
         @Suppress("TooGenericExceptionCaught")
         val isForceInvalidateTools = try {
-            val finalFileId = finalFileId(fileId, readyFileId)
-            readyFileId = null
+            val finalFile = finalFile(googleDriveFile, readyFile)
+            readyFile = null
             dataManager.readShredNotesFromGoogleDriveJsonFile(
-                fileId = finalFileId,
-                fileIdKey = KEY_FILE_ID
+                file = finalFile,
+                fileKey = KEY_FILE
             )
+            preferences.googleDriveFileName = finalFile.name
             give(Signal.ContentUpdated)
             report(Message.ShredNotesUpdate)
             true
@@ -403,7 +406,7 @@ class MainViewModel @Inject constructor(
             false
         } catch (e: GoogleRecoverableAuthException) {
             Timber.e(e)
-            readyFileId = e.additionalData[KEY_FILE_ID] as? String
+            readyFile = e.additionalData[KEY_FILE] as? GoogleDriveFile
             e.intent?.let {
                 navigateTo(NavDirection.ToAuthOnRead(it))
             } ?: report(Message.Error.Unknown)
@@ -438,6 +441,7 @@ class MainViewModel @Inject constructor(
                 readyJson = json,
                 jsonKey = KEY_JSON,
             )
+            preferences.googleDriveFileName = finalFile.name
             report(Message.GoogleDriveUpdate)
         } catch (e: GoogleAuthException) {
             Timber.e(e)
@@ -455,17 +459,6 @@ class MainViewModel @Inject constructor(
         }
         setState(State.Preparation.Continuing(isForceInvalidateTools = false))
     }
-
-    private fun finalFileId(
-        fileId: String?,
-        readyFileId: String?
-    ): String = fileId
-        ?: readyFileId
-        ?: if (BuildConfig.DEBUG) {
-            error("Missing file identifier and ready file identifier!")
-        } else {
-            ""
-        }
 
     private fun finalFile(
         file: GoogleDriveFile?,
