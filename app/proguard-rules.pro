@@ -100,7 +100,7 @@
 -dontnote rx.internal.util.PlatformDependent
 
 #noinspection ShrinkerUnresolvedReference
--keep class com.adkom666.shrednotes.data.external.** {*;}
+-keep class com.adkom666.shrednotes.data.external.** { *; }
 
--keep class com.google.** { *;}
--keep class com.fasterxml.** { *;}
+-keep class com.google.** { *; }
+-keep class com.fasterxml.** { *; }
