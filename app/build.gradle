@@ -97,10 +97,12 @@ android {
     }
 
     packagingOptions {
-        exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'
+        resources {
+            excludes += ['META-INF/kotlinx-coroutines-core.kotlin_module']
+        }
     }
 
-    lintOptions {
+    lint {
         abortOnError true
         warningsAsErrors true
         checkReleaseBuilds true
