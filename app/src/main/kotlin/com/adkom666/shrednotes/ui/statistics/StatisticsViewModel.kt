@@ -80,6 +80,6 @@ class StatisticsViewModel @Inject constructor() : ViewModel() {
 
     private fun navigateTo(direction: NavDirection) {
         Timber.d("Navigate to: direction=$direction")
-        _navigationChannel.offer(direction)
+        _navigationChannel.trySend(direction)
     }
 }

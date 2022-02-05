@@ -634,17 +634,19 @@ class MainActivity :
 
         override fun onChanged(state: MainViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                is MainViewModel.State.Preparation -> {
-                    prepare(state)
-                    model.ok()
-                }
-                MainViewModel.State.Working ->
-                    setWorking()
-                is MainViewModel.State.Waiting -> {
-                    setWaiting(state.operation)
-                    menuReference.get()?.invalidate()
-                }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: MainViewModel.State) = when (state) {
+            is MainViewModel.State.Preparation -> {
+                prepare(state)
+                model.ok()
+            }
+            MainViewModel.State.Working ->
+                setWorking()
+            is MainViewModel.State.Waiting -> {
+                setWaiting(state.operation)
+                menuReference.get()?.invalidate()
             }
         }
 

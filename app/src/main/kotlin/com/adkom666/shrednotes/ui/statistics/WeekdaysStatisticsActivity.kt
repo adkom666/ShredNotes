@@ -229,14 +229,16 @@ class WeekdaysStatisticsActivity : AppCompatActivity() {
 
         override fun onChanged(state: WeekdaysStatisticsViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                WeekdaysStatisticsViewModel.State.Waiting ->
-                    setWaiting()
-                is WeekdaysStatisticsViewModel.State.Working ->
-                    setWorking(state.isUiLocked)
-                WeekdaysStatisticsViewModel.State.Finishing ->
-                    finish()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: WeekdaysStatisticsViewModel.State) = when (state) {
+            WeekdaysStatisticsViewModel.State.Waiting ->
+                setWaiting()
+            is WeekdaysStatisticsViewModel.State.Working ->
+                setWorking(state.isUiLocked)
+            WeekdaysStatisticsViewModel.State.Finishing ->
+                finish()
         }
 
         private fun setWaiting() {

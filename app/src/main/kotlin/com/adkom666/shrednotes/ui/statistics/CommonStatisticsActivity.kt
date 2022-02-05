@@ -161,14 +161,16 @@ class CommonStatisticsActivity : AppCompatActivity() {
 
         override fun onChanged(state: CommonStatisticsViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                CommonStatisticsViewModel.State.Waiting ->
-                    setWaiting()
-                is CommonStatisticsViewModel.State.Working ->
-                    setWorking(state.isUiLocked)
-                CommonStatisticsViewModel.State.Finishing ->
-                    finish()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: CommonStatisticsViewModel.State) = when (state) {
+            CommonStatisticsViewModel.State.Waiting ->
+                setWaiting()
+            is CommonStatisticsViewModel.State.Working ->
+                setWorking(state.isUiLocked)
+            CommonStatisticsViewModel.State.Finishing ->
+                finish()
         }
 
         private fun setWaiting() {

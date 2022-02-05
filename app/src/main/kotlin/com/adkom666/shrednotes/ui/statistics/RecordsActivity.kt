@@ -235,14 +235,16 @@ class RecordsActivity : AppCompatActivity() {
 
         override fun onChanged(state: RecordsViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                RecordsViewModel.State.Waiting ->
-                    setWaiting()
-                is RecordsViewModel.State.Working ->
-                    setWorking(state.isUiLocked)
-                RecordsViewModel.State.Finishing ->
-                    finish()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: RecordsViewModel.State) = when (state) {
+            RecordsViewModel.State.Waiting ->
+                setWaiting()
+            is RecordsViewModel.State.Working ->
+                setWorking(state.isUiLocked)
+            RecordsViewModel.State.Finishing ->
+                finish()
         }
 
         private fun setWaiting() {

@@ -380,10 +380,12 @@ class NotesFragment :
 
         override fun onChanged(state: NotesViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                NotesViewModel.State.Waiting -> setWaiting()
-                NotesViewModel.State.Working -> setWorking()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: NotesViewModel.State) = when (state) {
+            NotesViewModel.State.Waiting -> setWaiting()
+            NotesViewModel.State.Working -> setWorking()
         }
 
         private fun setWaiting() = setProgressActive(true)

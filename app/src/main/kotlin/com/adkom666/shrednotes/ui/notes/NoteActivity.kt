@@ -296,15 +296,17 @@ class NoteActivity : AppCompatActivity() {
 
         override fun onChanged(state: NoteViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                NoteViewModel.State.Waiting ->
-                    setWaiting()
-                NoteViewModel.State.Working ->
-                    setWorking()
-                is NoteViewModel.State.Finishing -> {
-                    beforeFinish(state)
-                    finish()
-                }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: NoteViewModel.State) = when (state) {
+            NoteViewModel.State.Waiting ->
+                setWaiting()
+            NoteViewModel.State.Working ->
+                setWorking()
+            is NoteViewModel.State.Finishing -> {
+                beforeFinish(state)
+                finish()
             }
         }
 

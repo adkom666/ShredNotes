@@ -33,6 +33,6 @@ open class ExecutiveViewModel : ViewModel() {
      */
     protected fun execute(task: CoroutineTask) {
         Timber.d("Execute: task=$task")
-        _taskChannel.offer(task)
+        _taskChannel.trySend(task)
     }
 }

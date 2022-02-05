@@ -152,7 +152,7 @@ class AskViewModel @Inject constructor(
 
     private fun give(signal: Signal) {
         Timber.d("Give: signal=$signal")
-        _signalChannel.offer(signal)
+        _signalChannel.trySend(signal)
     }
 
     private inner class DonationFinisher : OnDonationFinishListener {

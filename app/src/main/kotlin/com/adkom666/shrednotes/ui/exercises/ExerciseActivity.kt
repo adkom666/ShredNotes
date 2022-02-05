@@ -147,15 +147,17 @@ class ExerciseActivity : AppCompatActivity() {
 
         override fun onChanged(state: ExerciseViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                ExerciseViewModel.State.Waiting ->
-                    setWaiting()
-                ExerciseViewModel.State.Working ->
-                    setWorking()
-                is ExerciseViewModel.State.Finishing -> {
-                    beforeFinish(state)
-                    finish()
-                }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: ExerciseViewModel.State) = when (state) {
+            ExerciseViewModel.State.Waiting ->
+                setWaiting()
+            ExerciseViewModel.State.Working ->
+                setWorking()
+            is ExerciseViewModel.State.Finishing -> {
+                beforeFinish(state)
+                finish()
             }
         }
 

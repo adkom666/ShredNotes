@@ -317,10 +317,12 @@ class ExercisesFragment :
 
         override fun onChanged(state: ExercisesViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                ExercisesViewModel.State.Waiting -> setWaiting()
-                ExercisesViewModel.State.Working -> setWorking()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: ExercisesViewModel.State) = when (state) {
+            ExercisesViewModel.State.Waiting -> setWaiting()
+            ExercisesViewModel.State.Working -> setWorking()
         }
 
         private fun setWaiting() = setProgressActive(true)

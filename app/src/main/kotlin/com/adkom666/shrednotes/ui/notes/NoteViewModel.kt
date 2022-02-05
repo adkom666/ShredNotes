@@ -358,11 +358,11 @@ class NoteViewModel @Inject constructor(
 
     private fun report(message: Message) {
         Timber.d("Report: message=$message")
-        _messageChannel.offer(message)
+        _messageChannel.trySend(message)
     }
 
     private fun give(signal: Signal) {
         Timber.d("Give: signal=$signal")
-        _signalChannel.offer(signal)
+        _signalChannel.trySend(signal)
     }
 }

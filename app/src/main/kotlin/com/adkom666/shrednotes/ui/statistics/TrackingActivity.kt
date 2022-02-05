@@ -273,14 +273,16 @@ class TrackingActivity : AppCompatActivity() {
 
         override fun onChanged(state: TrackingViewModel.State?) {
             Timber.d("State is $state")
-            when (state) {
-                TrackingViewModel.State.Waiting ->
-                    setWaiting()
-                is TrackingViewModel.State.Working ->
-                    setWorking(state.isUiLocked)
-                TrackingViewModel.State.Finishing ->
-                    finish()
-            }
+            state?.let { setState(it) }
+        }
+
+        private fun setState(state: TrackingViewModel.State) = when (state) {
+            TrackingViewModel.State.Waiting ->
+                setWaiting()
+            is TrackingViewModel.State.Working ->
+                setWorking(state.isUiLocked)
+            TrackingViewModel.State.Finishing ->
+                finish()
         }
 
         private fun setWaiting() {

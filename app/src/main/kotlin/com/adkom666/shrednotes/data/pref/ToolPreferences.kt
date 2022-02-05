@@ -124,12 +124,12 @@ class ToolPreferences(
 
     private fun give(signal: NoteToolPreferences.Signal) {
         Timber.d("Give: signal=$signal")
-        _noteToolSignalChannel.offer(signal)
+        _noteToolSignalChannel.trySend(signal)
     }
 
     private fun give(signal: ExerciseToolPreferences.Signal) {
         Timber.d("Give: signal=$signal")
-        _exerciseToolSignalChannel.offer(signal)
+        _exerciseToolSignalChannel.trySend(signal)
     }
 
     private fun selfUpdate(block: () -> Unit) {
