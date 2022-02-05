@@ -32,12 +32,14 @@ class ToolPreferences(
         initialValue = preferences.getBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isNoteSearchActive: old=$old, new=$new")
-        if (isExternalUpdate) {
-            preferences.edit {
-                putBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, new)
+        if (new != old) {
+            if (isExternalUpdate) {
+                preferences.edit {
+                    putBoolean(KEY_IS_NOTE_SEARCH_ACTIVE, new)
+                }
             }
+            give(NoteToolPreferences.Signal.NoteSearchActivenessChanged)
         }
-        give(NoteToolPreferences.Signal.NoteSearchActivenessChanged)
     }
 
     override var noteExerciseSubname: String? by observable(
@@ -76,12 +78,14 @@ class ToolPreferences(
         initialValue = preferences.getBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, false)
     ) { _, old, new ->
         Timber.d("Change isExcerciseSearchActive: old=$old, new=$new")
-        if (isExternalUpdate) {
-            preferences.edit {
-                putBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, new)
+        if (new != old) {
+            if (isExternalUpdate) {
+                preferences.edit {
+                    putBoolean(KEY_IS_EXERCISE_SEARCH_ACTIVE, new)
+                }
             }
+            give(ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged)
         }
-        give(ExerciseToolPreferences.Signal.ExcerciseSearchActivenessChanged)
     }
 
     override var exerciseSubname: String? by observable(
