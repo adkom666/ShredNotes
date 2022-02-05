@@ -104,3 +104,5 @@
 
 -keep class com.google.** { *; }
 -keep class com.fasterxml.** { *; }
+
+-keep class com.adkom666.shrednotes.data.DataManager$MapBackup { *; }
