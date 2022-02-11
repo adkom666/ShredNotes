@@ -212,7 +212,7 @@ class GoogleDriveViewModel @Inject constructor(
         get() = _manageableSelection
 
     /**
-     * Information about the presence of selected notes.
+     * Information about the presence of selected files.
      */
     val selection: Selection
         get() = _manageableSelection
