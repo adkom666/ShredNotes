@@ -217,6 +217,12 @@ class GoogleDriveViewModel @Inject constructor(
     val selection: Selection
         get() = _manageableSelection
 
+    /**
+     * Name of the target file to select.
+     */
+    val targetFileSelection: String?
+        get() = _targetFileNameAsLiveData.value?.fileSelection()
+
     private val mode: GoogleDriveDialogMode
         get() = requireNotNull(_mode)
 

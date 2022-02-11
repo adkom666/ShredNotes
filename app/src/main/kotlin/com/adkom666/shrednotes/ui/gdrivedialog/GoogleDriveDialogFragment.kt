@@ -114,6 +114,8 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
     private var actionMode: ActionMode? = null
     private var googleDriveFileListener: GoogleDriveFileListener? = null
 
+    private val handler: Handler = Handler(Looper.getMainLooper())
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         acquireActivityLaunchers()
@@ -231,6 +233,17 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         }
         childFragmentManager.performIfConfirmationFoundByTag(TAG_CONFIRM_DELETION) {
             it.setDeletingListener()
+        }
+    }
+
+    private fun setTargetFileSelection(fileName: String) {
+        val selectedItemPosition = adapter.select(fileName)
+        selectedItemPosition?.let { position ->
+            handler.postDelayed({
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                    binding.fileRecycler.startLinearSmoothScrollToPosition(position)
+                }
+            }, SCROLL_DELAY_MILLIS)
         }
     }
 
@@ -453,7 +466,9 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
         }
 
         private fun setFileNames(fileNames: List<String>) {
-            adapter.submitList(fileNames)
+            adapter.submitList(fileNames) {
+                applyFileSelection()
+            }
             if (fileNames.isNotEmpty()) {
                 binding.fileRecycler.isVisible = true
                 binding.noFilesTextView.isVisible = false
@@ -462,26 +477,17 @@ class GoogleDriveDialogFragment : DaggerDialogFragment() {
                 binding.noFilesTextView.isVisible = true
             }
         }
+
+        private fun applyFileSelection() = model.targetFileSelection?.let {
+            setTargetFileSelection(it)
+        }
     }
 
     private inner class TargetFileSelectionObserver : Observer<String?> {
 
-        private val handler: Handler = Handler(Looper.getMainLooper())
-
         override fun onChanged(fileName: String?) {
             Timber.d("Target file selection is $fileName")
             setTargetFileSelection(fileName ?: "")
-        }
-
-        private fun setTargetFileSelection(fileName: String) {
-            val selectedItemPosition = adapter.select(fileName)
-            selectedItemPosition?.let { position ->
-                handler.postDelayed({
-                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                        binding.fileRecycler.startLinearSmoothScrollToPosition(position)
-                    }
-                }, SCROLL_DELAY_MILLIS)
-            }
         }
     }
 
