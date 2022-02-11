@@ -10,10 +10,8 @@
         </shape>
     </item>
     <item
+        android:drawable="@drawable/ic_arrow_down_accented"
         android:left="@dimen/padding_m"
-        android:right="@dimen/padding_m">
-        <bitmap
-            android:src="@mipmap/ic_arrow_down_accented"
-            android:gravity="center_vertical|end" />
-    </item>
+        android:right="@dimen/padding_m"
+        android:gravity="center_vertical|end" />
 </layer-list>

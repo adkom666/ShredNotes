@@ -5,15 +5,13 @@
             <solid android:color="@android:color/transparent" />
             <corners android:radius="@dimen/spinner_corner_radius" />
             <stroke
-                android:width="2dp"
-                android:color="@color/color_accent" />
+                android:width="1dp"
+                android:color="@color/disabled_content_color" />
         </shape>
     </item>
     <item
+        android:drawable="@drawable/ic_arrow_down_disabled"
         android:left="@dimen/padding_m"
-        android:right="@dimen/padding_m">
-        <bitmap
-            android:src="@mipmap/ic_arrow_down_accented"
-            android:gravity="center_vertical|end" />
-    </item>
+        android:right="@dimen/padding_m"
+        android:gravity="center_vertical|end" />
 </layer-list>
