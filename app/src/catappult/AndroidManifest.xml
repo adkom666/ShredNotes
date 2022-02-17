@@ -16,4 +16,11 @@
         </intent>
     </queries>
 
+    <application>
+        <activity
+            android:name="com.appcoins.sdk.billing.UriCommunicationActivity"
+            tools:node="merge"
+            android:exported="true" />
+    </application>
+
 </manifest>
