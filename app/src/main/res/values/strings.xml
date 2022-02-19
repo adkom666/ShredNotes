@@ -1,3 +1,168 @@
 <resources>
-    <string name="app_name">Shred Notes</string>
+    <string name="app_name" translatable="false">Shred Notes</string>
+
+    <string name="menu_item_title_notes">Notes</string>
+    <string name="menu_item_title_exercises">Exercises</string>
+    <string name="menu_item_title_statistics">Statistics</string>
+    <string name="menu_item_title_ask">Ask</string>
+
+    <string name="menu_item_title_search">Search</string>
+    <string name="menu_item_title_filter">Filter</string>
+    <string name="menu_item_title_read">Read</string>
+    <string name="menu_item_title_write">Write</string>
+    <string name="menu_item_title_sing_in">Sign In</string>
+    <string name="menu_item_title_sign_out">Sign Out</string>
+
+    <string name="menu_item_title_delete">Delete</string>
+
+    <string name="progress_operation_reading">Reading</string>
+    <string name="progress_operation_writing">Writing</string>
+
+    <string name="desc_add_del">Add or delete</string>
+    <string name="desc_select_all">Select all</string>
+    <string name="desc_cancel">Cancel</string>
+    <string name="desc_pick_note_date_time">Pick note date and time</string>
+    <string name="desc_pick_note_date_range">Pick note date range</string>
+    <string name="desc_clear_note_date_range">Clear note date range</string>
+    <string name="desc_clear_note_bpm_range">Clear note BPM range</string>
+    <string name="desc_coin">Coin</string>
+
+    <string name="button_title_ok" translatable="false">OK</string>
+    <string name="button_title_cancel">Cancel</string>
+    <string name="button_title_yes">Yes</string>
+    <string name="button_title_no">No</string>
+    <string name="button_title_apply">Apply</string>
+    <string name="button_title_disable">Disable</string>
+    <string name="button_title_clear_all">Clear All</string>
+    <string name="button_title_refresh">Refresh</string>
+    <string name="button_title_more">More</string>
+    <string name="button_title_read">Read</string>
+    <string name="button_title_write">Write</string>
+
+    <string name="title_date_range">Date range:</string>
+    <string name="title_bpm_range">BPM range:</string>
+
+    <string name="hint_min">Min.</string>
+    <string name="hint_max">Max.</string>
+
+    <string name="title_exercise_name">Name:</string>
+    <string name="hint_exercise_name">Exercise name</string>
+
+    <string name="title_note_exercise">Exercise:</string>
+    <string name="hint_note_exercise">Exercise name</string>
+
+    <string name="title_note_bpm" translatable="false">BPM:</string>
+    <string name="hint_note_bpm" translatable="false">BPM</string>
+
+    <string name="title_file_name_">File:</string>
+    <string name="hint_file_name_">File name</string>
+
+    <string name="title_tracking_exercise">Exercise:</string>
+
+    <string name="item_statistics_common">Common</string>
+    <string name="item_statistics_weekdays_max_bpm">By Days Of Week (Max. BPM)</string>
+    <string name="item_statistics_weekdays_note_count">By Days Of Week (Note Count)</string>
+    <string name="item_statistics_records_bpm">Records (BPM)</string>
+    <string name="item_statistics_records_note_count">Records (Note Count)</string>
+    <string name="item_statistics_tracking_training_intensity">Training Intensity</string>
+    <string name="item_statistics_tracking_progress">Progress</string>
+
+    <string name="title_statistics_common">Common Statistics</string>
+    <string name="title_statistics_weekdays">Statistics By Days Of Week</string>
+    <string name="title_statistics_records">Records</string>
+    <string name="title_statistics_tracking_training_intensity">Training Intensity</string>
+    <string name="title_statistics_tracking_progress">Progress</string>
+
+    <string name="text_statistics_common_notes">Notes: %d</string>
+    <string name="text_statistics_common_related_exercises">Related exercises: %d</string>
+    <string name="text_statistics_common_days_ideally">Days ideally: %d</string>
+    <string name="text_statistics_common_active_days">Active days: %d</string>
+    <string name="text_statistics_common_active_days_share">Active days share: %.1f%%</string>
+    <string name="text_statistics_common_all_notes">Notes: %d</string>
+    <string name="text_statistics_common_all_exercises">Exercises: %d</string>
+
+    <string name="title_statistics_for_all_the_time">Total registered for all the time</string>
+    <string name="title_statistics_average_among_max_bpm">Average among maximum BPM</string>
+    <string name="title_statistics_average_note_count">Average note count</string>
+    <string name="title_statistics_bpm" translatable="false">BPM</string>
+    <string name="title_statistics_note_count">Note count</string>
+
+    <string name="title_sunday">Sunday</string>
+    <string name="title_monday">Monday</string>
+    <string name="title_tuesday">Tuesday</string>
+    <string name="title_wednesday">Wednesday</string>
+    <string name="title_thursday">Thursday</string>
+    <string name="title_friday">Friday</string>
+    <string name="title_saturday">Saturday</string>
+
+    <string name="label_sunday">Sun</string>
+    <string name="label_monday">Mon</string>
+    <string name="label_tuesday">Tue</string>
+    <string name="label_wednesday">Wed</string>
+    <string name="label_thursday">Thu</string>
+    <string name="label_friday">Fri</string>
+    <string name="label_saturday">Sat</string>
+
+    <string name="dialog_confirm_common_title">Confirmation</string>
+
+    <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_read_message">ALL NOTES AND EXERCISES ON THIS DEVICE WILL BE REPLACED WITH NOTES AND EXERCISES STORED ON GOOGLE DRIVE.\nDo you confirm reading from Google Drive?</string>
+
+    <string name="dialog_confirm_write_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_write_message">ALL NOTES AND EXERCISES ON GOOGLE DRIVE WILL BE REPLACED WITH NOTES AND EXERCISES STORED ON THIS DEVICE.\nDo you confirm writing to Google Drive?</string>
+
+    <string name="dialog_confirm_file_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_file_deletion_message">Number of selected files: %d\nDo you confirm deletion?</string>
+
+    <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_sign_out_message">Do you confirm signing out of your account?</string>
+
+    <string name="dialog_confirm_note_exercise_creating_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_note_exercise_creating_message">There is no \"%s\" exercise.\nDo you confirm its creation?</string>
+
+    <string name="dialog_confirm_exercise_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_exercise_deletion_message">DELETING EXERCISES WILL DELETE THE NOTES ASSOCIATED WITH THEM!\nNumber of selected exercises: %d (number of associated notes: %d).\nDo you confirm deletion?</string>
+
+    <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_note_deletion_message">Number of selected notes: %d\nDo you confirm deletion?</string>
+
+    <string name="dialog_filter_notes_title">Filter notes</string>
+
+    <string name="dialog_google_drive_title">Google Drive</string>
+    <string name="dialog_google_drive_no_files">No files</string>
+
+    <string name="message_shred_notes_has_been_updated">Shred notes has been updated</string>
+    <string name="message_google_drive_has_been_updated">Google Drive has been updated</string>
+    <string name="message_deleted_files">Deleted files: %d</string>
+
+    <string name="message_exercise_has_been_added">Exercise has been added</string>
+    <string name="message_exercise_has_been_updated">Exercise has been updated</string>
+    <string name="message_deleted_exercises">Deleted exercises: %d</string>
+
+    <string name="message_note_has_been_added">Note has been added</string>
+    <string name="message_note_has_been_updated">Note has been updated</string>
+    <string name="message_deleted_notes">Deleted notes: %d</string>
+
+    <string name="message_filter_undefined">Filter is not defined</string>
+
+    <string name="message_no_data">No data</string>
+    <string name="message_no_records">No records</string>
+
+    <string name="message_ask">For food and art</string>
+
+    <string name="error_unauthorized_user">Available only to authorized users</string>
+    <string name="error_unselected_file">File not selected</string>
+    <string name="error_missing_file_name">File name is missing</string>
+    <string name="error_wrong_json_syntax">Wrong syntax of the JSON file on Google Drive</string>
+    <string name="error_unsupported_data_version">Unsupported data version: %d</string>
+
+    <string name="error_missing_excercise_name">Exercise name is missing</string>
+    <string name="error_excercise_already_exists">Exercise \"%s\" already exists</string>
+
+    <string name="error_missing_note_excercise_name">Exercise name is missing</string>
+    <string name="error_missing_note_bpm">BPM is missing</string>
+    <string name="error_wrong_note_bpm">BPM must be a number between %d and %d</string>
+
+    <string name="error_clarified">Error occurred: %s</string>
+    <string name="error_unknown">Unknown error occurred</string>
 </resources>

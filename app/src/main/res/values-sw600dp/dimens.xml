@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_xs">4dp</dimen>
+    <dimen name="padding_s">6dp</dimen>
+    <dimen name="padding_m">12dp</dimen>
+    <dimen name="padding_l">24dp</dimen>
+    <dimen name="padding_xl">36dp</dimen>
+
+    <dimen name="card_corner_radius">6dp</dimen>
+    <dimen name="fab_margin">24dp</dimen>
+    <dimen name="child_fab_margin">12dp</dimen>
+    <dimen name="bottom_child_fab_margin">16dp</dimen>
+    <dimen name="square_image_button_size">40dp</dimen>
+    <dimen name="square_image_button_size_and_padding">76dp</dimen>
+    <dimen name="square_image_button_size_x2_and_padding">128dp</dimen>
+    <dimen name="spinner_padding_end">40dp</dimen>
+    <dimen name="pie_chart_height">512dp</dimen>
+</resources>

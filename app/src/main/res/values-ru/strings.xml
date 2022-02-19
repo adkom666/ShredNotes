@@ -1,0 +1,161 @@
+<resources>
+    <string name="menu_item_title_notes">Заметки</string>
+    <string name="menu_item_title_exercises">Упражнения</string>
+    <string name="menu_item_title_statistics">Статистика</string>
+    <string name="menu_item_title_ask">Аск</string>
+
+    <string name="menu_item_title_search">Поиск</string>
+    <string name="menu_item_title_filter">Фильтр</string>
+    <string name="menu_item_title_read">Прочитать</string>
+    <string name="menu_item_title_write">Записать</string>
+    <string name="menu_item_title_sing_in">Войти</string>
+    <string name="menu_item_title_sign_out">Выйти</string>
+
+    <string name="menu_item_title_delete">Удалить</string>
+
+    <string name="progress_operation_reading">Чтение</string>
+    <string name="progress_operation_writing">Запись</string>
+
+    <string name="desc_add_del">Добавить или удалить</string>
+    <string name="desc_select_all">Выделить все</string>
+    <string name="desc_cancel">Отмена</string>
+    <string name="desc_pick_note_date_time">Установить дату и время заметки</string>
+    <string name="desc_pick_note_date_range">Установить диапазон дат заметок</string>
+    <string name="desc_clear_note_date_range">Очистить диапазон дат заметок</string>
+    <string name="desc_clear_note_bpm_range">Очистить диапазон BPM</string>
+    <string name="desc_coin">Монета</string>
+
+    <string name="button_title_cancel">Отмена</string>
+    <string name="button_title_yes">Да</string>
+    <string name="button_title_no">Нет</string>
+    <string name="button_title_apply">Применить</string>
+    <string name="button_title_disable">Выключить</string>
+    <string name="button_title_clear_all">Очистить все</string>
+    <string name="button_title_refresh">Обновить</string>
+    <string name="button_title_more">Еще</string>
+    <string name="button_title_read">Прочитать</string>
+    <string name="button_title_write">Записать</string>
+
+    <string name="title_date_range">Диапазон дат:</string>
+    <string name="title_bpm_range">Диапазон BPM:</string>
+
+    <string name="hint_min">Мин.</string>
+    <string name="hint_max">Макс.</string>
+
+    <string name="title_exercise_name">Название:</string>
+    <string name="hint_exercise_name">Название упражнения</string>
+
+    <string name="title_note_exercise">Упражнение:</string>
+    <string name="hint_note_exercise">Название упражнения</string>
+
+    <string name="title_file_name_">Файл:</string>
+    <string name="hint_file_name_">Имя файла</string>
+
+    <string name="title_tracking_exercise">Упражнение:</string>
+
+    <string name="item_statistics_common">Общая</string>
+    <string name="item_statistics_weekdays_max_bpm">По дням недели (макс. BPM)</string>
+    <string name="item_statistics_weekdays_note_count">По дням недели (кол-во заметок)</string>
+    <string name="item_statistics_records_bpm">Рекорды (BPM)</string>
+    <string name="item_statistics_records_note_count">Рекорды (кол-во заметок)</string>
+    <string name="item_statistics_tracking_training_intensity">Интенсивность тренировок</string>
+    <string name="item_statistics_tracking_progress">Прогресс</string>
+
+    <string name="title_statistics_common">Общая статистика</string>
+    <string name="title_statistics_weekdays">Статистика по дням недели</string>
+    <string name="title_statistics_records">Рекорды</string>
+    <string name="title_statistics_tracking_training_intensity">Интенсивность тренировок</string>
+    <string name="title_statistics_tracking_progress">Прогресс</string>
+
+    <string name="text_statistics_common_notes">Заметок: %d</string>
+    <string name="text_statistics_common_related_exercises">Связанных упражнений: %d</string>
+    <string name="text_statistics_common_days_ideally">Дней в идеале: %d</string>
+    <string name="text_statistics_common_active_days">Активных дней: %d</string>
+    <string name="text_statistics_common_active_days_share">Доля активных дней: %.1f%%</string>
+    <string name="text_statistics_common_all_notes">Заметок: %d</string>
+    <string name="text_statistics_common_all_exercises">Упражнений: %d</string>
+
+    <string name="title_statistics_for_all_the_time">Зарегистрировано за все время</string>
+    <string name="title_statistics_average_among_max_bpm">Среднее среди максимальных BPM</string>
+    <string name="title_statistics_average_note_count">Среднее количество заметок</string>
+    <string name="title_statistics_note_count">Количество заметок</string>
+
+    <string name="title_sunday">Воскресенье</string>
+    <string name="title_monday">Понедельник</string>
+    <string name="title_tuesday">Вторник</string>
+    <string name="title_wednesday">Среда</string>
+    <string name="title_thursday">Четверг</string>
+    <string name="title_friday">Пятница</string>
+    <string name="title_saturday">Суббота</string>
+
+    <string name="label_sunday">Вск</string>
+    <string name="label_monday">Пнд</string>
+    <string name="label_tuesday">Втр</string>
+    <string name="label_wednesday">Срд</string>
+    <string name="label_thursday">Чтв</string>
+    <string name="label_friday">Птн</string>
+    <string name="label_saturday">Сбт</string>
+
+    <string name="dialog_confirm_common_title">Подтверждение</string>
+
+    <string name="dialog_confirm_read_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_read_message">ВСЕ ЗАМЕТКИ И УПРАЖНЕНИЯ НА ЭТОМ УСТРОЙСТВЕ БУДУТ ЗАМЕНЕНЫ ЗАМЕТКАМИ И УПРАЖНЕНИЯМИ, ХРАНЯЩИМИСЯ НА GOOGLE ДИСКЕ.\nВы подтверждаете чтение с Google Диска?</string>
+
+    <string name="dialog_confirm_write_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_write_message">ВСЕ ЗАМЕТКИ И УПРАЖНЕНИЯ НА GOOGLE ДИСКЕ БУДУТ ЗАМЕНЕНЫ ЗАМЕТКАМИ И УПРАЖНЕНИЯМИ, ХРАНЯЩИМИСЯ НА ЭТОМ УСТРОЙСТВЕ.\nВы подтверждаете запись на Google Диск?</string>
+
+    <string name="dialog_confirm_file_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_file_deletion_message">Выбрано файлов: %d\nВы подтверждаете удаление?</string>
+
+    <string name="dialog_confirm_sign_out_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_sign_out_message">Вы подтверждаете выход из аккаунта?</string>
+
+    <string name="dialog_confirm_note_exercise_creating_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_note_exercise_creating_message">Нет упражнения \"%s\".\nВы подтверждаете его создание?</string>
+
+    <string name="dialog_confirm_exercise_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_exercise_deletion_message">УДАЛЕНИЕ УПРАЖНЕНИЙ ПРИВЕДЕТ К УДАЛЕНИЮ СВЯЗАННЫХ С НИМИ ЗАМЕТОК!\nВыбрано упражнений: %d (связанных заметок: %d).\nВы подтверждаете удаление?</string>
+
+    <string name="dialog_confirm_note_deletion_title">@string/dialog_confirm_common_title</string>
+    <string name="dialog_confirm_note_deletion_message">Выбрано заметок: %d\nВы подтверждаете удаление?</string>
+
+    <string name="dialog_filter_notes_title">Фильтр заметок</string>
+
+    <string name="dialog_google_drive_title">Google Диск</string>
+    <string name="dialog_google_drive_no_files">Файлов нет</string>
+
+    <string name="message_shred_notes_has_been_updated">Информация обновлена</string>
+    <string name="message_google_drive_has_been_updated">Google Диск обновлен</string>
+    <string name="message_deleted_files">Удалено файлов: %d</string>
+
+    <string name="message_exercise_has_been_added">Упражнение добавлено</string>
+    <string name="message_exercise_has_been_updated">Упражнение обновлено</string>
+    <string name="message_deleted_exercises">Удалено упражнений: %d</string>
+
+    <string name="message_note_has_been_added">Заметка добавлена</string>
+    <string name="message_note_has_been_updated">Заметка обновлена</string>
+    <string name="message_deleted_notes">Удалено заметок: %d</string>
+
+    <string name="message_filter_undefined">Фильтр не определен</string>
+
+    <string name="message_no_data">Данных нет</string>
+    <string name="message_no_records">Рекордов нет</string>
+
+    <string name="message_ask">На еду и на творчество</string>
+
+    <string name="error_unauthorized_user">Доступно только авторизованным пользователям</string>
+    <string name="error_unselected_file">Файл не выбран</string>
+    <string name="error_missing_file_name">Нет имени файла</string>
+    <string name="error_wrong_json_syntax">Неправильный синтаксис JSON файла на Google Диске</string>
+    <string name="error_unsupported_data_version">Неподдерживаемая версия данных: %d</string>
+
+    <string name="error_missing_excercise_name">Нет названия упражнения</string>
+    <string name="error_excercise_already_exists">Упражнение \"%s\" уже есть</string>
+
+    <string name="error_missing_note_excercise_name">Нет названия упражнения</string>
+    <string name="error_missing_note_bpm">Нет BPM</string>
+    <string name="error_wrong_note_bpm">В поле BPM должно быть число от %d до %d</string>
+
+    <string name="error_clarified">Произошла ошибка: %s</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+</resources>

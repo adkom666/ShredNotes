@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color"
+    tools:context=".ui.notes.NoteActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/note_card"
+        style="@style/AppTheme.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/padding_l"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/note_card_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_m">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/note_date_time_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/note_date_time_text_view"
+                    style="@style/AppTheme.HeaderText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/square_image_button_size"
+                    android:gravity="top"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="@dimen/square_image_button_size_and_padding"
+                    android:freezesText="true"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:text="27.07.1964 4:20" />
+
+                <ImageButton
+                    android:id="@+id/pick_note_date_time_image_button"
+                    style="@style/AppTheme.ImageButton.ForHeader"
+                    android:layout_width="@dimen/square_image_button_size"
+                    android:layout_height="@dimen/square_image_button_size"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="@string/desc_pick_note_date_time"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintVertical_bias="0" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/note_exercise_title_text_view"
+                style="@style/AppTheme.SubHeaderText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/padding_m"
+                android:text="@string/title_note_exercise"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/note_date_time_container" />
+
+            <com.adkom666.shrednotes.widget.InstantAutoCompleteTextView
+                android:id="@+id/note_exercise_auto_complete_text_view"
+                style="@style/AppTheme.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:importantForAutofill="no"
+                android:hint="@string/hint_note_exercise"
+                android:saveEnabled="true"
+                android:popupBackground="@color/dialog_background_color"
+                android:imeOptions="actionNext"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/note_exercise_title_text_view" />
+
+            <TextView
+                android:id="@+id/note_bpm_title_text_view"
+                style="@style/AppTheme.SubHeaderText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_note_bpm"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/note_exercise_auto_complete_text_view" />
+
+            <EditText
+                android:id="@+id/note_bpm_edit_text"
+                style="@style/AppTheme.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:importantForAutofill="no"
+                android:hint="@string/hint_note_bpm"
+                android:saveEnabled="true"
+                android:imeOptions="actionDone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/note_bpm_title_text_view" />
+
+            <Button
+                android:id="@+id/ok_button"
+                style="@style/AppTheme.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_title_ok"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/note_bpm_edit_text" />
+
+            <Button
+                android:id="@+id/cancel_button"
+                style="@style/AppTheme.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/button_horizontal_margin"
+                android:text="@string/button_title_cancel"
+                app:layout_constraintStart_toEndOf="@+id/ok_button"
+                app:layout_constraintTop_toBottomOf="@+id/note_bpm_edit_text" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

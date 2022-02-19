@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.adkom666.shrednotes"
+    tools:node="merge">
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="ethereum" />
+        </intent>
+    </queries>
+
+    <application>
+        <activity
+            android:name="com.appcoins.sdk.billing.UriCommunicationActivity"
+            tools:node="merge"
+            android:exported="true" />
+    </application>
+
+</manifest>

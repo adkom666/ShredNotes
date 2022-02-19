@@ -1,11 +1,238 @@
 <resources>
 
+    <style name="SplashTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorAccent">@color/color_accent</item>
+    </style>
+
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
+        <item name="colorControlNormal">@color/color_control</item>
+        <item name="colorControlActivated">@color/color_accent</item>
+        <item name="colorControlHighlight">@color/color_accent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorAccent">@color/color_accent</item>
+        <item name="colorControlNormal">@color/color_control</item>
+        <item name="colorControlActivated">@color/color_accent</item>
+        <item name="colorControlHighlight">@color/color_accent</item>
+        <item name="materialCalendarTheme">@style/AppTheme.MaterialAlertDialog.DatePicker</item>
+        <item name="materialTimePickerTheme">@style/AppTheme.MaterialAlertDialog.TimePicker</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Confirmation" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/dialog_confirmation_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_confirmation_on_surface_color</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.Confirmation.Button.Neutral</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_confirmation_button_positive_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_confirmation_button_negative_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Confirmation.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_confirmation_button_neutral_color</item>
+        <item name="rippleColor">@color/dialog_confirmation_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Filter" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/dialog_filter_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_filter_on_surface_color</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.Filter.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.MaterialAlertDialog.Filter.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.Filter.Button.Neutral</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Filter.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_filter_button_positive_color</item>
+        <item name="rippleColor">@color/dialog_filter_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Filter.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_filter_button_negative_color</item>
+        <item name="rippleColor">@color/dialog_filter_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.Filter.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_filter_button_neutral_color</item>
+        <item name="rippleColor">@color/dialog_filter_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.DatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="android:textColor">@color/dialog_date_picker_text_color</item>
+        <item name="android:textColorPrimary">@color/dialog_date_picker_text_color_primary</item>
+        <item name="colorPrimary">@color/dialog_date_picker_primary_color</item>
+        <item name="colorOnPrimary">@color/dialog_date_picker_on_primary_color</item>
+        <item name="colorSurface">@color/dialog_date_time_picker_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_date_time_picker_on_surface_color</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.Button</item>
+        <item name="materialButtonStyle">@style/AppTheme.MaterialAlertDialog.DatePicker.TextButton</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.DatePicker.Button" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_date_picker_button_color</item>
+        <item name="rippleColor">@color/dialog_date_picker_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.DatePicker.TextButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog.Flush">
+        <item name="android:textColor">@color/dialog_date_picker_button_color</item>
+        <item name="rippleColor">@color/dialog_date_picker_button_ripple_color</item>
+        <item name="iconTint">@color/dialog_date_picker_button_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.TimePicker" parent="ThemeOverlay.MaterialComponents.TimePicker">
+        <item name="colorPrimary">@color/dialog_time_picker_primary_color</item>
+        <item name="colorOnPrimary">@color/dialog_time_picker_on_primary_color</item>
+        <item name="colorSurface">@color/dialog_date_time_picker_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_date_time_picker_on_surface_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.OutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/content_color</item>
+        <item name="strokeColor">@color/content_color</item>
+        <item name="rippleColor">@color/color_control</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.OutlinedButton.Unsafe">
+        <item name="rippleColor">@color/red</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/dialog_google_drive_surface_color</item>
+        <item name="colorOnSurface">@color/dialog_google_drive_on_surface_color</item>
+        <item name="actionModeBackground">@color/color_primary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Positive</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AppTheme.MaterialAlertDialog.GoogleDrive.Button.Neutral</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_google_drive_button_positive_color</item>
+        <item name="rippleColor">@color/dialog_google_drive_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.MaterialAlertDialog.GoogleDrive.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/dialog_google_drive_button_neutral_color</item>
+        <item name="rippleColor">@color/dialog_google_drive_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.Text" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/content_color_selector</item>
+    </style>
+
+    <style name="AppTheme.LargeText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/content_color_selector</item>
+    </style>
+
+    <style name="AppTheme.HeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/illustration_color</item>
+    </style>
+
+    <style name="AppTheme.DialogLikeHighlightTheme">
+        <item name="colorControlHighlight">@color/dialog_button_ripple_color</item>
+    </style>
+
+    <style name="AppTheme.DialogLikeSelectableHeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:theme">@style/AppTheme.DialogLikeHighlightTheme</item>
+        <item name="android:textColor">@color/illustration_color</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="AppTheme.SubHeaderText" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/illustration_color</item>
+    </style>
+
+    <style name="AppTheme.ProgressHeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/color_accent</item>
+    </style>
+
+    <style name="AppTheme.EditableText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/content_color_selector</item>
+        <item name="android:textColorHint">@color/color_control</item>
+    </style>
+
+    <style name="AppTheme.EditText" parent="AppTheme.EditableText" />
+
+    <style name="AppTheme.HotProgressBar">
+        <item name="android:padding">@dimen/padding_l</item>
+        <item name="android:background">@drawable/hot_progress_background</item>
+    </style>
+
+    <style name="AppTheme.Button">
+        <item name="android:backgroundTint">@color/grey_darkish</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="textAllCaps">true</item>
+        <item name="rippleColor">@color/color_accent</item>
+    </style>
+
+    <style name="AppTheme.ImageButton">
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@color/content_color_selector</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:padding">@dimen/padding_xs</item>
+    </style>
+
+    <style name="AppTheme.ImageButton.ForHeader">
+        <item name="android:tint">@color/illustration_color</item>
+    </style>
+
+    <style name="AppTheme.Fab">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">@dimen/fab_margin</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="backgroundTint">@color/color_primary</item>
+        <item name="rippleColor">@color/color_accent</item>
+        <item name="tint">@color/color_accent</item>
+        <item name="fabSize">normal</item>
+        <item name="elevation">@dimen/fab_elevation</item>
+    </style>
+
+    <style name="AppTheme.Fab.Child">
+        <item name="android:layout_margin">@dimen/child_fab_margin</item>
+        <item name="fabSize">mini</item>
+        <item name="elevation">@dimen/child_fab_elevation</item>
+    </style>
+
+    <style name="AppTheme.Fab.Child.Bottom">
+        <item name="android:layout_margin">@dimen/bottom_child_fab_margin</item>
+    </style>
+
+    <style name="AppTheme.Card">
+        <item name="cardBackgroundColor">@color/normal_card_color</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+    </style>
+
+    <style name="AppTheme.Card.Selectable">
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="cardBackgroundColor">@color/card_color_selector</item>
+    </style>
+
+    <style name="AppTheme.Card.Selectable.Item">
+        <item name="android:layout_marginStart">@dimen/padding_l</item>
+        <item name="android:layout_marginEnd">@dimen/padding_l</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:layout_marginBottom">@dimen/card_vertical_margin</item>
     </style>
 
 </resources>
