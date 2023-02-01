@@ -66,8 +66,9 @@ class TrackingAggregatorTest : TestCase() {
             dateRange = dateRange,
             exerciseId = null
         )
-        assertEquals(1, statistics.points.size)
-        assertEquals(BPM[1], statistics.points[0].maxBpm)
+        assertEquals(2, statistics.points.size)
+        assertEquals(0, statistics.points[0].maxBpm)
+        assertEquals(BPM[1], statistics.points[1].maxBpm)
     }
 
     fun testAggregateMaxBpmTrackingForPredefinedExercise() = runBlocking {
@@ -75,8 +76,9 @@ class TrackingAggregatorTest : TestCase() {
             dateRange = INFINITE_DATE_RANGE,
             exerciseId = 1.toId()
         )
-        assertEquals(1, statistics.points.size)
-        assertEquals(BPM[1], statistics.points[0].maxBpm)
+        assertEquals(2, statistics.points.size)
+        assertEquals(0, statistics.points[0].maxBpm)
+        assertEquals(BPM[1], statistics.points[1].maxBpm)
     }
 
     fun testAggregateNoteCountTrackingForInfiniteDateRange() = runBlocking {
@@ -95,8 +97,9 @@ class TrackingAggregatorTest : TestCase() {
             dateRange = dateRange,
             exerciseId = null
         )
-        assertEquals(1, statistics.points.size)
-        assertEquals(2, statistics.points[0].noteCount)
+        assertEquals(2, statistics.points.size)
+        assertEquals(0, statistics.points[0].noteCount)
+        assertEquals(2, statistics.points[1].noteCount)
     }
 
     fun testAggregateNoteCountTrackingForPredefinedExercise() = runBlocking {
@@ -104,8 +107,9 @@ class TrackingAggregatorTest : TestCase() {
             dateRange = INFINITE_DATE_RANGE,
             exerciseId = 1.toId()
         )
-        assertEquals(1, statistics.points.size)
-        assertEquals(2, statistics.points[0].noteCount)
+        assertEquals(2, statistics.points.size)
+        assertEquals(0, statistics.points[0].noteCount)
+        assertEquals(2, statistics.points[1].noteCount)
     }
 
     private fun fillDatabase() {
