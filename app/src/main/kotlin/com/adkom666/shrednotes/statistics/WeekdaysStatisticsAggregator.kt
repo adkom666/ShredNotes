@@ -31,7 +31,7 @@ class WeekdaysStatisticsAggregator(
         Timber.d("aggregateAverageAmongMaxBpm: dateRange=$dateRange")
         val averageAmongMaxBpm = averageAmongMaxBpmCache[dateRange]
             ?: aggregateAverageQuantity(dateRange) { noteList ->
-                noteList.map { it.bpm }.maxOrNull()
+                noteList.maxOfOrNull { it.bpm }
             }.also { averageAmongMaxBpmCache[dateRange] = it }
         return WeekdaysStatistics(valueMap = averageAmongMaxBpm)
     }
