@@ -21,7 +21,6 @@ class TrackingAggregatorTest : TestCase() {
     private companion object {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
-
         private val BPM = arrayOf(256, 666, 512)
 
         private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
