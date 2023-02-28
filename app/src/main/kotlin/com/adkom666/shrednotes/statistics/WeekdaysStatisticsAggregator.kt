@@ -81,12 +81,12 @@ class WeekdaysStatisticsAggregator(
         val averageQuantity = mutableMapOf<Weekday, Float>()
         ALL_WEEKDAYS.forEach { weekday ->
             val quantityList = weekdayToQuantityListMap[weekday]
+            Timber.d("weekday=$weekday, quantityList=$quantityList")
             if (quantityList.isNullOrEmpty().not()) {
                 quantityList?.average()?.let {
                     averageQuantity[weekday] = it.toFloat()
                 }
             }
-            Timber.d("weekday=$weekday, quantityList=$quantityList")
             Timber.d("averageQuantity[$weekday]=${averageQuantity[weekday]}")
         }
         return averageQuantity
