@@ -2,6 +2,8 @@ package com.adkom666.shrednotes.statistics
 
 import com.adkom666.shrednotes.data.model.Note
 import com.adkom666.shrednotes.data.repository.NoteRepository
+import com.adkom666.shrednotes.statistics.util.endDateInclusive
+import com.adkom666.shrednotes.statistics.util.startDateInclusive
 import com.adkom666.shrednotes.util.ALL_WEEKDAYS
 import com.adkom666.shrednotes.util.DateRange
 import com.adkom666.shrednotes.util.Weekday
@@ -18,6 +20,8 @@ import java.util.Calendar
 class WeekdaysStatisticsAggregator(
     private val noteRepository: NoteRepository
 ) {
+    private var firstNoteDateCache: Array<Days?>? = null
+    private var lastNoteDateCache: Array<Days?>? = null
     private var averageAmongMaxBpmCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
     private var averageAmongNoteCountCache: MutableMap<DateRange, WeekdayValues> = mutableMapOf()
 
@@ -56,6 +60,8 @@ class WeekdaysStatisticsAggregator(
      */
     fun clearCache() {
         Timber.d("clearCache")
+        firstNoteDateCache = null
+        lastNoteDateCache = null
         averageAmongMaxBpmCache.clear()
         averageAmongNoteCountCache.clear()
     }
@@ -64,18 +70,18 @@ class WeekdaysStatisticsAggregator(
         dateRange: DateRange,
         calcQuantity: (List<Note>) -> Int?
     ): WeekdayValues {
-        val noteToDaysMap = noteToDaysMap(dateRange)
-        Timber.d("noteToDaysMap=$noteToDaysMap")
-
-        val weekdayToQuantityListMap = weekdayToEmptyIntListMap()
-        val calendar = Calendar.getInstance()
-        noteToDaysMap.keys.forEach { days ->
-            val weekday = days.date.weekday(calendar)
-            noteToDaysMap[days]?.let { noteList ->
-                calcQuantity(noteList)?.let { quantity ->
-                    weekdayToQuantityListMap[weekday]?.add(quantity)
-                }
-            }
+        val daysToNotesMap = daysToNotesMap(dateRange)
+        Timber.d("daysToNotesMap=$daysToNotesMap")
+        val startDate = firstDate()?.let {
+            startDateInclusive(dateRange.fromInclusive, it)
+        }
+        val endDate = lastDate()?.let {
+            endDateInclusive(dateRange.toExclusive, it)
+        }
+        val weekdayToQuantityListMap = if (startDate != null && endDate != null) {
+            weekdayToQuantityListMap(daysToNotesMap, startDate, endDate, calcQuantity)
+        } else {
+            emptyMap()
         }
 
         val averageQuantity = mutableMapOf<Weekday, Float>()
@@ -92,17 +98,38 @@ class WeekdaysStatisticsAggregator(
         return averageQuantity
     }
 
-    private suspend fun noteToDaysMap(dateRange: DateRange): Map<Days, List<Note>> {
+    private suspend fun daysToNotesMap(dateRange: DateRange): Map<Days, List<Note>> {
         val notes = noteRepository.listUnorderedSuspending(dateRange)
-        val noteToDaysMap = mutableMapOf<Days, MutableList<Note>>()
+        val daysToNotesMap = mutableMapOf<Days, MutableList<Note>>()
         notes.forEach { note ->
             val days = Days(note.dateTime)
-            val noteList = noteToDaysMap[days]
+            val noteList = daysToNotesMap[days]
                 ?: mutableListOf<Note>()
-                    .also { noteToDaysMap[days] = it }
+                    .also { daysToNotesMap[days] = it }
             noteList.add(note)
         }
-        return noteToDaysMap
+        return daysToNotesMap
+    }
+
+    private fun weekdayToQuantityListMap(
+        daysToNotesMap: Map<Days, List<Note>>,
+        startDate: Days,
+        endDate: Days,
+        calcQuantity: (List<Note>) -> Int?
+    ): Map<Weekday, List<Int>> {
+        val weekdayToQuantityListMap = weekdayToEmptyIntListMap()
+        val noNoteList = emptyList<Note>()
+        val calendar = Calendar.getInstance()
+        var days = startDate
+        while (days < endDate) {
+            val noteList = daysToNotesMap[days] ?: noNoteList
+            calcQuantity(noteList)?.addToListFrom(weekdayToQuantityListMap, days, calendar)
+            days = days.tomorrow
+        }
+        daysToNotesMap[endDate]?.let { noteList ->
+            calcQuantity(noteList)?.addToListFrom(weekdayToQuantityListMap, days, calendar)
+        }
+        return weekdayToQuantityListMap
     }
 
     private fun weekdayToEmptyIntListMap(): Map<Weekday, MutableList<Int>> {
@@ -111,5 +138,26 @@ class WeekdaysStatisticsAggregator(
             weekdayToIntListMap[weekday] = mutableListOf()
         }
         return weekdayToIntListMap
+    }
+
+    private suspend fun firstDate(): Days? {
+        return firstNoteDateCache?.first()
+            ?: noteRepository.firstNoteDateSuspending()
+                .also { firstNoteDateCache = arrayOf(it) }
+    }
+
+    private suspend fun lastDate(): Days? {
+        return lastNoteDateCache?.first()
+            ?: noteRepository.lastNoteDateSuspending()
+                .also { lastNoteDateCache = arrayOf(it) }
+    }
+
+    private fun Int.addToListFrom(
+        weekdayToQuantityListMap: Map<Weekday, MutableList<Int>>,
+        days: Days,
+        calendar: Calendar
+    ) {
+        val weekday = days.date.weekday(calendar)
+        weekdayToQuantityListMap[weekday]?.add(this)
     }
 }
