@@ -25,6 +25,9 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         private const val EXERCISE_NAME_1 = "exercise 1"
         private const val EXERCISE_NAME_2 = "exercise 2"
         private val BPM = arrayOf(256, 666, 512, 300)
+
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
+        private const val DAYS_PER_WEEK = 7
     }
 
     @Inject
@@ -83,13 +86,13 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
     fun testAggregateAverageNoteCountForInfiniteDateRange() = runBlocking {
         val statistics = statisticsAggregator.aggregateAverageNoteCount(INFINITE_DATE_RANGE)
         Timber.d("statistics.valueMap=${statistics.valueMap}")
-        assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
-        assertEquals(1f, statistics.valueMap[Weekday.MONDAY])
-        assertEquals(null, statistics.valueMap[Weekday.TUESDAY])
-        assertEquals((2f + 1f) / 2, statistics.valueMap[Weekday.WEDNESDAY])
-        assertEquals(null, statistics.valueMap[Weekday.THURSDAY])
-        assertEquals(null, statistics.valueMap[Weekday.FRIDAY])
-        assertEquals(null, statistics.valueMap[Weekday.SATURDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.SUNDAY])
+        assertEquals(1f / 3, statistics.valueMap[Weekday.MONDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.TUESDAY])
+        assertEquals((2f + 1f) / 4, statistics.valueMap[Weekday.WEDNESDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.THURSDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.FRIDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.SATURDAY])
     }
 
     fun testAggregateAverageNoteCountForCustomDateRange() = runBlocking {
@@ -103,7 +106,7 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         Timber.d("statistics.valueMap=${statistics.valueMap}")
         assertEquals(null, statistics.valueMap[Weekday.SUNDAY])
         assertEquals(1f, statistics.valueMap[Weekday.MONDAY])
-        assertEquals(null, statistics.valueMap[Weekday.TUESDAY])
+        assertEquals(0f, statistics.valueMap[Weekday.TUESDAY])
         assertEquals(2f, statistics.valueMap[Weekday.WEDNESDAY])
         assertEquals(null, statistics.valueMap[Weekday.THURSDAY])
         assertEquals(null, statistics.valueMap[Weekday.FRIDAY])
@@ -153,11 +156,9 @@ class WeekdaysStatisticsAggregatorTest : TestCase() {
         )
         noteDao.insert(noteEntity3)
 
-        calendar.set(Calendar.YEAR, 1992)
-        calendar.set(Calendar.DAY_OF_WEEK, 4)
         val noteEntity4 = NoteEntity(
             id = 4.toId(),
-            timestamp = calendar.timeInMillis,
+            timestamp = calendar.timeInMillis - 3 * DAYS_PER_WEEK * MILLIS_PER_DAY,
             exerciseId = exerciseEntity2.id,
             bpm = BPM[3]
         )
